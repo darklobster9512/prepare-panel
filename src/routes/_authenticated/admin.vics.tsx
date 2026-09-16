@@ -331,6 +331,7 @@ function AdminVics() {
   };
 
   const vics = vicsQuery.data ?? [];
+  const projects = projectsQuery.data ?? [];
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     if (!term) return vics;
@@ -393,6 +394,7 @@ function AdminVics() {
                 <th className="px-5 py-3 font-semibold">Geburtsort</th>
                 <th className="px-5 py-3 font-semibold">Adresse</th>
                 <th className="px-5 py-3 font-semibold">Familienstand</th>
+                {/* placeholder */}
                 <th className="px-5 py-3 font-semibold">Steuer-ID</th>
                 <th className="px-5 py-3 font-semibold">Bank</th>
                 <th className="px-5 py-3 font-semibold text-right">Aktionen</th>
