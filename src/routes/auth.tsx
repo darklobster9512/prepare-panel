@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Loader2, Lock, ShieldCheck, UserCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
@@ -50,6 +50,9 @@ function translateError(message: string): string {
   if (m.includes("password")) return "Das Passwort erfüllt die Anforderungen nicht.";
   return "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.";
 }
+
+const inputClass =
+  "w-full rounded-xl border border-border bg-card px-4 py-3 text-base text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary focus:ring-1 focus:ring-primary";
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -134,45 +137,48 @@ function AuthPage() {
 
   const isSignUp = mode === "signup";
 
-  return (
-    <div className="grid min-h-screen bg-background lg:grid-cols-[1fr_minmax(0,38rem)]">
-      {/* Formularseite */}
-      <div className="flex flex-col px-6 py-10 sm:px-12 lg:px-16">
-        <span className="text-lg font-extrabold tracking-tight text-foreground">Panel</span>
+  const switchMode = () => {
+    setMode(isSignUp ? "signin" : "signup");
+    setError(null);
+  };
 
-        <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
-          <h1 className="text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
+  return (
+    <div className="flex min-h-screen flex-col bg-background">
+      {/* Kopfzeile */}
+      <header className="border-b border-border">
+        <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-6">
+          <span className="text-lg font-extrabold tracking-tight text-foreground">Panel</span>
+          <p className="text-sm text-muted-foreground">
+            {isSignUp ? "Sie haben schon ein Konto?" : "Noch kein Konto?"}{" "}
+            <button
+              type="button"
+              onClick={switchMode}
+              className="font-semibold text-primary underline-offset-4 hover:underline"
+            >
+              {isSignUp ? "Anmelden" : "Registrieren"}
+            </button>
+          </p>
+        </div>
+      </header>
+
+      {/* Inhalt */}
+      <main className="flex flex-1 items-center justify-center px-6 py-16">
+        <div className="w-full max-w-[30rem]">
+          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Schritt 1 von 1 · Kontodaten
+          </p>
+          <h1 className="mt-4 text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-[2.5rem]">
             {isSignUp ? "Konto erstellen" : "Willkommen zurück"}
           </h1>
-          <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+          <p className="mt-4 text-base leading-relaxed text-muted-foreground">
             {isSignUp
               ? "In wenigen Schritten zum Zugang für die interne Prozessvorbereitung."
               : "Melden Sie sich an, um Ihre Unternehmensprozesse zu verwalten."}
           </p>
 
-          <div className="mt-8 inline-flex rounded-full bg-secondary p-1">
-            {(["signin", "signup"] as const).map((value) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => {
-                  setMode(value);
-                  setError(null);
-                }}
-                className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
-                  mode === value
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {value === "signin" ? "Anmelden" : "Registrieren"}
-              </button>
-            ))}
-          </div>
-
-          <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
+          <form onSubmit={handleSubmit} className="mt-10 space-y-5" noValidate>
             {isSignUp && (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-5 sm:grid-cols-2">
                 <Field
                   id="firstName"
                   label="Vorname"
@@ -200,21 +206,17 @@ function AuthPage() {
             />
 
             <div>
-              <label
-                htmlFor="password"
-                className="text-sm font-semibold text-foreground"
-              >
+              <label htmlFor="password" className="text-sm font-semibold text-foreground">
                 Passwort
               </label>
-              <div className="relative mt-1.5">
+              <div className="relative mt-2">
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete={isSignUp ? "new-password" : "current-password"}
-                  className="w-full rounded-xl border border-input bg-card px-4 py-3 pr-12 text-base text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  placeholder={isSignUp ? "Mindestens 6 Zeichen" : "••••••••"}
+                  className={`${inputClass} pr-12`}
                 />
                 <button
                   type="button"
@@ -223,19 +225,23 @@ function AuthPage() {
                   className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4.5 w-4.5" aria-hidden="true" />
+                    <EyeOff className="h-4 w-4" aria-hidden="true" />
                   ) : (
-                    <Eye className="h-4.5 w-4.5" aria-hidden="true" />
+                    <Eye className="h-4 w-4" aria-hidden="true" />
                   )}
                 </button>
               </div>
+              {isSignUp && (
+                <p className="mt-2 text-xs text-muted-foreground">Mindestens 6 Zeichen.</p>
+              )}
             </div>
 
             {error && (
               <p
                 role="alert"
-                className="rounded-xl border border-destructive/25 bg-destructive/8 px-4 py-3 text-sm text-destructive"
+                className="flex items-start gap-2 text-sm leading-relaxed text-destructive"
               >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                 {error}
               </p>
             )}
@@ -243,47 +249,54 @@ function AuthPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90 disabled:opacity-60"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
               {isSignUp ? "Konto erstellen" : "Anmelden"}
             </button>
 
-            <p className="pt-1 text-xs leading-relaxed text-muted-foreground">
-              Neue Konten erhalten automatisch die Rolle „Mitarbeiter". Administratoren
-              werden intern freigeschaltet.
+            <p className="text-center text-sm text-muted-foreground">
+              {isSignUp ? "Sie haben schon ein Konto?" : "Noch kein Konto?"}{" "}
+              <button
+                type="button"
+                onClick={switchMode}
+                className="font-semibold text-primary underline-offset-4 hover:underline"
+              >
+                {isSignUp ? "Anmelden" : "Jetzt registrieren"}
+              </button>
             </p>
           </form>
-        </div>
-      </div>
 
-      {/* Markenseite */}
-      <aside className="relative hidden overflow-hidden bg-foreground px-14 py-16 lg:flex lg:flex-col lg:justify-center">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-32 -top-32 h-[34rem] w-[34rem] rounded-full bg-primary/30 blur-3xl"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-40 -left-24 h-[28rem] w-[28rem] rounded-full bg-primary-glow/20 blur-3xl"
-        />
-
-        <div className="relative z-10 max-w-md">
-          <span className="inline-flex items-center gap-2 rounded-full border border-background/20 px-4 py-1.5 text-sm font-medium text-background/80">
-            <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-            Geschützter Bereich
-          </span>
-          <h2 className="mt-8 text-3xl font-bold leading-tight text-background">
-            Alle internen Prozesse an einem Ort vorbereitet
-          </h2>
-          <ul className="mt-8 space-y-4 text-base leading-relaxed text-background/70">
-            <li>Strukturierte Abläufe für Teams und Administration</li>
-            <li>Getrennte Ansichten für Admins und Mitarbeitende</li>
-            <li>Klarer Überblick über Aufgaben, Status und Freigaben</li>
-          </ul>
+          {/* Vertrauenshinweise */}
+          <div className="mt-12 grid gap-4 border-t border-border pt-8 text-sm text-muted-foreground sm:grid-cols-3">
+            <Trust icon={Lock} text="Verschlüsselte Übertragung" />
+            <Trust icon={ShieldCheck} text="Nur interner Zugang" />
+            <Trust icon={UserCheck} text="Rolle wird automatisch vergeben" />
+          </div>
         </div>
-      </aside>
+      </main>
+
+      <footer className="border-t border-border">
+        <div className="mx-auto w-full max-w-5xl px-6 py-6 text-sm text-muted-foreground">
+          © {new Date().getFullYear()} Panel · Interne Vorbereitung von Unternehmensprozessen
+        </div>
+      </footer>
     </div>
+  );
+}
+
+function Trust({
+  icon: Icon,
+  text,
+}: {
+  icon: typeof Lock;
+  text: string;
+}) {
+  return (
+    <p className="flex items-start gap-2 leading-relaxed">
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+      {text}
+    </p>
   );
 }
 
@@ -313,7 +326,7 @@ function Field({
         value={value}
         autoComplete={autoComplete}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1.5 w-full rounded-xl border border-input bg-card px-4 py-3 text-base text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+        className={`${inputClass} mt-2`}
       />
     </div>
   );
