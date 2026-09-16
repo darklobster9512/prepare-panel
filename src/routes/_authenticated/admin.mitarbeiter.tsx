@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertCircle, Eye, EyeOff, LayoutDashboard, Plus, Users } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, IdCard, LayoutDashboard, Plus, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { PanelShell } from "@/components/panel-shell";
@@ -118,7 +118,9 @@ function AdminEmployees() {
       nav={[
         { label: "Übersicht", icon: LayoutDashboard, to: "/admin", exact: true },
         { label: "Mitarbeiter", icon: Users, to: "/admin/mitarbeiter" },
+        { label: "Vics", icon: IdCard, to: "/admin/vics" },
       ]}
+
     >
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
