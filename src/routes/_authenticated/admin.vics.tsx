@@ -132,6 +132,8 @@ function AdminVics() {
   const addVicsBulk = useServerFn(createVicsBulk);
   const editVic = useServerFn(updateVic);
   const removeVic = useServerFn(deleteVic);
+  const assignProject = useServerFn(assignVicProject);
+  const fetchProjects = useServerFn(listProjects);
 
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<DialogMode>("form");
@@ -159,11 +161,19 @@ function AdminVics() {
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: ["admin", "vics"] });
 
+  const projectsQuery = useQuery({
+    queryKey: ["admin", "projects"],
+    queryFn: () => fetchProjects(),
+    enabled: role === "admin",
+  });
+
   const saveMutation = useMutation({
-    mutationFn: (values: FormState & { id?: string }) =>
-      values.id
-        ? editVic({ data: { ...values, id: values.id } })
-        : addVic({ data: values }),
+    mutationFn: (values: FormState & { id?: string }) => {
+      const payload = { ...values, project_id: values.project_id || null };
+      return values.id
+        ? editVic({ data: { ...payload, id: values.id } })
+        : addVic({ data: payload });
+    },
     onSuccess: () => {
       setOpen(false);
       setForm(emptyForm);
@@ -242,6 +252,7 @@ function AdminVics() {
       tax_id: vic.tax_id ?? "",
       bank: vic.bank ?? "",
       notes: vic.notes ?? "",
+      project_id: vic.project_id ?? "",
     });
     setMode("form");
     resetDialog();
