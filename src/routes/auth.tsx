@@ -35,10 +35,7 @@ const signInSchema = z.object({
   password: z.string().min(6, { message: "Das Passwort muss mindestens 6 Zeichen haben." }),
 });
 
-const signUpSchema = signInSchema.extend({
-  firstName: z.string().trim().min(2, { message: "Bitte Vornamen eingeben." }).max(60),
-  lastName: z.string().trim().min(2, { message: "Bitte Nachnamen eingeben." }).max(60),
-});
+const signUpSchema = signInSchema;
 
 function translateError(message: string): string {
   const m = message.toLowerCase();
@@ -57,8 +54,6 @@ const inputClass =
 function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -105,7 +100,7 @@ function AuthPage() {
       return;
     }
 
-    const parsed = signUpSchema.safeParse({ email, password, firstName, lastName });
+    const parsed = signUpSchema.safeParse({ email, password });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Eingaben prüfen.");
       return;
@@ -114,10 +109,7 @@ function AuthPage() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: { first_name: parsed.data.firstName, last_name: parsed.data.lastName },
-      },
+      options: { emailRedirectTo: window.location.origin },
     });
     setSubmitting(false);
 
@@ -177,25 +169,6 @@ function AuthPage() {
           </p>
 
           <form onSubmit={handleSubmit} className="mt-10 space-y-5" noValidate>
-            {isSignUp && (
-              <div className="grid gap-5 sm:grid-cols-2">
-                <Field
-                  id="firstName"
-                  label="Vorname"
-                  value={firstName}
-                  onChange={setFirstName}
-                  autoComplete="given-name"
-                />
-                <Field
-                  id="lastName"
-                  label="Nachname"
-                  value={lastName}
-                  onChange={setLastName}
-                  autoComplete="family-name"
-                />
-              </div>
-            )}
-
             <Field
               id="email"
               label="E-Mail-Adresse"
