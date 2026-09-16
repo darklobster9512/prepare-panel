@@ -150,19 +150,19 @@ export function AuftraegeSection({ enabled }: Props) {
         {auftraege.map((auftrag) => (
           <div
             key={auftrag.id}
-            className="group relative flex min-h-[9.5rem] flex-col items-start gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm"
+            className="group relative flex aspect-square flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm"
           >
             <AuftragLogo
               value={auftrag.logo_path}
               alt={auftrag.name}
-              className="h-12 w-12 rounded-xl border border-border object-contain"
+              className="h-16 w-16 rounded-xl border border-border object-contain"
               fallback={
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-muted text-muted-foreground">
-                  <ImageIcon className="h-5 w-5" aria-hidden="true" />
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border bg-muted text-muted-foreground">
+                  <ImageIcon className="h-6 w-6" aria-hidden="true" />
                 </div>
               }
             />
-            <span className="mt-auto line-clamp-2 text-sm font-semibold text-foreground">
+            <span className="line-clamp-2 text-center text-sm font-semibold text-foreground">
               {auftrag.name}
             </span>
 
@@ -194,7 +194,7 @@ export function AuftraegeSection({ enabled }: Props) {
         <button
           type="button"
           onClick={openCreate}
-          className="flex min-h-[9.5rem] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border bg-card/50 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+          className="flex aspect-square flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border bg-card/50 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
         >
           <Plus className="h-7 w-7" aria-hidden="true" />
           <span className="text-sm font-semibold">Auftrag hinzufügen</span>
