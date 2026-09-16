@@ -17,6 +17,8 @@ export type VicRow = {
   tax_id: string | null;
   bank: string | null;
   notes: string | null;
+  project_id: string | null;
+  project_name: string | null;
   created_at: string;
 };
 
@@ -61,10 +63,30 @@ const vicSchema = z.object({
     .max(2000)
     .optional()
     .transform((value) => (value ? value : null)),
+  project_id: z
+    .string()
+    .uuid()
+    .nullable()
+    .optional()
+    .transform((value) => (value ? value : null)),
+});
+
+const assignmentSchema = z.object({
+  id: z.string().uuid(),
+  project_id: z.string().uuid().nullable(),
 });
 
 const SELECT_COLUMNS =
-  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, created_at";
+  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, created_at, projects(name)";
+
+type RawVicRow = Omit<VicRow, "project_name"> & {
+  projects: { name: string } | null;
+};
+
+function mapVic(row: RawVicRow): VicRow {
+  const { projects, ...rest } = row;
+  return { ...rest, project_name: projects?.name ?? null };
+}
 
 export const listVics = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -77,7 +99,7 @@ export const listVics = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false });
 
     if (error) throw new Error("Datensätze konnten nicht geladen werden.");
-    return (data ?? []) as VicRow[];
+    return ((data ?? []) as unknown as RawVicRow[]).map(mapVic);
   });
 
 export const createVic = createServerFn({ method: "POST" })
@@ -144,5 +166,20 @@ export const deleteVic = createServerFn({ method: "POST" })
 
     const { error } = await context.supabase.from("vics").delete().eq("id", data.id);
     if (error) throw new Error("Datensatz konnte nicht gelöscht werden.");
+    return { ok: true };
+  });
+
+export const assignVicProject = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => assignmentSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+
+    const { error } = await context.supabase
+      .from("vics")
+      .update({ project_id: data.project_id })
+      .eq("id", data.id);
+
+    if (error) throw new Error("Projekt konnte nicht zugewiesen werden.");
     return { ok: true };
   });

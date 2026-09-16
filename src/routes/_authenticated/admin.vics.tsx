@@ -29,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
 import { parseVics, type ParsedVic } from "@/lib/vic-parser";
 import {
+  assignVicProject,
   createVic,
   createVicsBulk,
   deleteVic,
@@ -36,6 +37,7 @@ import {
   updateVic,
   type VicRow,
 } from "@/lib/vics.functions";
+import { listProjects } from "@/lib/projects.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/vics")({
   head: () => ({
@@ -71,6 +73,7 @@ type FormState = {
   tax_id: string;
   bank: string;
   notes: string;
+  project_id: string;
 };
 
 const emptyForm: FormState = {
@@ -86,6 +89,7 @@ const emptyForm: FormState = {
   tax_id: "",
   bank: "",
   notes: "",
+  project_id: "",
 };
 
 const previewFields: { key: keyof ParsedVic; label: string; type?: string }[] = [
@@ -128,6 +132,8 @@ function AdminVics() {
   const addVicsBulk = useServerFn(createVicsBulk);
   const editVic = useServerFn(updateVic);
   const removeVic = useServerFn(deleteVic);
+  const assignProject = useServerFn(assignVicProject);
+  const fetchProjects = useServerFn(listProjects);
 
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<DialogMode>("form");
@@ -155,11 +161,19 @@ function AdminVics() {
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: ["admin", "vics"] });
 
+  const projectsQuery = useQuery({
+    queryKey: ["admin", "projects"],
+    queryFn: () => fetchProjects(),
+    enabled: role === "admin",
+  });
+
   const saveMutation = useMutation({
-    mutationFn: (values: FormState & { id?: string }) =>
-      values.id
-        ? editVic({ data: { ...values, id: values.id } })
-        : addVic({ data: values }),
+    mutationFn: (values: FormState & { id?: string }) => {
+      const payload = { ...values, project_id: values.project_id || null };
+      return values.id
+        ? editVic({ data: { ...payload, id: values.id } })
+        : addVic({ data: payload });
+    },
     onSuccess: () => {
       setOpen(false);
       setForm(emptyForm);
@@ -207,6 +221,18 @@ function AdminVics() {
     },
   });
 
+  const assignMutation = useMutation({
+    mutationFn: (values: { id: string; project_id: string | null }) =>
+      assignProject({ data: values }),
+    onSuccess: () => {
+      setSuccess("Projekt zugewiesen.");
+      invalidate();
+    },
+    onError: () => {
+      setError("Projekt konnte nicht zugewiesen werden. Bitte erneut versuchen.");
+    },
+  });
+
   const resetDialog = () => {
     setError(null);
     setSuccess(null);
@@ -238,6 +264,7 @@ function AdminVics() {
       tax_id: vic.tax_id ?? "",
       bank: vic.bank ?? "",
       notes: vic.notes ?? "",
+      project_id: vic.project_id ?? "",
     });
     setMode("form");
     resetDialog();
@@ -304,11 +331,12 @@ function AdminVics() {
   };
 
   const vics = vicsQuery.data ?? [];
+  const projects = projectsQuery.data ?? [];
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     if (!term) return vics;
     return vics.filter((vic) =>
-      [vic.first_name, vic.last_name, vic.birth_name, vic.city, vic.tax_id]
+      [vic.first_name, vic.last_name, vic.birth_name, vic.city, vic.tax_id, vic.project_name]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(term)),
     );
@@ -368,25 +396,26 @@ function AdminVics() {
                 <th className="px-5 py-3 font-semibold">Familienstand</th>
                 <th className="px-5 py-3 font-semibold">Steuer-ID</th>
                 <th className="px-5 py-3 font-semibold">Bank</th>
+                <th className="px-5 py-3 font-semibold">Projekt</th>
                 <th className="px-5 py-3 font-semibold text-right">Aktionen</th>
               </tr>
             </thead>
             <tbody>
               {vicsQuery.isLoading ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={9}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={10}>
                     Wird geladen …
                   </td>
                 </tr>
               ) : vicsQuery.isError ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={9}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={10}>
                     Datensätze konnten nicht geladen werden.
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={9}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={10}>
                     {vics.length === 0
                       ? "Noch keine Datensätze vorhanden."
                       : "Keine Treffer für diese Suche."}
@@ -422,6 +451,26 @@ function AdminVics() {
                       {vic.tax_id || "–"}
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">{vic.bank || "–"}</td>
+                    <td className="px-5 py-4">
+                      <select
+                        value={vic.project_id ?? ""}
+                        onChange={(event) =>
+                          assignMutation.mutate({
+                            id: vic.id,
+                            project_id: event.target.value || null,
+                          })
+                        }
+                        aria-label="Projekt zuweisen"
+                        className="h-9 w-36 rounded-lg border border-border bg-background px-2 text-sm text-foreground"
+                      >
+                        <option value="">Kein Projekt</option>
+                        {projects.map((project) => (
+                          <option key={project.id} value={project.id}>
+                            {project.name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <button
@@ -547,6 +596,25 @@ function AdminVics() {
                   <Label htmlFor="bank">Aktuelle Bank</Label>
                   <Input id="bank" value={form.bank} onChange={set("bank")} placeholder="N26" />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="project_id">Projekt</Label>
+                <select
+                  id="project_id"
+                  value={form.project_id}
+                  onChange={(event) =>
+                    setForm((prev) => ({ ...prev, project_id: event.target.value }))
+                  }
+                  className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
+                >
+                  <option value="">Kein Projekt</option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="space-y-2">
