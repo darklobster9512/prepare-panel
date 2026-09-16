@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   AlertCircle,
+  ClipboardPaste,
   IdCard,
   LayoutDashboard,
   Pencil,
@@ -23,8 +24,17 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
-import { createVic, deleteVic, listVics, updateVic, type VicRow } from "@/lib/vics.functions";
+import { parseVics, type ParsedVic } from "@/lib/vic-parser";
+import {
+  createVic,
+  createVicsBulk,
+  deleteVic,
+  listVics,
+  updateVic,
+  type VicRow,
+} from "@/lib/vics.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/vics")({
   head: () => ({
@@ -50,6 +60,7 @@ export const Route = createFileRoute("/_authenticated/admin/vics")({
 type FormState = {
   first_name: string;
   last_name: string;
+  birth_name: string;
   birth_date: string;
   birth_place: string;
   street: string;
@@ -64,6 +75,7 @@ type FormState = {
 const emptyForm: FormState = {
   first_name: "",
   last_name: "",
+  birth_name: "",
   birth_date: "",
   birth_place: "",
   street: "",
@@ -74,6 +86,21 @@ const emptyForm: FormState = {
   bank: "",
   notes: "",
 };
+
+const previewFields: { key: keyof ParsedVic; label: string; type?: string }[] = [
+  { key: "first_name", label: "Vorname(n)" },
+  { key: "last_name", label: "Nachname" },
+  { key: "birth_name", label: "Geburtsname" },
+  { key: "birth_date", label: "Geburtsdatum", type: "date" },
+  { key: "birth_place", label: "Geburtsort" },
+  { key: "street", label: "Straße" },
+  { key: "postal_code", label: "PLZ" },
+  { key: "city", label: "Ort" },
+  { key: "marital_status", label: "Familienstand" },
+  { key: "tax_id", label: "Steuer-ID" },
+  { key: "bank", label: "Bank" },
+  { key: "notes", label: "Notizen" },
+];
 
 const nav = [
   { label: "Übersicht", icon: LayoutDashboard, to: "/admin", exact: true },
@@ -87,6 +114,8 @@ function formatDate(value: string | null) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString("de-DE");
 }
 
+type DialogMode = "form" | "import" | "preview";
+
 function AdminVics() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -94,15 +123,20 @@ function AdminVics() {
 
   const fetchVics = useServerFn(listVics);
   const addVic = useServerFn(createVic);
+  const addVicsBulk = useServerFn(createVicsBulk);
   const editVic = useServerFn(updateVic);
   const removeVic = useServerFn(deleteVic);
 
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<DialogMode>("form");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [importText, setImportText] = useState("");
+  const [parsed, setParsed] = useState<ParsedVic[]>([]);
+  const [selected, setSelected] = useState<boolean[]>([]);
 
   useEffect(() => {
     if (!loading && role && role !== "admin") {
@@ -142,6 +176,27 @@ function AdminVics() {
     },
   });
 
+  const bulkMutation = useMutation({
+    mutationFn: (records: ParsedVic[]) => addVicsBulk({ data: { records } }),
+    onSuccess: (_data, records) => {
+      setOpen(false);
+      setMode("form");
+      setImportText("");
+      setParsed([]);
+      setSelected([]);
+      setError(null);
+      setSuccess(
+        records.length === 1
+          ? "1 Datensatz importiert."
+          : `${records.length} Datensätze importiert.`,
+      );
+      invalidate();
+    },
+    onError: () => {
+      setError("Import fehlgeschlagen. Bitte erneut versuchen.");
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (id: string) => removeVic({ data: { id } }),
     onSuccess: () => {
@@ -150,11 +205,19 @@ function AdminVics() {
     },
   });
 
+  const resetDialog = () => {
+    setError(null);
+    setSuccess(null);
+    setImportText("");
+    setParsed([]);
+    setSelected([]);
+  };
+
   const openCreate = () => {
     setEditingId(null);
     setForm(emptyForm);
-    setError(null);
-    setSuccess(null);
+    setMode("form");
+    resetDialog();
     setOpen(true);
   };
 
@@ -163,6 +226,7 @@ function AdminVics() {
     setForm({
       first_name: vic.first_name ?? "",
       last_name: vic.last_name ?? "",
+      birth_name: vic.birth_name ?? "",
       birth_date: vic.birth_date ?? "",
       birth_place: vic.birth_place ?? "",
       street: vic.street ?? "",
@@ -173,8 +237,8 @@ function AdminVics() {
       bank: vic.bank ?? "",
       notes: vic.notes ?? "",
     });
-    setError(null);
-    setSuccess(null);
+    setMode("form");
+    resetDialog();
     setOpen(true);
   };
 
@@ -195,6 +259,41 @@ function AdminVics() {
     saveMutation.mutate(editingId ? { ...form, id: editingId } : form);
   };
 
+  const handleParse = () => {
+    setError(null);
+    const records = parseVics(importText);
+    if (records.length === 0) {
+      setError("Es konnten keine Datensätze erkannt werden.");
+      return;
+    }
+    setParsed(records);
+    setSelected(records.map(() => true));
+    setMode("preview");
+  };
+
+  const updateParsed = (index: number, key: keyof ParsedVic, value: string) =>
+    setParsed((prev) =>
+      prev.map((record, i) => (i === index ? { ...record, [key]: value } : record)),
+    );
+
+  const removeParsed = (index: number) => {
+    setParsed((prev) => prev.filter((_, i) => i !== index));
+    setSelected((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleBulkSave = () => {
+    setError(null);
+    const chosen = parsed.filter(
+      (record, index) =>
+        selected[index] && record.first_name.trim() && record.last_name.trim(),
+    );
+    if (chosen.length === 0) {
+      setError("Bitte mindestens einen vollständigen Datensatz auswählen.");
+      return;
+    }
+    bulkMutation.mutate(chosen);
+  };
+
   const handleDelete = (vic: VicRow) => {
     const name = `${vic.first_name} ${vic.last_name}`.trim();
     if (!window.confirm(`Datensatz von ${name} wirklich löschen?`)) return;
@@ -207,7 +306,7 @@ function AdminVics() {
     const term = search.trim().toLowerCase();
     if (!term) return vics;
     return vics.filter((vic) =>
-      [vic.first_name, vic.last_name, vic.city, vic.tax_id]
+      [vic.first_name, vic.last_name, vic.birth_name, vic.city, vic.tax_id]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(term)),
     );
@@ -256,10 +355,11 @@ function AdminVics() {
 
       <section className="mt-6 rounded-2xl border border-border bg-card shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[56rem] text-left text-sm">
+          <table className="w-full min-w-[60rem] text-left text-sm">
             <thead>
               <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
                 <th className="px-5 py-3 font-semibold">Name</th>
+                <th className="px-5 py-3 font-semibold">Geburtsname</th>
                 <th className="px-5 py-3 font-semibold">Geburtsdatum</th>
                 <th className="px-5 py-3 font-semibold">Geburtsort</th>
                 <th className="px-5 py-3 font-semibold">Adresse</th>
@@ -272,19 +372,19 @@ function AdminVics() {
             <tbody>
               {vicsQuery.isLoading ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={8}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={9}>
                     Wird geladen …
                   </td>
                 </tr>
               ) : vicsQuery.isError ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={8}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={9}>
                     Datensätze konnten nicht geladen werden.
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={8}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={9}>
                     {vics.length === 0
                       ? "Noch keine Datensätze vorhanden."
                       : "Keine Treffer für diese Suche."}
@@ -295,6 +395,9 @@ function AdminVics() {
                   <tr key={vic.id} className="border-b border-border/60 last:border-0">
                     <td className="px-5 py-4 font-medium text-foreground">
                       {[vic.first_name, vic.last_name].filter(Boolean).join(" ")}
+                    </td>
+                    <td className="px-5 py-4 text-muted-foreground">
+                      {vic.birth_name || "–"}
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">
                       {formatDate(vic.birth_date)}
@@ -349,93 +452,281 @@ function AdminVics() {
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>
-              {editingId ? "Datensatz bearbeiten" : "Vic hinzufügen"}
+              {mode === "form"
+                ? editingId
+                  ? "Datensatz bearbeiten"
+                  : "Vic hinzufügen"
+                : "Schnell-Import"}
             </DialogTitle>
             <DialogDescription>
-              Vorname und Nachname genügen, alles Weitere kannst du später ergänzen.
+              {mode === "form"
+                ? "Vorname und Nachname genügen, alles Weitere kannst du später ergänzen."
+                : mode === "import"
+                  ? "Mehrere Datensätze als Text einfügen – die Felder werden automatisch erkannt."
+                  : "Bitte die erkannten Datensätze prüfen und bei Bedarf korrigieren."}
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
+          {mode === "form" && !editingId ? (
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                setMode("import");
+              }}
+              className="flex w-full items-center gap-3 rounded-xl border border-dashed border-border px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+            >
+              <ClipboardPaste className="h-4 w-4 shrink-0" aria-hidden="true" />
+              Schnell-Import – mehrere Datensätze auf einmal einfügen
+            </button>
+          ) : null}
+
+          {mode === "form" ? (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="first_name">Vorname(n)</Label>
+                  <Input
+                    id="first_name"
+                    value={form.first_name}
+                    onChange={set("first_name")}
+                    placeholder="Stefan Christian"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="last_name">Nachname</Label>
+                  <Input id="last_name" value={form.last_name} onChange={set("last_name")} required />
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="first_name">Vorname(n)</Label>
-                <Input
-                  id="first_name"
-                  value={form.first_name}
-                  onChange={set("first_name")}
-                  placeholder="Stefan Christian"
-                  required
+                <Label htmlFor="birth_name">Geburtsname</Label>
+                <Input id="birth_name" value={form.birth_name} onChange={set("birth_name")} placeholder="Sens" />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="birth_date">Geburtsdatum</Label>
+                  <Input id="birth_date" type="date" value={form.birth_date} onChange={set("birth_date")} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="birth_place">Geburtsort</Label>
+                  <Input id="birth_place" value={form.birth_place} onChange={set("birth_place")} placeholder="Köln" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="street">Straße und Hausnummer</Label>
+                <Input id="street" value={form.street} onChange={set("street")} placeholder="Am Keltersberg 9" />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="postal_code">PLZ</Label>
+                  <Input id="postal_code" value={form.postal_code} onChange={set("postal_code")} placeholder="53783" />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="city">Ort</Label>
+                  <Input id="city" value={form.city} onChange={set("city")} placeholder="Eitorf" />
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="marital_status">Familienstand</Label>
+                  <Input id="marital_status" value={form.marital_status} onChange={set("marital_status")} placeholder="geschieden" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tax_id">Steuer-ID</Label>
+                  <Input id="tax_id" value={form.tax_id} onChange={set("tax_id")} placeholder="63051299484" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bank">Aktuelle Bank</Label>
+                  <Input id="bank" value={form.bank} onChange={set("bank")} placeholder="N26" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notizen</Label>
+                <Input id="notes" value={form.notes} onChange={set("notes")} />
+              </div>
+
+              {error ? (
+                <p className="flex items-start gap-2 text-sm font-medium text-destructive">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                  {error}
+                </p>
+              ) : null}
+
+              <Button type="submit" disabled={saveMutation.isPending} className="w-full rounded-full">
+                {saveMutation.isPending
+                  ? "Wird gespeichert …"
+                  : editingId
+                    ? "Änderungen speichern"
+                    : "Datensatz anlegen"}
+              </Button>
+            </form>
+          ) : null}
+
+          {mode === "import" ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="import_text">Datensätze einfügen</Label>
+                <Textarea
+                  id="import_text"
+                  value={importText}
+                  onChange={(event) => setImportText(event.target.value)}
+                  rows={16}
+                  autoFocus
+                  className="min-h-[18rem] font-mono text-xs"
+                  placeholder={
+                    "Stefan Christian Ehses\n24.07.1966 in Trier\nHordenbachstr. 10\n42369 Wuppertal\n\nVorname: Jacqueline\nNachname: van Steen\nGeburtsdatum: 03.07.1979\n…"
+                  }
                 />
+                <p className="text-xs text-muted-foreground">
+                  Mehrere Datensätze durch eine Leerzeile oder eine Trennzeile (===) trennen.
+                </p>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="last_name">Nachname</Label>
-                <Input id="last_name" value={form.last_name} onChange={set("last_name")} required />
+
+              {error ? (
+                <p className="flex items-start gap-2 text-sm font-medium text-destructive">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                  {error}
+                </p>
+              ) : null}
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={() => {
+                    setError(null);
+                    setMode("form");
+                  }}
+                >
+                  Zurück
+                </Button>
+                <Button
+                  type="button"
+                  className="flex-1 rounded-full"
+                  onClick={handleParse}
+                  disabled={!importText.trim()}
+                >
+                  Datensätze erkennen
+                </Button>
               </div>
             </div>
+          ) : null}
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="birth_date">Geburtsdatum</Label>
-                <Input id="birth_date" type="date" value={form.birth_date} onChange={set("birth_date")} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="birth_place">Geburtsort</Label>
-                <Input id="birth_place" value={form.birth_place} onChange={set("birth_place")} placeholder="Köln" />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="street">Straße und Hausnummer</Label>
-              <Input id="street" value={form.street} onChange={set("street")} placeholder="Am Keltersberg 9" />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="space-y-2">
-                <Label htmlFor="postal_code">PLZ</Label>
-                <Input id="postal_code" value={form.postal_code} onChange={set("postal_code")} placeholder="53783" />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="city">Ort</Label>
-                <Input id="city" value={form.city} onChange={set("city")} placeholder="Eitorf" />
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="space-y-2">
-                <Label htmlFor="marital_status">Familienstand</Label>
-                <Input id="marital_status" value={form.marital_status} onChange={set("marital_status")} placeholder="geschieden" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="tax_id">Steuer-ID</Label>
-                <Input id="tax_id" value={form.tax_id} onChange={set("tax_id")} placeholder="63051299484" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bank">Aktuelle Bank</Label>
-                <Input id="bank" value={form.bank} onChange={set("bank")} placeholder="N26" />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notizen</Label>
-              <Input id="notes" value={form.notes} onChange={set("notes")} />
-            </div>
-
-            {error ? (
-              <p className="flex items-start gap-2 text-sm font-medium text-destructive">
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                {error}
+          {mode === "preview" ? (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                {parsed.length === 1
+                  ? "1 Datensatz erkannt."
+                  : `${parsed.length} Datensätze erkannt.`}
               </p>
-            ) : null}
 
-            <Button type="submit" disabled={saveMutation.isPending} className="w-full rounded-full">
-              {saveMutation.isPending
-                ? "Wird gespeichert …"
-                : editingId
-                  ? "Änderungen speichern"
-                  : "Datensatz anlegen"}
-            </Button>
-          </form>
+              <div className="space-y-4">
+                {parsed.map((record, index) => {
+                  const incomplete = !record.first_name.trim() || !record.last_name.trim();
+                  return (
+                    <div
+                      key={index}
+                      className="rounded-xl border border-border bg-card p-4"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                          <input
+                            type="checkbox"
+                            checked={selected[index] ?? false}
+                            onChange={(event) =>
+                              setSelected((prev) =>
+                                prev.map((value, i) =>
+                                  i === index ? event.target.checked : value,
+                                ),
+                              )
+                            }
+                            className="h-4 w-4 accent-primary"
+                          />
+                          {[record.first_name, record.last_name]
+                            .filter(Boolean)
+                            .join(" ") || `Datensatz ${index + 1}`}
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => removeParsed(index)}
+                          aria-label="Aus Import entfernen"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border text-destructive transition-colors hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                      </div>
+
+                      {incomplete ? (
+                        <p className="mt-2 flex items-start gap-2 text-xs font-medium text-destructive">
+                          <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                          Vor- und Nachname fehlen – dieser Datensatz wird nicht gespeichert.
+                        </p>
+                      ) : null}
+
+                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                        {previewFields.map((field) => (
+                          <div key={field.key} className="space-y-1">
+                            <Label
+                              htmlFor={`p-${index}-${field.key}`}
+                              className="text-xs text-muted-foreground"
+                            >
+                              {field.label}
+                            </Label>
+                            <Input
+                              id={`p-${index}-${field.key}`}
+                              type={field.type ?? "text"}
+                              value={record[field.key]}
+                              onChange={(event) =>
+                                updateParsed(index, field.key, event.target.value)
+                              }
+                              className="h-9"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {error ? (
+                <p className="flex items-start gap-2 text-sm font-medium text-destructive">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                  {error}
+                </p>
+              ) : null}
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={() => {
+                    setError(null);
+                    setMode("import");
+                  }}
+                >
+                  Zurück
+                </Button>
+                <Button
+                  type="button"
+                  className="flex-1 rounded-full"
+                  onClick={handleBulkSave}
+                  disabled={bulkMutation.isPending}
+                >
+                  {bulkMutation.isPending ? "Wird gespeichert …" : "Alle speichern"}
+                </Button>
+              </div>
+            </div>
+          ) : null}
         </DialogContent>
       </Dialog>
     </PanelShell>

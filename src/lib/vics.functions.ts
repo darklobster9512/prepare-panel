@@ -7,6 +7,7 @@ export type VicRow = {
   id: string;
   first_name: string;
   last_name: string;
+  birth_name: string | null;
   birth_date: string | null;
   birth_place: string | null;
   street: string | null;
@@ -41,6 +42,7 @@ const optional = z
 const vicSchema = z.object({
   first_name: z.string().trim().min(1, "Bitte einen Vornamen eingeben.").max(120),
   last_name: z.string().trim().min(1, "Bitte einen Nachnamen eingeben.").max(120),
+  birth_name: optional,
   birth_date: z
     .string()
     .trim()
@@ -62,7 +64,7 @@ const vicSchema = z.object({
 });
 
 const SELECT_COLUMNS =
-  "id, first_name, last_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, created_at";
+  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, created_at";
 
 export const listVics = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -91,6 +93,33 @@ export const createVic = createServerFn({ method: "POST" })
     if (error) throw new Error("Datensatz konnte nicht gespeichert werden.");
     return { ok: true };
   });
+
+export const createVicsBulk = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        records: z
+          .array(vicSchema)
+          .min(1, "Keine Datensätze erkannt.")
+          .max(200, "Maximal 200 Datensätze pro Import."),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+
+    const rows = data.records.map((record) => ({
+      ...record,
+      created_by: context.userId,
+    }));
+
+    const { error } = await context.supabase.from("vics").insert(rows);
+    if (error) throw new Error("Datensätze konnten nicht gespeichert werden.");
+    return { ok: true, count: rows.length };
+  });
+
+
 
 export const updateVic = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
