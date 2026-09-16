@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import type { LucideIcon } from "lucide-react";
 import { LogOut } from "lucide-react";
@@ -9,8 +9,15 @@ import { supabase } from "@/integrations/supabase/client";
 export type NavItem = {
   label: string;
   icon: LucideIcon;
+  to?: string;
+  exact?: boolean;
   active?: boolean;
 };
+
+const navBase =
+  "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors";
+const navIdle = "text-background/70 hover:bg-background/10 hover:text-background";
+const navActive = "bg-primary text-primary-foreground";
 
 type PanelShellProps = {
   title: string;
@@ -59,20 +66,29 @@ export function PanelShell({
         </span>
 
         <nav className="mt-9 flex flex-1 flex-col gap-1">
-          {nav.map((item) => (
-            <button
-              key={item.label}
-              type="button"
-              className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors ${
-                item.active
-                  ? "bg-primary text-primary-foreground"
-                  : "text-background/70 hover:bg-background/10 hover:text-background"
-              }`}
-            >
-              <item.icon className="h-4 w-4" aria-hidden="true" />
-              {item.label}
-            </button>
-          ))}
+          {nav.map((item) =>
+            item.to ? (
+              <Link
+                key={item.label}
+                to={item.to}
+                activeOptions={{ exact: item.exact ?? false }}
+                className={`${navBase} ${navIdle}`}
+                activeProps={{ className: `${navBase} ${navActive}` }}
+              >
+                <item.icon className="h-4 w-4" aria-hidden="true" />
+                {item.label}
+              </Link>
+            ) : (
+              <button
+                key={item.label}
+                type="button"
+                className={`${navBase} ${item.active ? navActive : navIdle}`}
+              >
+                <item.icon className="h-4 w-4" aria-hidden="true" />
+                {item.label}
+              </button>
+            ),
+          )}
         </nav>
 
         <p className="mt-6 text-xs leading-relaxed text-background/40">
