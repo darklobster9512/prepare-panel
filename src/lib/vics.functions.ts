@@ -168,3 +168,18 @@ export const deleteVic = createServerFn({ method: "POST" })
     if (error) throw new Error("Datensatz konnte nicht gelöscht werden.");
     return { ok: true };
   });
+
+export const assignVicProject = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => assignmentSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+
+    const { error } = await context.supabase
+      .from("vics")
+      .update({ project_id: data.project_id })
+      .eq("id", data.id);
+
+    if (error) throw new Error("Projekt konnte nicht zugewiesen werden.");
+    return { ok: true };
+  });
