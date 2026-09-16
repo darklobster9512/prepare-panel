@@ -29,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
 import { parseVics, type ParsedVic } from "@/lib/vic-parser";
 import {
+  assignVicProject,
   createVic,
   createVicsBulk,
   deleteVic,
@@ -36,6 +37,7 @@ import {
   updateVic,
   type VicRow,
 } from "@/lib/vics.functions";
+import { listProjects } from "@/lib/projects.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/vics")({
   head: () => ({
@@ -71,6 +73,7 @@ type FormState = {
   tax_id: string;
   bank: string;
   notes: string;
+  project_id: string;
 };
 
 const emptyForm: FormState = {
@@ -86,6 +89,7 @@ const emptyForm: FormState = {
   tax_id: "",
   bank: "",
   notes: "",
+  project_id: "",
 };
 
 const previewFields: { key: keyof ParsedVic; label: string; type?: string }[] = [
