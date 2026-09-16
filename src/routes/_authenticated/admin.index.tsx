@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Users } from "lucide-react";
+import { IdCard, LayoutDashboard, Users } from "lucide-react";
 import { useEffect } from "react";
 
 import { PanelShell, StatCard } from "@/components/panel-shell";
@@ -65,7 +65,9 @@ function AdminPanel() {
       nav={[
         { label: "Übersicht", icon: LayoutDashboard, to: "/admin", exact: true },
         { label: "Mitarbeiter", icon: Users, to: "/admin/mitarbeiter" },
+        { label: "Vics", icon: IdCard, to: "/admin/vics" },
       ]}
+
     >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Mitarbeitende" value="24" hint="+3 in diesem Monat" />
