@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   AlertCircle,
   ClipboardPaste,
+  FolderKanban,
   IdCard,
   LayoutDashboard,
   Pencil,
@@ -106,6 +107,7 @@ const nav = [
   { label: "Übersicht", icon: LayoutDashboard, to: "/admin", exact: true },
   { label: "Mitarbeiter", icon: Users, to: "/admin/mitarbeiter" },
   { label: "Vics", icon: IdCard, to: "/admin/vics" },
+  { label: "Projekte", icon: FolderKanban, to: "/admin/projekte" },
 ];
 
 function formatDate(value: string | null) {
