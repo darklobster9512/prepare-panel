@@ -221,6 +221,18 @@ function AdminVics() {
     },
   });
 
+  const assignMutation = useMutation({
+    mutationFn: (values: { id: string; project_id: string | null }) =>
+      assignProject({ data: values }),
+    onSuccess: () => {
+      setSuccess("Projekt zugewiesen.");
+      invalidate();
+    },
+    onError: () => {
+      setError("Projekt konnte nicht zugewiesen werden. Bitte erneut versuchen.");
+    },
+  });
+
   const resetDialog = () => {
     setError(null);
     setSuccess(null);
@@ -437,6 +449,26 @@ function AdminVics() {
                       {vic.tax_id || "–"}
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">{vic.bank || "–"}</td>
+                    <td className="px-5 py-4">
+                      <select
+                        value={vic.project_id ?? ""}
+                        onChange={(event) =>
+                          assignMutation.mutate({
+                            id: vic.id,
+                            project_id: event.target.value || null,
+                          })
+                        }
+                        aria-label="Projekt zuweisen"
+                        className="h-9 w-36 rounded-lg border border-border bg-background px-2 text-sm text-foreground"
+                      >
+                        <option value="">Kein Projekt</option>
+                        {projects.map((project) => (
+                          <option key={project.id} value={project.id}>
+                            {project.name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <button
