@@ -599,6 +599,25 @@ function AdminVics() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="project_id">Projekt</Label>
+                <select
+                  id="project_id"
+                  value={form.project_id}
+                  onChange={(event) =>
+                    setForm((prev) => ({ ...prev, project_id: event.target.value }))
+                  }
+                  className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
+                >
+                  <option value="">Kein Projekt</option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="notes">Notizen</Label>
                 <Input id="notes" value={form.notes} onChange={set("notes")} />
               </div>
