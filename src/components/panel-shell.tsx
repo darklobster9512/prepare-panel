@@ -125,7 +125,7 @@ export function PanelShell({
         </header>
 
         <main className="flex-1 px-6 py-8">
-          <div className="mx-auto w-full max-w-6xl">{children}</div>
+          <div className="w-full">{children}</div>
         </main>
       </div>
     </div>
