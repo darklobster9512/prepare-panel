@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { AuftraegeSection } from "@/components/auftraege-section";
 import { PanelShell } from "@/components/panel-shell";
 import { Button } from "@/components/ui/button";
 import {
@@ -365,7 +366,10 @@ function AdminVics() {
       userName={profile?.email || "Administrator"}
       nav={nav}
     >
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <AuftraegeSection enabled={role === "admin"} />
+
+      <div className="mt-10 flex flex-wrap items-end justify-between gap-4">
+
         <div>
           <h2 className="text-lg font-bold tracking-tight text-foreground">
             Vic-Datensätze
