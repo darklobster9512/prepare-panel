@@ -1,17 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import {
-  BarChart3,
-  FileCheck2,
-  LayoutDashboard,
-  Settings,
-  Users,
-} from "lucide-react";
+import { LayoutDashboard, Users } from "lucide-react";
 import { useEffect } from "react";
 
 import { PanelShell, StatCard } from "@/components/panel-shell";
 import { useAuth } from "@/hooks/use-auth";
 
-export const Route = createFileRoute("/_authenticated/admin")({
+export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({
     meta: [
       { title: "Admin-Panel – Interne Prozessvorbereitung" },
@@ -69,11 +63,8 @@ function AdminPanel() {
       roleLabel="Administrator"
       userName={userName}
       nav={[
-        { label: "Übersicht", icon: LayoutDashboard, active: true },
-        { label: "Benutzer", icon: Users },
-        { label: "Prozesse", icon: FileCheck2 },
-        { label: "Auswertungen", icon: BarChart3 },
-        { label: "Einstellungen", icon: Settings },
+        { label: "Übersicht", icon: LayoutDashboard, to: "/admin", exact: true },
+        { label: "Mitarbeiter", icon: Users, to: "/admin/mitarbeiter" },
       ]}
     >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
