@@ -7,6 +7,7 @@ export type VicRow = {
   id: string;
   first_name: string;
   last_name: string;
+  birth_name: string | null;
   birth_date: string | null;
   birth_place: string | null;
   street: string | null;
