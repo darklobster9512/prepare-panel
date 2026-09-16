@@ -105,6 +105,7 @@ export type Database = {
           middle_name: string | null
           notes: string | null
           postal_code: string | null
+          project_id: string | null
           street: string | null
           tax_id: string | null
           updated_at: string
@@ -124,6 +125,7 @@ export type Database = {
           middle_name?: string | null
           notes?: string | null
           postal_code?: string | null
+          project_id?: string | null
           street?: string | null
           tax_id?: string | null
           updated_at?: string
@@ -143,11 +145,20 @@ export type Database = {
           middle_name?: string | null
           notes?: string | null
           postal_code?: string | null
+          project_id?: string | null
           street?: string | null
           tax_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vics_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
