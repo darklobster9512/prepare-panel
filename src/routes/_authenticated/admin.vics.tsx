@@ -49,7 +49,6 @@ export const Route = createFileRoute("/_authenticated/admin/vics")({
 
 type FormState = {
   first_name: string;
-  middle_name: string;
   last_name: string;
   birth_date: string;
   birth_place: string;
@@ -64,7 +63,6 @@ type FormState = {
 
 const emptyForm: FormState = {
   first_name: "",
-  middle_name: "",
   last_name: "",
   birth_date: "",
   birth_place: "",
@@ -164,7 +162,6 @@ function AdminVics() {
     setEditingId(vic.id);
     setForm({
       first_name: vic.first_name ?? "",
-      middle_name: vic.middle_name ?? "",
       last_name: vic.last_name ?? "",
       birth_date: vic.birth_date ?? "",
       birth_place: vic.birth_place ?? "",
@@ -210,7 +207,7 @@ function AdminVics() {
     const term = search.trim().toLowerCase();
     if (!term) return vics;
     return vics.filter((vic) =>
-      [vic.first_name, vic.middle_name, vic.last_name, vic.city, vic.tax_id]
+      [vic.first_name, vic.last_name, vic.city, vic.tax_id]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(term)),
     );
@@ -297,9 +294,7 @@ function AdminVics() {
                 filtered.map((vic) => (
                   <tr key={vic.id} className="border-b border-border/60 last:border-0">
                     <td className="px-5 py-4 font-medium text-foreground">
-                      {[vic.first_name, vic.middle_name, vic.last_name]
-                        .filter(Boolean)
-                        .join(" ")}
+                      {[vic.first_name, vic.last_name].filter(Boolean).join(" ")}
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">
                       {formatDate(vic.birth_date)}
@@ -362,14 +357,16 @@ function AdminVics() {
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="first_name">Vorname</Label>
-                <Input id="first_name" value={form.first_name} onChange={set("first_name")} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="middle_name">Zweiter Vorname</Label>
-                <Input id="middle_name" value={form.middle_name} onChange={set("middle_name")} />
+                <Label htmlFor="first_name">Vorname(n)</Label>
+                <Input
+                  id="first_name"
+                  value={form.first_name}
+                  onChange={set("first_name")}
+                  placeholder="Stefan Christian"
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="last_name">Nachname</Label>
