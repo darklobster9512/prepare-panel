@@ -6,7 +6,6 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export type VicRow = {
   id: string;
   first_name: string;
-  middle_name: string | null;
   last_name: string;
   birth_date: string | null;
   birth_place: string | null;
@@ -41,7 +40,6 @@ const optional = z
 
 const vicSchema = z.object({
   first_name: z.string().trim().min(1, "Bitte einen Vornamen eingeben.").max(120),
-  middle_name: optional,
   last_name: z.string().trim().min(1, "Bitte einen Nachnamen eingeben.").max(120),
   birth_date: z
     .string()
@@ -64,7 +62,7 @@ const vicSchema = z.object({
 });
 
 const SELECT_COLUMNS =
-  "id, first_name, middle_name, last_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, created_at";
+  "id, first_name, last_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, created_at";
 
 export const listVics = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
