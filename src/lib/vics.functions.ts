@@ -94,6 +94,33 @@ export const createVic = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const createVicsBulk = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        records: z
+          .array(vicSchema)
+          .min(1, "Keine Datensätze erkannt.")
+          .max(200, "Maximal 200 Datensätze pro Import."),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+
+    const rows = data.records.map((record) => ({
+      ...record,
+      created_by: context.userId,
+    }));
+
+    const { error } = await context.supabase.from("vics").insert(rows);
+    if (error) throw new Error("Datensätze konnten nicht gespeichert werden.");
+    return { ok: true, count: rows.length };
+  });
+
+
+
 export const updateVic = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) =>
