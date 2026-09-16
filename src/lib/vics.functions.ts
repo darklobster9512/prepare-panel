@@ -42,6 +42,7 @@ const optional = z
 const vicSchema = z.object({
   first_name: z.string().trim().min(1, "Bitte einen Vornamen eingeben.").max(120),
   last_name: z.string().trim().min(1, "Bitte einen Nachnamen eingeben.").max(120),
+  birth_name: optional,
   birth_date: z
     .string()
     .trim()
