@@ -224,9 +224,21 @@ function AdminVics() {
   const assignMutation = useMutation({
     mutationFn: (values: { id: string; project_id: string | null }) =>
       assignProject({ data: values }),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      const projectName =
+        variables.project_id === null
+          ? null
+          : (projectsQuery.data ?? []).find(
+              (project) => project.id === variables.project_id,
+            )?.name ?? null;
+      queryClient.setQueryData<VicRow[]>(["admin", "vics"], (prev) =>
+        (prev ?? []).map((vic) =>
+          vic.id === variables.id
+            ? { ...vic, project_id: variables.project_id, project_name: projectName }
+            : vic,
+        ),
+      );
       setSuccess("Projekt zugewiesen.");
-      invalidate();
     },
     onError: () => {
       setError("Projekt konnte nicht zugewiesen werden. Bitte erneut versuchen.");
