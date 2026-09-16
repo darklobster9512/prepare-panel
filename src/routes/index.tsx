@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -53,13 +53,14 @@ function Index() {
         </p>
 
         <div className="mt-10">
-          <button
-            type="button"
+          <Link
+            to="/auth"
             className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90 hover:shadow-primary/35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             Zum Panel
-          </button>
+          </Link>
         </div>
+
       </div>
     </main>
   );
