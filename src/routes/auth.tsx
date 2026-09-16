@@ -156,9 +156,6 @@ function AuthPage() {
       {/* Inhalt */}
       <main className="flex flex-1 items-center justify-center px-6 py-16">
         <div className="w-full max-w-[30rem]">
-          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Schritt 1 von 1 · Kontodaten
-          </p>
           <h1 className="mt-4 text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-[2.5rem]">
             {isSignUp ? "Konto erstellen" : "Willkommen zurück"}
           </h1>
