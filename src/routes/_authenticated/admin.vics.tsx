@@ -336,7 +336,7 @@ function AdminVics() {
     const term = search.trim().toLowerCase();
     if (!term) return vics;
     return vics.filter((vic) =>
-      [vic.first_name, vic.last_name, vic.birth_name, vic.city, vic.tax_id]
+      [vic.first_name, vic.last_name, vic.birth_name, vic.city, vic.tax_id, vic.project_name]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(term)),
     );
@@ -394,9 +394,9 @@ function AdminVics() {
                 <th className="px-5 py-3 font-semibold">Geburtsort</th>
                 <th className="px-5 py-3 font-semibold">Adresse</th>
                 <th className="px-5 py-3 font-semibold">Familienstand</th>
-                {/* placeholder */}
                 <th className="px-5 py-3 font-semibold">Steuer-ID</th>
                 <th className="px-5 py-3 font-semibold">Bank</th>
+                <th className="px-5 py-3 font-semibold">Projekt</th>
                 <th className="px-5 py-3 font-semibold text-right">Aktionen</th>
               </tr>
             </thead>
