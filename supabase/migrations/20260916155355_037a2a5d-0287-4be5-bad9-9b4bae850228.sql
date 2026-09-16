@@ -1,0 +1,1 @@
+ALTER TABLE public.vics ADD COLUMN IF NOT EXISTS birth_name text;
