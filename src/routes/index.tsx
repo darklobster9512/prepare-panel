@@ -1,24 +1,66 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Panel – Interne Vorbereitung Unternehmensprozesse" },
+      {
+        name: "description",
+        content:
+          "Internes Panel zur Vorbereitung von Unternehmensprozessen – derzeit im Aufbau.",
+      },
+      {
+        property: "og:title",
+        content: "Panel – Interne Vorbereitung Unternehmensprozesse",
+      },
+      {
+        property: "og:description",
+        content:
+          "Internes Panel zur Vorbereitung von Unternehmensprozessen – derzeit im Aufbau.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
+    <main className="relative flex min-h-screen items-center overflow-hidden bg-background">
+      {/* Decorative brand gradient in the background */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-40 -top-40 h-[42rem] w-[42rem] rounded-full bg-gradient-to-br from-primary-glow/40 to-primary/30 blur-3xl"
       />
-    </div>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-64 -left-40 h-[36rem] w-[36rem] rounded-full bg-gradient-to-tr from-secondary/60 to-primary-glow/30 blur-3xl"
+      />
+
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-6 py-24 sm:px-10">
+        <span className="inline-flex items-center rounded-full border border-primary/20 bg-card/70 px-4 py-1.5 text-sm font-medium text-primary backdrop-blur-sm">
+          Internes Panel
+        </span>
+
+        <h1 className="mt-8 max-w-3xl text-balance text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+          Ihr Panel für die interne Vorbereitung von Unternehmensprozessen
+        </h1>
+
+        <p className="mt-6 max-w-xl text-pretty text-lg leading-relaxed text-muted-foreground sm:text-xl">
+          Wir bereiten die zentralen Abläufe Ihres Unternehmens strukturiert
+          vor – übersichtlich, effizient und an einem Ort.
+        </p>
+
+        <div className="mt-10">
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90 hover:shadow-primary/35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          >
+            Zum Panel
+          </button>
+        </div>
+      </div>
+    </main>
   );
 }
