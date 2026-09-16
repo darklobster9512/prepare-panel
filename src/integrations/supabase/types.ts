@@ -65,6 +65,63 @@ export type Database = {
         }
         Relationships: []
       }
+      vics: {
+        Row: {
+          bank: string | null
+          birth_date: string | null
+          birth_place: string | null
+          city: string | null
+          created_at: string
+          created_by: string | null
+          first_name: string
+          id: string
+          last_name: string
+          marital_status: string | null
+          middle_name: string | null
+          notes: string | null
+          postal_code: string | null
+          street: string | null
+          tax_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          bank?: string | null
+          birth_date?: string | null
+          birth_place?: string | null
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          first_name: string
+          id?: string
+          last_name: string
+          marital_status?: string | null
+          middle_name?: string | null
+          notes?: string | null
+          postal_code?: string | null
+          street?: string | null
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bank?: string | null
+          birth_date?: string | null
+          birth_place?: string | null
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          marital_status?: string | null
+          middle_name?: string | null
+          notes?: string | null
+          postal_code?: string | null
+          street?: string | null
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
