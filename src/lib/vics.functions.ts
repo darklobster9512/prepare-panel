@@ -64,7 +64,7 @@ const vicSchema = z.object({
 });
 
 const SELECT_COLUMNS =
-  "id, first_name, last_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, created_at";
+  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, created_at";
 
 export const listVics = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
