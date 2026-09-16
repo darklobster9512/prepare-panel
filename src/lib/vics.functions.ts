@@ -96,7 +96,8 @@ export const listVics = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("vics")
       .select(SELECT_COLUMNS)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false });
 
     if (error) throw new Error("Datensätze konnten nicht geladen werden.");
     return ((data ?? []) as unknown as RawVicRow[]).map(mapVic);
