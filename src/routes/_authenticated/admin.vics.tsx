@@ -1206,11 +1206,11 @@ function AdminVics() {
                                 />
                               ) : null}
                             </div>
-                          ) : (
+                          ) : !item.admin_only ? (
                             <p className="mt-3 border-t border-border/60 pt-3 text-muted-foreground">
                               Noch keine verwendeten Daten.
                             </p>
-                          )}
+                          ) : null}
 
                           {item.completed_at ? (
                             <p className="pt-2 text-xs text-muted-foreground">
