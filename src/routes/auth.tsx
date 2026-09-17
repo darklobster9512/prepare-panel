@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AlertCircle, Eye, EyeOff, Loader2, Lock, ShieldCheck, UserCheck } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
