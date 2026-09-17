@@ -561,19 +561,19 @@ function AdminVics() {
             <tbody>
               {vicsQuery.isLoading ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={7}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={8}>
                     Wird geladen …
                   </td>
                 </tr>
               ) : vicsQuery.isError ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={7}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={8}>
                     Datensätze konnten nicht geladen werden.
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={7}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={8}>
                     {vics.length === 0
                       ? "Noch keine Datensätze vorhanden."
                       : "Keine Treffer für diese Suche."}
