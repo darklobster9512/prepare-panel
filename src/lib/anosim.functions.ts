@@ -118,19 +118,24 @@ export const getAnosimFullServiceProduct = createServerFn({ method: "GET" })
     await assertAdmin(context.supabase, context.userId);
     const { anosimFetch } = await import("./anosim.server");
 
-    const products = await anosimFetch<
-      import("./anosim.server").AnosimProductPrice[]
-    >("/ProductPrices", {
-      countryId: GERMANY_COUNTRY_ID,
-      rentalTypeId: 3,
-    });
+    type ProductPrice = import("./anosim.server").AnosimProductPrice;
 
-    const list = Array.isArray(products) ? products : [];
-    const match = list.find(
-      (product) =>
-        product.rentalType === "RentalFull" &&
-        product.durationInMinutes === FULL_SERVICE_DURATION_MINUTES,
-    );
+    const isFullService = (product: ProductPrice) =>
+      product.rentalType === "RentalFull" &&
+      product.durationInMinutes === FULL_SERVICE_DURATION_MINUTES;
+
+    let match: ProductPrice | undefined;
+
+    for (const rentalTypeId of [3, 2, 4, 1]) {
+      const products = await anosimFetch<ProductPrice[]>("/ProductPrices", {
+        countryId: GERMANY_COUNTRY_ID,
+        rentalTypeId,
+      });
+      const list = Array.isArray(products) ? products : [];
+      match = list.find(isFullService);
+      if (match) break;
+    }
+
 
     if (!match) {
       throw new Error(
