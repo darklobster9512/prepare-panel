@@ -480,25 +480,26 @@ function AdminVics() {
                 <th className="px-5 py-3 font-semibold">Steuer-ID</th>
                 <th className="px-5 py-3 font-semibold">Bank</th>
                 <th className="px-5 py-3 font-semibold">Projekt</th>
+                <th className="px-5 py-3 font-semibold">Aufträge</th>
                 <th className="px-5 py-3 font-semibold text-right">Aktionen</th>
               </tr>
             </thead>
             <tbody>
               {vicsQuery.isLoading ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={10}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={11}>
                     Wird geladen …
                   </td>
                 </tr>
               ) : vicsQuery.isError ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={10}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={11}>
                     Datensätze konnten nicht geladen werden.
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={10}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={11}>
                     {vics.length === 0
                       ? "Noch keine Datensätze vorhanden."
                       : "Keine Treffer für diese Suche."}
@@ -555,7 +556,49 @@ function AdminVics() {
                       </select>
                     </td>
                     <td className="px-5 py-4">
+                      {(vic.auftraege ?? []).length === 0 ? (
+                        <span className="text-muted-foreground">–</span>
+                      ) : (
+                        <div className="flex flex-wrap items-center gap-1">
+                          {(vic.auftraege ?? []).slice(0, 4).map((item) => (
+                            <span
+                              key={item.id}
+                              title={item.auftrag_name}
+                              className="inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-md border border-border bg-background"
+                            >
+                              <AuftragLogo
+                                value={item.logo_path}
+                                alt={item.auftrag_name}
+                                className="h-full w-full object-contain p-0.5"
+                                fallback={
+                                  <span className="text-[0.6rem] font-semibold text-muted-foreground">
+                                    {item.auftrag_name.slice(0, 2).toUpperCase()}
+                                  </span>
+                                }
+                              />
+                            </span>
+                          ))}
+                          {(vic.auftraege ?? []).length > 4 ? (
+                            <span className="text-xs text-muted-foreground">
+                              +{(vic.auftraege ?? []).length - 4}
+                            </span>
+                          ) : null}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAssignError(null);
+                            setAssignVicId(vic.id);
+                          }}
+                          aria-label="Aufträge zuweisen"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary"
+                        >
+                          <Plus className="h-4 w-4" aria-hidden="true" />
+                        </button>
                         <button
                           type="button"
                           onClick={() => openEdit(vic)}
