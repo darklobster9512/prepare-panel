@@ -146,7 +146,7 @@ function MitarbeiterAuftraege() {
           />
 
           <Section
-            title="Erledigt"
+            title="Abgeschlossen"
             empty="Noch nichts abgeschlossen."
             items={done}
             action={(item) => (
