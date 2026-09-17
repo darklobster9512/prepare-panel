@@ -26,8 +26,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/use-auth";
-import { createEmployee, listEmployees } from "@/lib/admin-users.functions";
+import {
+  createEmployee,
+  listEmployees,
+  updateEmployeeOnboarding,
+  type EmployeeRow,
+} from "@/lib/admin-users.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/mitarbeiter")({
   head: () => ({
@@ -64,6 +70,14 @@ function AdminEmployees() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [onboardingRow, setOnboardingRow] = useState<EmployeeRow | null>(null);
+  const [onboardingEnabled, setOnboardingEnabled] = useState(false);
+  const [gologinEmail, setGologinEmail] = useState("");
+  const [gologinPassword, setGologinPassword] = useState("");
+  const [showGologinPassword, setShowGologinPassword] = useState(false);
+  const [onboardingError, setOnboardingError] = useState<string | null>(null);
+
+  const saveOnboarding = useServerFn(updateEmployeeOnboarding);
 
   useEffect(() => {
     if (!loading && role && role !== "admin") {
@@ -99,6 +113,34 @@ function AdminEmployees() {
       );
     },
   });
+
+  const onboardingMutation = useMutation({
+    mutationFn: (values: {
+      userId: string;
+      onboardingEnabled: boolean;
+      gologinEmail: string | null;
+      gologinPassword: string | null;
+    }) => saveOnboarding({ data: values }),
+    onSuccess: () => {
+      setOnboardingRow(null);
+      setOnboardingError(null);
+      setSuccess("Onboarding gespeichert.");
+      queryClient.invalidateQueries({ queryKey: ["admin", "employees"] });
+    },
+    onError: () => {
+      setOnboardingError("Onboarding konnte nicht gespeichert werden.");
+    },
+  });
+
+  const openOnboarding = (person: EmployeeRow) => {
+    setOnboardingRow(person);
+    setOnboardingEnabled(person.onboarding_enabled);
+    setGologinEmail(person.gologin_email ?? "");
+    setGologinPassword(person.gologin_password ?? "");
+    setShowGologinPassword(false);
+    setOnboardingError(null);
+    setSuccess(null);
+  };
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -174,24 +216,26 @@ function AdminEmployees() {
                 <th className="px-6 py-3 font-semibold">E-Mail</th>
                 <th className="px-6 py-3 font-semibold">Rolle</th>
                 <th className="px-6 py-3 font-semibold">Erstellt</th>
+                <th className="px-6 py-3 font-semibold">Onboarding</th>
+                <th className="px-6 py-3 font-semibold text-right">Aktionen</th>
               </tr>
             </thead>
             <tbody>
               {employeesQuery.isLoading ? (
                 <tr>
-                  <td className="px-6 py-6 text-muted-foreground" colSpan={3}>
+                  <td className="px-6 py-6 text-muted-foreground" colSpan={5}>
                     Wird geladen …
                   </td>
                 </tr>
               ) : employeesQuery.isError ? (
                 <tr>
-                  <td className="px-6 py-6 text-muted-foreground" colSpan={3}>
+                  <td className="px-6 py-6 text-muted-foreground" colSpan={5}>
                     Konten konnten nicht geladen werden.
                   </td>
                 </tr>
               ) : employees.length === 0 ? (
                 <tr>
-                  <td className="px-6 py-6 text-muted-foreground" colSpan={3}>
+                  <td className="px-6 py-6 text-muted-foreground" colSpan={5}>
                     Noch keine Konten vorhanden.
                   </td>
                 </tr>
@@ -211,6 +255,28 @@ function AdminEmployees() {
                     </td>
                     <td className="px-6 py-4 text-muted-foreground">
                       {new Date(person.created_at).toLocaleDateString("de-DE")}
+                    </td>
+                    <td className="px-6 py-4">
+                      {person.onboarding_enabled ? (
+                        <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-600">
+                          Aktiv
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground">
+                          Inaktiv
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full"
+                        onClick={() => openOnboarding(person)}
+                      >
+                        Onboarding bearbeiten
+                      </Button>
                     </td>
                   </tr>
                 ))
@@ -287,6 +353,105 @@ function AdminEmployees() {
               {mutation.isPending ? "Wird angelegt …" : "Konto anlegen"}
             </Button>
           </form>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={onboardingRow !== null}
+        onOpenChange={(value) => {
+          if (!value) setOnboardingRow(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Onboarding</DialogTitle>
+            <DialogDescription>
+              {onboardingRow?.email} – GoLogin-Zugangsdaten hinterlegen und den
+              Onboarding-Reiter freischalten.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  Onboarding aktiv
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Blendet den Reiter „Onboarding" im Mitarbeiter-Panel ein.
+                </p>
+              </div>
+              <Switch
+                checked={onboardingEnabled}
+                onCheckedChange={setOnboardingEnabled}
+                aria-label="Onboarding aktiv"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="gologin-email">GoLogin E-Mail</Label>
+              <Input
+                id="gologin-email"
+                type="email"
+                autoComplete="off"
+                value={gologinEmail}
+                onChange={(event) => setGologinEmail(event.target.value)}
+                placeholder="name@gologin.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="gologin-password">GoLogin Passwort</Label>
+              <div className="relative">
+                <Input
+                  id="gologin-password"
+                  type={showGologinPassword ? "text" : "password"}
+                  autoComplete="off"
+                  value={gologinPassword}
+                  onChange={(event) => setGologinPassword(event.target.value)}
+                  className="pr-11"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowGologinPassword((value) => !value)}
+                  aria-label={
+                    showGologinPassword ? "Passwort verbergen" : "Passwort anzeigen"
+                  }
+                  className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted-foreground hover:text-foreground"
+                >
+                  {showGologinPassword ? (
+                    <EyeOff className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-4 w-4" aria-hidden="true" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {onboardingError ? (
+              <p className="flex items-start gap-2 text-sm font-medium text-destructive">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                {onboardingError}
+              </p>
+            ) : null}
+
+            <Button
+              type="button"
+              className="w-full rounded-full"
+              disabled={onboardingMutation.isPending}
+              onClick={() => {
+                if (!onboardingRow) return;
+                setOnboardingError(null);
+                onboardingMutation.mutate({
+                  userId: onboardingRow.user_id,
+                  onboardingEnabled,
+                  gologinEmail: gologinEmail.trim() || null,
+                  gologinPassword: gologinPassword.trim() || null,
+                });
+              }}
+            >
+              {onboardingMutation.isPending ? "Wird gespeichert …" : "Speichern"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </PanelShell>

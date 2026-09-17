@@ -5,7 +5,6 @@ import {
   ArrowLeft,
   Check,
   ClipboardCheck,
-  ClipboardList,
   Info,
   MessageSquare,
   Phone,
@@ -26,6 +25,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
+import { mitarbeiterNav } from "@/lib/mitarbeiter-nav";
 import { statusLabel, statusRingClass } from "@/lib/auftrag-status";
 import {
   completeAuftrag,
@@ -243,7 +243,7 @@ function WizardPage() {
       subtitle={item ? `${item.first_name} ${item.last_name}` : "Wird geladen …"}
       roleLabel="Mitarbeiter"
       userName={userName}
-      nav={[{ label: "Aufträge", icon: ClipboardList, to: "/mitarbeiter/auftraege" }]}
+      nav={mitarbeiterNav(profile?.onboarding_enabled)}
     >
       <Link
         to="/mitarbeiter/auftraege"

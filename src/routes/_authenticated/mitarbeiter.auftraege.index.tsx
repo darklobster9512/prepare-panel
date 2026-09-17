@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ClipboardList, Phone } from "lucide-react";
+import { Phone } from "lucide-react";
 import { useState } from "react";
 
 import { PanelShell } from "@/components/panel-shell";
 import { AuftragLogo } from "@/components/auftrag-logo";
 import { useAuth } from "@/hooks/use-auth";
+import { mitarbeiterNav } from "@/lib/mitarbeiter-nav";
 import { statusLabel, statusRingClass } from "@/lib/auftrag-status";
 import { claimVic, listWorkItems } from "@/lib/mitarbeiter.functions";
 import type { WorkItem } from "@/lib/mitarbeiter.types";
@@ -80,7 +81,7 @@ function MitarbeiterAuftraege() {
       subtitle="Datensätze beanspruchen und Aufträge abarbeiten"
       roleLabel="Mitarbeiter"
       userName={userName}
-      nav={[{ label: "Aufträge", icon: ClipboardList, to: "/mitarbeiter/auftraege" }]}
+      nav={mitarbeiterNav(profile?.onboarding_enabled)}
     >
       {error ? (
         <p className="mb-4 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">

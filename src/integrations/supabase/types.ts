@@ -111,8 +111,11 @@ export type Database = {
           created_at: string
           email: string
           first_name: string
+          gologin_email: string | null
+          gologin_password: string | null
           id: string
           last_name: string
+          onboarding_enabled: boolean
           updated_at: string
           user_id: string
         }
@@ -120,8 +123,11 @@ export type Database = {
           created_at?: string
           email?: string
           first_name?: string
+          gologin_email?: string | null
+          gologin_password?: string | null
           id?: string
           last_name?: string
+          onboarding_enabled?: boolean
           updated_at?: string
           user_id: string
         }
@@ -129,8 +135,11 @@ export type Database = {
           created_at?: string
           email?: string
           first_name?: string
+          gologin_email?: string | null
+          gologin_password?: string | null
           id?: string
           last_name?: string
+          onboarding_enabled?: boolean
           updated_at?: string
           user_id?: string
         }

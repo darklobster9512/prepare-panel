@@ -8,6 +8,9 @@ export type EmployeeRow = {
   email: string;
   role: string;
   created_at: string;
+  onboarding_enabled: boolean;
+  gologin_email: string | null;
+  gologin_password: string | null;
 };
 
 async function assertAdmin(supabase: any, userId: string) {
@@ -29,7 +32,9 @@ export const listEmployees = createServerFn({ method: "GET" })
 
     const { data: profiles, error } = await context.supabase
       .from("profiles")
-      .select("user_id, email, created_at")
+      .select(
+        "user_id, email, created_at, onboarding_enabled, gologin_email, gologin_password",
+      )
       .order("created_at", { ascending: false });
 
     if (error) throw new Error("Konten konnten nicht geladen werden.");
@@ -46,7 +51,37 @@ export const listEmployees = createServerFn({ method: "GET" })
       email: p.email,
       created_at: p.created_at,
       role: roleByUser.get(p.user_id) ?? "mitarbeiter",
+      onboarding_enabled: Boolean(p.onboarding_enabled),
+      gologin_email: p.gologin_email ?? null,
+      gologin_password: p.gologin_password ?? null,
     }));
+  });
+
+const onboardingSchema = z.object({
+  userId: z.string().uuid(),
+  onboardingEnabled: z.boolean(),
+  gologinEmail: z.string().trim().max(200).optional().nullable(),
+  gologinPassword: z.string().trim().max(200).optional().nullable(),
+});
+
+export const updateEmployeeOnboarding = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => onboardingSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+
+    const { error } = await context.supabase
+      .from("profiles")
+      .update({
+        onboarding_enabled: data.onboardingEnabled,
+        gologin_email: data.gologinEmail?.trim() || null,
+        gologin_password: data.gologinPassword?.trim() || null,
+      })
+      .eq("user_id", data.userId);
+
+    if (error) throw new Error("Onboarding konnte nicht gespeichert werden.");
+
+    return { success: true as const };
   });
 
 const createSchema = z.object({
