@@ -486,16 +486,12 @@ function AdminVics() {
 
       <section className="mt-6 rounded-2xl border border-border bg-card shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[60rem] text-left text-sm">
+          <table className="w-full min-w-[44rem] text-left text-sm">
             <thead>
               <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
                 <th className="px-5 py-3 font-semibold">Name</th>
-                <th className="px-5 py-3 font-semibold">Geburtsname</th>
                 <th className="px-5 py-3 font-semibold">Geburtsdatum</th>
                 <th className="px-5 py-3 font-semibold">Geburtsort</th>
-                <th className="px-5 py-3 font-semibold">Adresse</th>
-                <th className="px-5 py-3 font-semibold">Familienstand</th>
-                <th className="px-5 py-3 font-semibold">Steuer-ID</th>
                 <th className="px-5 py-3 font-semibold">Bank</th>
                 <th className="px-5 py-3 font-semibold">Projekt</th>
                 <th className="px-5 py-3 font-semibold">Aufträge</th>
@@ -505,19 +501,19 @@ function AdminVics() {
             <tbody>
               {vicsQuery.isLoading ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={11}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={7}>
                     Wird geladen …
                   </td>
                 </tr>
               ) : vicsQuery.isError ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={11}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={7}>
                     Datensätze konnten nicht geladen werden.
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={11}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={7}>
                     {vics.length === 0
                       ? "Noch keine Datensätze vorhanden."
                       : "Keine Treffer für diese Suche."}
@@ -530,27 +526,10 @@ function AdminVics() {
                       {[vic.first_name, vic.last_name].filter(Boolean).join(" ")}
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">
-                      {vic.birth_name || "–"}
-                    </td>
-                    <td className="px-5 py-4 text-muted-foreground">
                       {formatDate(vic.birth_date)}
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">
                       {vic.birth_place || "–"}
-                    </td>
-                    <td className="px-5 py-4 text-muted-foreground">
-                      {vic.street ? <span className="block">{vic.street}</span> : null}
-                      {vic.postal_code || vic.city
-                        ? [vic.postal_code, vic.city].filter(Boolean).join(" ")
-                        : vic.street
-                          ? null
-                          : "–"}
-                    </td>
-                    <td className="px-5 py-4 text-muted-foreground">
-                      {vic.marital_status || "–"}
-                    </td>
-                    <td className="px-5 py-4 text-muted-foreground">
-                      {vic.tax_id || "–"}
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">{vic.bank || "–"}</td>
                     <td className="px-5 py-4">
