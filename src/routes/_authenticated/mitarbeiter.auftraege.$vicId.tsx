@@ -476,6 +476,7 @@ function StepCard({
   const [webid, setWebid] = useState(step.webid_link ?? "");
   const [postident, setPostident] = useState(step.postident_link ?? "");
   const [infoOpen, setInfoOpen] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const emailMutation = useMutation({
