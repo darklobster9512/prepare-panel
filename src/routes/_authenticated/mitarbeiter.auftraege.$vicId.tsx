@@ -128,17 +128,12 @@ function CopyText({
         aria-label={`${label} kopieren`}
         title="Klicken zum Kopieren"
         onClick={() => copy(value)}
-        className={`group/copy inline-flex min-w-0 items-center gap-1 rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring ${className}`}
+        className={`group/copy inline-flex min-w-0 cursor-copy items-center gap-1 rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring ${className}`}
       >
         <span className="min-w-0 truncate">{value}</span>
         {copied ? (
           <Check className="h-3 w-3 shrink-0 text-emerald-600" aria-hidden="true" />
-        ) : (
-          <Plus
-            className="h-3 w-3 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/copy:opacity-100"
-            aria-hidden="true"
-          />
-        )}
+        ) : null}
       </button>
       <CopyButton value={value} label={label} />
     </span>
@@ -156,17 +151,12 @@ function CopyValue({ label, value }: { label: string; value: string }) {
           aria-label={`${label} kopieren`}
           title="Klicken zum Kopieren"
           onClick={() => copy(value)}
-          className="group/copy inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="group/copy inline-flex cursor-copy items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {value}
           {copied ? (
             <Check className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
-          ) : (
-            <Plus
-              className="h-3.5 w-3.5 text-muted-foreground opacity-0 transition-opacity group-hover/copy:opacity-100"
-              aria-hidden="true"
-            />
-          )}
+          ) : null}
         </button>
         <CopyButton value={value} label={label} />
       </div>
@@ -836,19 +826,14 @@ function Readonly({
             aria-label={`${label} kopieren`}
             title="Klicken zum Kopieren"
             onClick={() => copy(value)}
-            className="group/copy flex min-w-0 flex-1 items-center gap-1 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="group/copy flex min-w-0 cursor-copy flex-1 items-center gap-1 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
               {value}
             </span>
             {copied ? (
               <Check className="h-3 w-3 shrink-0 text-emerald-600" aria-hidden="true" />
-            ) : (
-              <Plus
-                className="h-3 w-3 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/copy:opacity-100"
-                aria-hidden="true"
-              />
-            )}
+            ) : null}
           </button>
         ) : (
           <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
