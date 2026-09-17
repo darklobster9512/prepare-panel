@@ -7,6 +7,7 @@ import {
   IdCard,
   LayoutDashboard,
   Pencil,
+  Phone,
   Plus,
   Trash2,
   Users,

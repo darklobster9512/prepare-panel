@@ -9,6 +9,7 @@ import {
   IdCard,
   LayoutDashboard,
   Pencil,
+  Phone,
   Plus,
   RefreshCw,
   Trash2,
