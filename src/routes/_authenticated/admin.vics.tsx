@@ -131,6 +131,23 @@ function formatDate(value: string | null) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString("de-DE");
 }
 
+function CredentialRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-28 shrink-0 text-muted-foreground">{label}</span>
+      <span className="font-medium text-foreground">{value}</span>
+      <button
+        type="button"
+        onClick={() => navigator.clipboard?.writeText(value)}
+        aria-label={`${label} kopieren`}
+        className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-secondary"
+      >
+        <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
 type DialogMode = "form" | "import" | "preview";
 
 function AdminVics() {
@@ -411,6 +428,7 @@ function AdminVics() {
   };
 
   const vics = vicsQuery.data ?? [];
+  const assignVic = vics.find((vic) => vic.id === assignVicId) ?? null;
   const projects = projectsQuery.data ?? [];
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
