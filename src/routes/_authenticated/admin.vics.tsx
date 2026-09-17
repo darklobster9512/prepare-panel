@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   AlertCircle,
+  Check,
   ClipboardPaste,
   Copy,
   FolderKanban,
@@ -596,7 +597,18 @@ function AdminVics() {
                     className="cursor-pointer border-b border-border/60 transition-colors last:border-0 hover:bg-secondary/50"
                   >
                     <td className="px-5 py-4 font-medium text-foreground">
-                      {[vic.first_name, vic.last_name].filter(Boolean).join(" ")}
+                      <span className="inline-flex items-center gap-2">
+                        {[vic.first_name, vic.last_name].filter(Boolean).join(" ")}
+                        {vic.completed_at ? (
+                          <span
+                            title="Abgeschlossen"
+                            className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[0.65rem] font-semibold text-emerald-600"
+                          >
+                            <Check className="h-3 w-3" aria-hidden="true" />
+                            Abgeschlossen
+                          </span>
+                        ) : null}
+                      </span>
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">
                       {formatDate(vic.birth_date)}

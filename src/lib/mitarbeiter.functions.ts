@@ -8,7 +8,7 @@ import type { AuftragStatus, WorkAuftrag, WorkItem } from "@/lib/mitarbeiter.typ
 export type { AuftragStatus, WorkAuftrag, WorkItem };
 
 const SELECT_COLUMNS =
-  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, claimed_by, claimed_at, email_street, email_postal_code, email_city, email_birth_date, email_address, created_at, anosim_numbers(number, end_date, order_booking_id), vic_auftraege!inner(id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, auftraege(name, logo_path, ident_type, besonderheiten, images, sort_order))";
+  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, claimed_by, claimed_at, completed_at, completed_by, email_street, email_postal_code, email_city, email_birth_date, email_address, created_at, anosim_numbers(number, end_date, order_booking_id), vic_auftraege!inner(id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, auftraege(name, logo_path, ident_type, besonderheiten, images, sort_order))";
 
 function mapItem(row: any): WorkItem {
   const { anosim_numbers, vic_auftraege, ...rest } = row;
@@ -95,10 +95,15 @@ export const claimVic = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-async function assertClaimed(supabase: any, vicId: string, userId: string) {
+async function assertClaimed(
+  supabase: any,
+  vicId: string,
+  userId: string,
+  options: { allowCompleted?: boolean } = {},
+) {
   const { data, error } = await supabase
     .from("vics")
-    .select("claimed_by, birth_date")
+    .select("claimed_by, birth_date, completed_at")
     .eq("id", vicId)
     .maybeSingle();
 
@@ -106,7 +111,10 @@ async function assertClaimed(supabase: any, vicId: string, userId: string) {
   if (data.claimed_by !== userId) {
     throw new Error("Dieser Datensatz ist dir nicht zugewiesen.");
   }
-  return data as { claimed_by: string; birth_date: string | null };
+  if (!options.allowCompleted && data.completed_at) {
+    throw new Error("Dieser Datensatz ist bereits abgeschlossen und kann nicht mehr geändert werden.");
+  }
+  return data as { claimed_by: string; birth_date: string | null; completed_at: string | null };
 }
 
 export const ensureEmailIdentity = createServerFn({ method: "POST" })
@@ -206,6 +214,36 @@ export const completeAuftrag = createServerFn({ method: "POST" })
       .eq("auftrag_id", data.auftrag_id);
 
     if (error) throw new Error("Auftrag konnte nicht gespeichert werden.");
+    return getWorkItemInternal(context.supabase, data.vic_id);
+  });
+
+export const finishVic = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => z.object({ vic_id: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }): Promise<WorkItem> => {
+    await assertClaimed(context.supabase, data.vic_id, context.userId);
+
+    const { data: open, error: openError } = await context.supabase
+      .from("vic_auftraege")
+      .select("id")
+      .eq("vic_id", data.vic_id)
+      .eq("status", "offen");
+
+    if (openError) throw new Error("Aufträge konnten nicht geprüft werden.");
+    if ((open ?? []).length > 0) {
+      throw new Error("Es sind noch Aufträge offen.");
+    }
+
+    const { error } = await context.supabase
+      .from("vics")
+      .update({
+        claimed_by: context.userId,
+        completed_at: new Date().toISOString(),
+        completed_by: context.userId,
+      })
+      .eq("id", data.vic_id);
+
+    if (error) throw new Error("Datensatz konnte nicht abgeschlossen werden.");
     return getWorkItemInternal(context.supabase, data.vic_id);
   });
 

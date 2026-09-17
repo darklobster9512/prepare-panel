@@ -1,10 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft,
   CalendarDays,
   Check,
+  ClipboardCheck,
   ClipboardList,
   FileText,
   Info,
@@ -32,6 +33,7 @@ import { statusLabel, statusRingClass } from "@/lib/auftrag-status";
 import {
   completeAuftrag,
   ensureEmailIdentity,
+  finishVic,
   getWorkItem,
   listVicSms,
   saveEmailAddress,
@@ -166,6 +168,7 @@ function CopyValue({ label, value }: { label: string; value: string }) {
 
 function WizardPage() {
   const { vicId } = Route.useParams();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, profile, loading } = useAuth();
 
@@ -212,10 +215,25 @@ function WizardPage() {
   }, [needsIdentity]);
 
   const steps = item?.auftraege ?? [];
+  const openCount = steps.filter((step) => step.status === "offen").length;
+  const allDone = steps.length > 0 && openCount === 0;
+  const isCompleted = Boolean(item?.completed_at);
   const firstOpen = steps.findIndex((step) => step.status === "offen");
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const current = activeIndex ?? (firstOpen >= 0 ? firstOpen : 0);
-  const step = steps[current] ?? null;
+  const fallbackIndex = firstOpen >= 0 ? firstOpen : allDone ? steps.length : 0;
+  const current = activeIndex ?? fallbackIndex;
+  const showSummary = steps.length > 0 && current >= steps.length;
+  const step = showSummary ? null : (steps[current] ?? null);
+
+  const finishFn = useServerFn(finishVic);
+  const finishMutation = useMutation({
+    mutationFn: () => finishFn({ data: { vic_id: vicId } }),
+    onSuccess: (next) => {
+      setItem(next);
+      queryClient.invalidateQueries({ queryKey: ["mitarbeiter", "work-items"] });
+      navigate({ to: "/mitarbeiter/auftraege" });
+    },
+  });
 
   const userName =
     [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") ||
@@ -263,24 +281,41 @@ function WizardPage() {
               </p>
             ) : null}
 
+            {isCompleted ? (
+              <p className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-foreground">
+                Dieser Datensatz wurde am {formatDateTime(item.completed_at!)} abgeschlossen und
+                kann nicht mehr geändert werden.
+              </p>
+            ) : null}
+
             <StepBar
               steps={steps}
               current={current}
               claimed={Boolean(item.claimed_by)}
               onSelect={setActiveIndex}
+              summaryEnabled={allDone}
+              openCount={openCount}
             />
 
-            {step ? (
+            {showSummary ? (
+              <SummaryCard
+                item={item}
+                canFinish={isMine && allDone && !isCompleted}
+                pending={finishMutation.isPending}
+                error={(finishMutation.error as Error | null)?.message ?? null}
+                onFinish={() => finishMutation.mutate()}
+              />
+            ) : step ? (
               <StepCard
                 key={step.id}
                 item={item}
                 step={step}
-                editable={isMine}
+                editable={isMine && !isCompleted}
                 onSaved={(next) => {
                   setItem(next);
                   queryClient.invalidateQueries({ queryKey: ["mitarbeiter", "work-items"] });
                   const nextOpen = next.auftraege.findIndex((a) => a.status === "offen");
-                  setActiveIndex(nextOpen >= 0 ? nextOpen : current);
+                  setActiveIndex(nextOpen >= 0 ? nextOpen : next.auftraege.length);
                 }}
                 saveEmail={(email) =>
                   saveEmailFn({ data: { vic_id: vicId, email_address: email } })
@@ -424,11 +459,15 @@ function StepBar({
   current,
   claimed,
   onSelect,
+  summaryEnabled,
+  openCount,
 }: {
   steps: WorkAuftrag[];
   current: number;
   claimed: boolean;
   onSelect: (index: number) => void;
+  summaryEnabled: boolean;
+  openCount: number;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
@@ -462,7 +501,200 @@ function StepBar({
           {step.name}
         </button>
       ))}
+
+      {steps.length > 0 ? (
+        <button
+          type="button"
+          onClick={() => summaryEnabled && onSelect(steps.length)}
+          disabled={!summaryEnabled}
+          title={
+            summaryEnabled
+              ? "Zusammenfassung"
+              : `Noch ${openCount} ${openCount === 1 ? "Auftrag" : "Aufträge"} offen`
+          }
+          className={`inline-flex items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+            current >= steps.length ? "bg-secondary text-foreground" : "text-muted-foreground"
+          }`}
+        >
+          <span
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-lg bg-background ${
+              summaryEnabled ? "ring-2 ring-primary" : "ring-2 ring-border"
+            }`}
+          >
+            <ClipboardCheck className="h-4 w-4" aria-hidden="true" />
+          </span>
+          Zusammenfassung
+        </button>
+      ) : null}
     </div>
+  );
+}
+
+function SummaryCard({
+  item,
+  canFinish,
+  pending,
+  error,
+  onFinish,
+}: {
+  item: WorkItem;
+  canFinish: boolean;
+  pending: boolean;
+  error: string | null;
+  onFinish: () => void;
+}) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const success = item.auftraege.filter((a) => a.status === "erfolgreich").length;
+  const failed = item.auftraege.filter((a) => a.status === "fehlgeschlagen").length;
+
+  return (
+    <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-bold tracking-tight text-foreground">Zusammenfassung</h2>
+          <p className="text-xs text-muted-foreground">
+            {success} erfolgreich · {failed} fehlgeschlagen
+          </p>
+        </div>
+        {item.completed_at ? (
+          <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-600">
+            <Check className="h-3.5 w-3.5" aria-hidden="true" />
+            Abgeschlossen
+          </span>
+        ) : null}
+      </div>
+
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <Readonly label="Datensatz" value={`${item.first_name} ${item.last_name}`} />
+        {item.phone_number ? (
+          <Readonly label="Telefonnummer" value={item.phone_number} />
+        ) : null}
+        {item.email_address ? (
+          <Readonly label="Erstellte E-Mail" value={item.email_address} />
+        ) : null}
+      </div>
+
+      <ul className="mt-6 space-y-3">
+        {item.auftraege.map((auftrag) => (
+          <li
+            key={auftrag.id}
+            className="flex flex-wrap items-start gap-3 rounded-xl border border-border bg-background p-4"
+          >
+            <span
+              className={`inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-card ${statusRingClass(
+                auftrag.status,
+                true,
+              )}`}
+            >
+              <AuftragLogo
+                value={auftrag.logo_path}
+                alt={auftrag.name}
+                className="h-full w-full object-contain p-1"
+                fallback={
+                  <span className="text-[0.6rem] font-semibold text-muted-foreground">
+                    {auftrag.name.slice(0, 2).toUpperCase()}
+                  </span>
+                }
+              />
+            </span>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-foreground">{auftrag.name}</p>
+              <dl className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                {auftrag.used_login_name ? (
+                  <div className="flex gap-2">
+                    <dt>Anmeldename:</dt>
+                    <dd className="break-all text-foreground">{auftrag.used_login_name}</dd>
+                  </div>
+                ) : null}
+                {auftrag.used_password ? (
+                  <div className="flex gap-2">
+                    <dt>Passwort:</dt>
+                    <dd className="break-all text-foreground">{auftrag.used_password}</dd>
+                  </div>
+                ) : null}
+                {auftrag.webid_link ? (
+                  <div className="flex gap-2">
+                    <dt>WebID-Link:</dt>
+                    <dd className="break-all text-foreground">{auftrag.webid_link}</dd>
+                  </div>
+                ) : null}
+                {auftrag.postident_link ? (
+                  <div className="flex gap-2">
+                    <dt>Postident-Link:</dt>
+                    <dd className="break-all text-foreground">{auftrag.postident_link}</dd>
+                  </div>
+                ) : null}
+              </dl>
+            </div>
+
+            <span
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
+                auftrag.status === "erfolgreich"
+                  ? "bg-emerald-500/10 text-emerald-600"
+                  : auftrag.status === "fehlgeschlagen"
+                    ? "bg-destructive/10 text-destructive"
+                    : "bg-secondary text-muted-foreground"
+              }`}
+            >
+              {auftrag.status === "erfolgreich" ? (
+                <Check className="h-3.5 w-3.5" aria-hidden="true" />
+              ) : auftrag.status === "fehlgeschlagen" ? (
+                <X className="h-3.5 w-3.5" aria-hidden="true" />
+              ) : null}
+              {statusLabel(auftrag.status, true)}
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      {error ? <p className="mt-4 text-sm text-destructive">{error}</p> : null}
+
+      {canFinish ? (
+        <div className="mt-6 border-t border-border pt-5">
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => setConfirmOpen(true)}
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+          >
+            <ClipboardCheck className="h-4 w-4" aria-hidden="true" />
+            {pending ? "Wird abgeschlossen …" : "Abschluss bestätigen"}
+          </button>
+        </div>
+      ) : null}
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Auftrag abschließen</DialogTitle>
+            <DialogDescription>
+              Danach kannst du nichts mehr ändern. Der Datensatz wird als abgeschlossen markiert.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setConfirmOpen(false)}
+              className="inline-flex items-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+            >
+              Abbrechen
+            </button>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => {
+                setConfirmOpen(false);
+                onFinish();
+              }}
+              className="inline-flex items-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+            >
+              Abschließen
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </section>
   );
 }
 

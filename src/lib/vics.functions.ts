@@ -20,6 +20,7 @@ export type VicRow = {
   notes: string | null;
   project_id: string | null;
   claimed_by: string | null;
+  completed_at: string | null;
   project_name: string | null;
   auftraege: VicAuftrag[];
   phone_number: string | null;
@@ -82,7 +83,7 @@ const assignmentSchema = z.object({
 });
 
 const SELECT_COLUMNS =
-  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, claimed_by, created_at, projects(name), anosim_numbers(number, end_date), vic_auftraege(id, auftrag_id, login_name, password, status, auftraege(name, logo_path))";
+  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, claimed_by, completed_at, created_at, projects(name), anosim_numbers(number, end_date), vic_auftraege(id, auftrag_id, login_name, password, status, auftraege(name, logo_path))";
 
 type RawVicRow = Omit<
   VicRow,

@@ -70,15 +70,8 @@ function MitarbeiterAuftraege() {
   });
 
   const items = itemsQuery.data ?? [];
-  const mine = items.filter(
-    (item) =>
-      item.claimed_by === user?.id &&
-      item.auftraege.some((a) => a.status === "offen"),
-  );
-  const done = items.filter(
-    (item) =>
-      item.claimed_by === user?.id && item.auftraege.every((a) => a.status !== "offen"),
-  );
+  const mine = items.filter((item) => item.claimed_by === user?.id && !item.completed_at);
+  const done = items.filter((item) => item.claimed_by === user?.id && item.completed_at);
   const available = items.filter((item) => !item.claimed_by);
   const taken = items.filter((item) => item.claimed_by && item.claimed_by !== user?.id);
 
@@ -124,7 +117,9 @@ function MitarbeiterAuftraege() {
                 params={{ vicId: item.id }}
                 className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
-                Weiterarbeiten
+                {item.auftraege.length > 0 && item.auftraege.every((a) => a.status !== "offen")
+                  ? "Abschließen"
+                  : "Weiterarbeiten"}
               </Link>
             )}
           />
@@ -151,7 +146,7 @@ function MitarbeiterAuftraege() {
           />
 
           <Section
-            title="Erledigt"
+            title="Abgeschlossen"
             empty="Noch nichts abgeschlossen."
             items={done}
             action={(item) => (
@@ -217,6 +212,11 @@ function Section({
               <h3 className="text-base font-bold tracking-tight text-foreground">
                 {item.first_name} {item.last_name}
               </h3>
+              {item.completed_at ? (
+                <p className="mt-1 inline-flex w-fit items-center rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-600">
+                  Abgeschlossen am {formatDate(item.completed_at)}
+                </p>
+              ) : null}
               <dl className="mt-2 space-y-1 text-sm text-muted-foreground">
                 <div className="flex gap-2">
                   <dt>Geburtsdatum:</dt>
