@@ -377,14 +377,43 @@ function AdminEmployees() {
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Onboarding</DialogTitle>
+            <DialogTitle>Mitarbeiter bearbeiten</DialogTitle>
             <DialogDescription>
-              {onboardingRow?.email} – GoLogin-Zugangsdaten hinterlegen und den
-              Onboarding-Reiter freischalten.
+              {onboardingRow?.email} – Passwort ändern, GoLogin-Zugangsdaten
+              hinterlegen und den Onboarding-Reiter freischalten.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="reset-password">Neues Passwort</Label>
+              <div className="relative">
+                <Input
+                  id="reset-password"
+                  type={showNewPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                  placeholder="leer lassen = unverändert"
+                  className="pr-11"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword((value) => !value)}
+                  aria-label={
+                    showNewPassword ? "Passwort verbergen" : "Passwort anzeigen"
+                  }
+                  className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted-foreground hover:text-foreground"
+                >
+                  {showNewPassword ? (
+                    <EyeOff className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-4 w-4" aria-hidden="true" />
+                  )}
+                </button>
+              </div>
+            </div>
+
             <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
               <div>
                 <p className="text-sm font-semibold text-foreground">
