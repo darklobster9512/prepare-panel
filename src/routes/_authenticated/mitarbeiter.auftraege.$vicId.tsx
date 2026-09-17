@@ -746,7 +746,7 @@ function Field({
   onChange,
   disabled,
   placeholder,
-  copyable = true,
+  copyable = false,
 }: {
   label: string;
   value: string;
