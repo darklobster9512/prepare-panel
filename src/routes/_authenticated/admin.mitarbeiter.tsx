@@ -123,15 +123,22 @@ function AdminEmployees() {
       onboardingEnabled: boolean;
       gologinEmail: string | null;
       gologinPassword: string | null;
+      newPassword: string | null;
     }) => saveOnboarding({ data: values }),
     onSuccess: () => {
       setOnboardingRow(null);
       setOnboardingError(null);
-      setSuccess("Onboarding gespeichert.");
+      setNewPassword("");
+      setSuccess("Änderungen gespeichert.");
       queryClient.invalidateQueries({ queryKey: ["admin", "employees"] });
     },
-    onError: () => {
-      setOnboardingError("Onboarding konnte nicht gespeichert werden.");
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : "";
+      setOnboardingError(
+        message.includes("Passwort")
+          ? message
+          : "Änderungen konnten nicht gespeichert werden.",
+      );
     },
   });
 
@@ -141,6 +148,8 @@ function AdminEmployees() {
     setGologinEmail(person.gologin_email ?? "");
     setGologinPassword(person.gologin_password ?? "");
     setShowGologinPassword(false);
+    setNewPassword("");
+    setShowNewPassword(false);
     setOnboardingError(null);
     setSuccess(null);
   };
