@@ -484,11 +484,18 @@ function AdminEmployees() {
               onClick={() => {
                 if (!onboardingRow) return;
                 setOnboardingError(null);
+                if (newPassword && newPassword.length < 6) {
+                  setOnboardingError(
+                    "Das Passwort muss mindestens 6 Zeichen haben.",
+                  );
+                  return;
+                }
                 onboardingMutation.mutate({
                   userId: onboardingRow.user_id,
                   onboardingEnabled,
                   gologinEmail: gologinEmail.trim() || null,
                   gologinPassword: gologinPassword.trim() || null,
+                  newPassword: newPassword || null,
                 });
               }}
             >
