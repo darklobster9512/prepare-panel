@@ -18,6 +18,7 @@ import { Route as AuthenticatedAdminProjekteRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminTelefonnummernRouteImport } from './routes/_authenticated/admin.telefonnummern'
 import { Route as AuthenticatedAdminVicsRouteImport } from './routes/_authenticated/admin.vics'
 import { Route as AuthenticatedMitarbeiterIndexRouteImport } from './routes/_authenticated/mitarbeiter.index'
+import { Route as AuthenticatedMitarbeiterAuftraegeIndexRouteImport } from './routes/_authenticated/mitarbeiter.auftraege.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -67,6 +68,12 @@ const AuthenticatedMitarbeiterIndexRoute =
     path: '/mitarbeiter/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMitarbeiterAuftraegeIndexRoute =
+  AuthenticatedMitarbeiterAuftraegeIndexRouteImport.update({
+    id: '/mitarbeiter/auftraege/',
+    path: '/mitarbeiter/auftraege/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -77,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/admin/vics': typeof AuthenticatedAdminVicsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/mitarbeiter/': typeof AuthenticatedMitarbeiterIndexRoute
+  '/mitarbeiter/auftraege/': typeof AuthenticatedMitarbeiterAuftraegeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -87,6 +95,7 @@ export interface FileRoutesByTo {
   '/admin/vics': typeof AuthenticatedAdminVicsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/mitarbeiter': typeof AuthenticatedMitarbeiterIndexRoute
+  '/mitarbeiter/auftraege': typeof AuthenticatedMitarbeiterAuftraegeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -99,6 +108,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/vics': typeof AuthenticatedAdminVicsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/mitarbeiter/': typeof AuthenticatedMitarbeiterIndexRoute
+  '/_authenticated/mitarbeiter/auftraege/': typeof AuthenticatedMitarbeiterAuftraegeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/admin/vics'
     | '/admin/'
     | '/mitarbeiter/'
+    | '/mitarbeiter/auftraege/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/admin/vics'
     | '/admin'
     | '/mitarbeiter'
+    | '/mitarbeiter/auftraege'
   id:
     | '__root__'
     | '/'
@@ -132,6 +144,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/vics'
     | '/_authenticated/admin/'
     | '/_authenticated/mitarbeiter/'
+    | '/_authenticated/mitarbeiter/auftraege/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -205,6 +218,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMitarbeiterIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mitarbeiter/auftraege/': {
+      id: '/_authenticated/mitarbeiter/auftraege/'
+      path: '/mitarbeiter/auftraege'
+      fullPath: '/mitarbeiter/auftraege/'
+      preLoaderRoute: typeof AuthenticatedMitarbeiterAuftraegeIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -215,6 +235,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminVicsRoute: typeof AuthenticatedAdminVicsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedMitarbeiterIndexRoute: typeof AuthenticatedMitarbeiterIndexRoute
+  AuthenticatedMitarbeiterAuftraegeIndexRoute: typeof AuthenticatedMitarbeiterAuftraegeIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -224,6 +245,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminVicsRoute: AuthenticatedAdminVicsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedMitarbeiterIndexRoute: AuthenticatedMitarbeiterIndexRoute,
+  AuthenticatedMitarbeiterAuftraegeIndexRoute:
+    AuthenticatedMitarbeiterAuftraegeIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
