@@ -92,6 +92,7 @@ export const updateAuftrag = createServerFn({ method: "POST" })
         ident_type: data.ident_type ?? null,
         besonderheiten: data.besonderheiten ?? null,
         images: data.images ?? [],
+        generate_password: data.generate_password ?? false,
       })
       .eq("id", data.id);
 
