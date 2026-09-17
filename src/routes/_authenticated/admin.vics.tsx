@@ -552,6 +552,7 @@ function AdminVics() {
                 <th className="px-5 py-3 font-semibold">Geburtsdatum</th>
                 <th className="px-5 py-3 font-semibold">Geburtsort</th>
                 <th className="px-5 py-3 font-semibold">Bank</th>
+                <th className="px-5 py-3 font-semibold">Telefonnummer</th>
                 <th className="px-5 py-3 font-semibold">Projekt</th>
                 <th className="px-5 py-3 font-semibold">Aufträge</th>
                 <th className="px-5 py-3 font-semibold text-right">Aktionen</th>
@@ -560,19 +561,19 @@ function AdminVics() {
             <tbody>
               {vicsQuery.isLoading ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={7}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={8}>
                     Wird geladen …
                   </td>
                 </tr>
               ) : vicsQuery.isError ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={7}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={8}>
                     Datensätze konnten nicht geladen werden.
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={7}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={8}>
                     {vics.length === 0
                       ? "Noch keine Datensätze vorhanden."
                       : "Keine Treffer für diese Suche."}
@@ -603,6 +604,26 @@ function AdminVics() {
                       {vic.birth_place || "–"}
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">{vic.bank || "–"}</td>
+                    <td
+                      className="px-5 py-4"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      {vic.phone_number ? (
+                        <span className="inline-flex items-center gap-2 text-foreground">
+                          {vic.phone_number}
+                          <button
+                            type="button"
+                            onClick={() => navigator.clipboard?.writeText(vic.phone_number ?? "")}
+                            aria-label="Telefonnummer kopieren"
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-secondary"
+                          >
+                            <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                          </button>
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">–</span>
+                      )}
+                    </td>
                     <td className="px-5 py-4" onClick={(event) => event.stopPropagation()}>
                       <select
                         value={vic.project_id ?? ""}
