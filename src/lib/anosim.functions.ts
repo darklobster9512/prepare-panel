@@ -121,12 +121,18 @@ export const listAnosimSms = createServerFn({ method: "GET" })
   )
   .handler(async ({ data, context }): Promise<AnosimSmsRow[]> => {
     await assertAdmin(context.supabase, context.userId);
-    const { anosimFetch } = await import("./anosim.server");
-    const sms = await anosimFetch<import("./anosim.server").AnosimSms[]>(
-      `/Sms/${data.orderBookingId}`,
-    );
-    return Array.isArray(sms) ? sms : [];
+    const { anosimFetch, AnosimError } = await import("./anosim.server");
+    try {
+      const sms = await anosimFetch<import("./anosim.server").AnosimSms[]>(
+        `/Sms/${data.orderBookingId}`,
+      );
+      return Array.isArray(sms) ? sms : [];
+    } catch (err) {
+      if (err instanceof AnosimError && err.status === 400) return [];
+      throw err;
+    }
   });
+
 
 export const getAnosimFullServiceProduct = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
