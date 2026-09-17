@@ -214,10 +214,25 @@ function WizardPage() {
   }, [needsIdentity]);
 
   const steps = item?.auftraege ?? [];
+  const openCount = steps.filter((step) => step.status === "offen").length;
+  const allDone = steps.length > 0 && openCount === 0;
+  const isCompleted = Boolean(item?.completed_at);
   const firstOpen = steps.findIndex((step) => step.status === "offen");
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const current = activeIndex ?? (firstOpen >= 0 ? firstOpen : 0);
-  const step = steps[current] ?? null;
+  const fallbackIndex = firstOpen >= 0 ? firstOpen : allDone ? steps.length : 0;
+  const current = activeIndex ?? fallbackIndex;
+  const showSummary = steps.length > 0 && current >= steps.length;
+  const step = showSummary ? null : (steps[current] ?? null);
+
+  const finishFn = useServerFn(finishVic);
+  const finishMutation = useMutation({
+    mutationFn: () => finishFn({ data: { vic_id: vicId } }),
+    onSuccess: (next) => {
+      setItem(next);
+      queryClient.invalidateQueries({ queryKey: ["mitarbeiter", "work-items"] });
+      navigate({ to: "/mitarbeiter/auftraege" });
+    },
+  });
 
   const userName =
     [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") ||
