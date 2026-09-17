@@ -18,31 +18,45 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          end_date: string | null
           id: string
           note: string | null
           number: string | null
           order_booking_id: number
           updated_at: string
+          vic_id: string | null
         }
         Insert: {
           created_at?: string
           created_by?: string | null
+          end_date?: string | null
           id?: string
           note?: string | null
           number?: string | null
           order_booking_id: number
           updated_at?: string
+          vic_id?: string | null
         }
         Update: {
           created_at?: string
           created_by?: string | null
+          end_date?: string | null
           id?: string
           note?: string | null
           number?: string | null
           order_booking_id?: number
           updated_at?: string
+          vic_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "anosim_numbers_vic_id_fkey"
+            columns: ["vic_id"]
+            isOneToOne: false
+            referencedRelation: "vics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       auftraege: {
         Row: {
