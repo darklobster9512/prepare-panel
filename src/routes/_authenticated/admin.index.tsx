@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { FolderKanban, IdCard, LayoutDashboard, Users } from "lucide-react";
+import { FolderKanban, IdCard, LayoutDashboard, Phone, Users } from "lucide-react";
 import { useEffect } from "react";
 
 import { PanelShell, StatCard } from "@/components/panel-shell";
@@ -67,6 +67,7 @@ function AdminPanel() {
         { label: "Mitarbeiter", icon: Users, to: "/admin/mitarbeiter" },
         { label: "Vics", icon: IdCard, to: "/admin/vics" },
         { label: "Projekte", icon: FolderKanban, to: "/admin/projekte" },
+        { label: "Telefonnummern", icon: Phone, to: "/admin/telefonnummern" },
       ]}
 
     >

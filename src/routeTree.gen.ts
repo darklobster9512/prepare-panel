@@ -16,6 +16,7 @@ import { Route as AuthenticatedMitarbeiterRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminMitarbeiterRouteImport } from './routes/_authenticated/admin.mitarbeiter'
 import { Route as AuthenticatedAdminProjekteRouteImport } from './routes/_authenticated/admin.projekte'
+import { Route as AuthenticatedAdminTelefonnummernRouteImport } from './routes/_authenticated/admin.telefonnummern'
 import { Route as AuthenticatedAdminVicsRouteImport } from './routes/_authenticated/admin.vics'
 
 const IndexRoute = IndexRouteImport.update({
@@ -55,6 +56,12 @@ const AuthenticatedAdminProjekteRoute =
     path: '/admin/projekte',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminTelefonnummernRoute =
+  AuthenticatedAdminTelefonnummernRouteImport.update({
+    id: '/admin/telefonnummern',
+    path: '/admin/telefonnummern',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminVicsRoute = AuthenticatedAdminVicsRouteImport.update({
   id: '/admin/vics',
   path: '/admin/vics',
@@ -67,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/mitarbeiter': typeof AuthenticatedMitarbeiterRoute
   '/admin/mitarbeiter': typeof AuthenticatedAdminMitarbeiterRoute
   '/admin/projekte': typeof AuthenticatedAdminProjekteRoute
+  '/admin/telefonnummern': typeof AuthenticatedAdminTelefonnummernRoute
   '/admin/vics': typeof AuthenticatedAdminVicsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
 }
@@ -76,6 +84,7 @@ export interface FileRoutesByTo {
   '/mitarbeiter': typeof AuthenticatedMitarbeiterRoute
   '/admin/mitarbeiter': typeof AuthenticatedAdminMitarbeiterRoute
   '/admin/projekte': typeof AuthenticatedAdminProjekteRoute
+  '/admin/telefonnummern': typeof AuthenticatedAdminTelefonnummernRoute
   '/admin/vics': typeof AuthenticatedAdminVicsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
 }
@@ -87,6 +96,7 @@ export interface FileRoutesById {
   '/_authenticated/mitarbeiter': typeof AuthenticatedMitarbeiterRoute
   '/_authenticated/admin/mitarbeiter': typeof AuthenticatedAdminMitarbeiterRoute
   '/_authenticated/admin/projekte': typeof AuthenticatedAdminProjekteRoute
+  '/_authenticated/admin/telefonnummern': typeof AuthenticatedAdminTelefonnummernRoute
   '/_authenticated/admin/vics': typeof AuthenticatedAdminVicsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/mitarbeiter'
     | '/admin/mitarbeiter'
     | '/admin/projekte'
+    | '/admin/telefonnummern'
     | '/admin/vics'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/mitarbeiter'
     | '/admin/mitarbeiter'
     | '/admin/projekte'
+    | '/admin/telefonnummern'
     | '/admin/vics'
     | '/admin'
   id:
@@ -117,6 +129,7 @@ export interface FileRouteTypes {
     | '/_authenticated/mitarbeiter'
     | '/_authenticated/admin/mitarbeiter'
     | '/_authenticated/admin/projekte'
+    | '/_authenticated/admin/telefonnummern'
     | '/_authenticated/admin/vics'
     | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
@@ -178,6 +191,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminProjekteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/telefonnummern': {
+      id: '/_authenticated/admin/telefonnummern'
+      path: '/admin/telefonnummern'
+      fullPath: '/admin/telefonnummern'
+      preLoaderRoute: typeof AuthenticatedAdminTelefonnummernRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/vics': {
       id: '/_authenticated/admin/vics'
       path: '/admin/vics'
@@ -192,6 +212,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMitarbeiterRoute: typeof AuthenticatedMitarbeiterRoute
   AuthenticatedAdminMitarbeiterRoute: typeof AuthenticatedAdminMitarbeiterRoute
   AuthenticatedAdminProjekteRoute: typeof AuthenticatedAdminProjekteRoute
+  AuthenticatedAdminTelefonnummernRoute: typeof AuthenticatedAdminTelefonnummernRoute
   AuthenticatedAdminVicsRoute: typeof AuthenticatedAdminVicsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
@@ -200,6 +221,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMitarbeiterRoute: AuthenticatedMitarbeiterRoute,
   AuthenticatedAdminMitarbeiterRoute: AuthenticatedAdminMitarbeiterRoute,
   AuthenticatedAdminProjekteRoute: AuthenticatedAdminProjekteRoute,
+  AuthenticatedAdminTelefonnummernRoute: AuthenticatedAdminTelefonnummernRoute,
   AuthenticatedAdminVicsRoute: AuthenticatedAdminVicsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }

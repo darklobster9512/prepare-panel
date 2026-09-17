@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertCircle, Eye, EyeOff, FolderKanban, IdCard, LayoutDashboard, Plus, Users } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, FolderKanban, IdCard, LayoutDashboard, Phone, Plus, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { PanelShell } from "@/components/panel-shell";
@@ -120,6 +120,7 @@ function AdminEmployees() {
         { label: "Mitarbeiter", icon: Users, to: "/admin/mitarbeiter" },
         { label: "Vics", icon: IdCard, to: "/admin/vics" },
         { label: "Projekte", icon: FolderKanban, to: "/admin/projekte" },
+        { label: "Telefonnummern", icon: Phone, to: "/admin/telefonnummern" },
       ]}
 
     >
