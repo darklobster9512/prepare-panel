@@ -1,0 +1,1 @@
+ALTER TABLE public.auftraege ADD COLUMN IF NOT EXISTS generate_loginname boolean NOT NULL DEFAULT false; UPDATE public.auftraege SET generate_loginname = true WHERE name = 'DKB';

@@ -13,6 +13,7 @@ export type AuftragRow = {
   besonderheiten: string | null;
   images: string[];
   generate_password: boolean;
+  generate_loginname: boolean;
   created_at: string;
 };
 
