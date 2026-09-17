@@ -146,23 +146,23 @@ export function AuftraegeSection({ enabled }: Props) {
         </p>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-10">
         {auftraege.map((auftrag) => (
           <div
             key={auftrag.id}
-            className="group relative flex aspect-square flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm"
+            className="group relative flex aspect-square flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-card p-3 shadow-sm"
           >
             <AuftragLogo
               value={auftrag.logo_path}
               alt={auftrag.name}
-              className="h-16 w-16 rounded-xl border border-border object-contain"
+              className="h-10 w-10 rounded-lg border border-border object-contain"
               fallback={
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border bg-muted text-muted-foreground">
-                  <ImageIcon className="h-6 w-6" aria-hidden="true" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground">
+                  <ImageIcon className="h-4 w-4" aria-hidden="true" />
                 </div>
               }
             />
-            <span className="line-clamp-2 text-center text-sm font-semibold text-foreground">
+            <span className="line-clamp-2 text-center text-xs font-semibold text-foreground">
               {auftrag.name}
             </span>
 
@@ -194,10 +194,10 @@ export function AuftraegeSection({ enabled }: Props) {
         <button
           type="button"
           onClick={openCreate}
-          className="flex aspect-square flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border bg-card/50 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+          className="flex aspect-square flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border bg-card/50 p-3 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
         >
-          <Plus className="h-7 w-7" aria-hidden="true" />
-          <span className="text-sm font-semibold">Auftrag hinzufügen</span>
+          <Plus className="h-5 w-5" aria-hidden="true" />
+          <span className="text-center text-xs font-semibold">Auftrag hinzufügen</span>
         </button>
       </div>
 
