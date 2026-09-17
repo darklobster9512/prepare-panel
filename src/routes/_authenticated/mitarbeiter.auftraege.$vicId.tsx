@@ -19,6 +19,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { AuftragLogo } from "@/components/auftrag-logo";
+import { CopyButton } from "@/components/copy-button";
 import { PanelShell } from "@/components/panel-shell";
 import {
   Dialog,
