@@ -956,6 +956,83 @@ function AdminVics() {
       </Dialog>
 
       <Dialog
+        open={buyOpen}
+        onOpenChange={(value) => {
+          if (!value && !buyNumberMutation.isPending) setBuyOpen(false);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Telefonnummer kaufen</DialogTitle>
+            <DialogDescription>
+              Deutschland · FullService · 30 Tage – wird nach der Bestätigung gekauft und
+              diesem Datensatz zugewiesen.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm">
+            {productQuery.isLoading ? (
+              <p className="text-muted-foreground">Preis wird geladen …</p>
+            ) : productQuery.isError ? (
+              <p className="text-destructive">Preis konnte nicht geladen werden.</p>
+            ) : (
+              <>
+                <p className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Preis</span>
+                  <span className="text-base font-semibold text-foreground">
+                    {(productQuery.data?.price ?? 0).toFixed(2)} USD
+                  </span>
+                </p>
+                <p className="mt-1 flex items-center justify-between">
+                  <span className="text-muted-foreground">Verfügbar</span>
+                  <span className="text-foreground">
+                    {productQuery.data?.availableCount ?? 0}
+                  </span>
+                </p>
+              </>
+            )}
+          </div>
+
+          {phoneError ? (
+            <p className="flex items-center gap-2 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4" aria-hidden="true" />
+              {phoneError}
+            </p>
+          ) : null}
+
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-full"
+              disabled={buyNumberMutation.isPending}
+              onClick={() => setBuyOpen(false)}
+            >
+              Abbrechen
+            </Button>
+            <Button
+              type="button"
+              className="rounded-full"
+              disabled={
+                buyNumberMutation.isPending ||
+                !productQuery.data?.productId ||
+                !assignVicId
+              }
+              onClick={() => {
+                if (!assignVicId || !productQuery.data?.productId) return;
+                buyNumberMutation.mutate({
+                  productId: productQuery.data.productId,
+                  vicId: assignVicId,
+                });
+              }}
+            >
+              {buyNumberMutation.isPending ? "Wird gekauft …" : "Kaufen bestätigen"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
         open={detailVicId !== null}
         onOpenChange={(value) => {
           if (!value) setDetailVicId(null);
