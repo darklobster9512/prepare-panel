@@ -19,6 +19,7 @@ export type Database = {
           besonderheiten: string | null
           created_at: string
           created_by: string | null
+          generate_loginname: boolean
           generate_password: boolean
           id: string
           ident_type: string | null
@@ -31,6 +32,7 @@ export type Database = {
           besonderheiten?: string | null
           created_at?: string
           created_by?: string | null
+          generate_loginname?: boolean
           generate_password?: boolean
           id?: string
           ident_type?: string | null
@@ -43,6 +45,7 @@ export type Database = {
           besonderheiten?: string | null
           created_at?: string
           created_by?: string | null
+          generate_loginname?: boolean
           generate_password?: boolean
           id?: string
           ident_type?: string | null

@@ -52,6 +52,7 @@ export function AuftraegeSection({ enabled }: Props) {
   const [newImages, setNewImages] = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
   const [generatePassword, setGeneratePassword] = useState(false);
+  const [generateLoginname, setGenerateLoginname] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -94,6 +95,7 @@ export function AuftraegeSection({ enabled }: Props) {
     setImages([]);
     setNewImages([]);
     setGeneratePassword(false);
+    setGenerateLoginname(false);
     setError(null);
   };
 
@@ -113,6 +115,7 @@ export function AuftraegeSection({ enabled }: Props) {
     setImages(auftrag.images ?? []);
     setNewImages([]);
     setGeneratePassword(auftrag.generate_password ?? false);
+    setGenerateLoginname(auftrag.generate_loginname ?? false);
     setError(null);
     setOpen(true);
   };
@@ -166,6 +169,7 @@ export function AuftraegeSection({ enabled }: Props) {
         besonderheiten: besonderheiten.trim() ? besonderheiten.trim() : null,
         images: imagePaths,
         generate_password: generatePassword,
+        generate_loginname: generateLoginname,
       };
 
       if (editing) {
@@ -368,6 +372,20 @@ export function AuftraegeSection({ enabled }: Props) {
               />
             </div>
 
+            <div className="flex items-start justify-between gap-4 rounded-xl border border-border bg-muted/40 p-3">
+              <div className="space-y-1">
+                <Label htmlFor="auftrag-loginname">Anmeldename generieren</Label>
+                <p className="text-xs text-muted-foreground">
+                  Muster: Nachname + Geburtsjahr (z. B. Ehses66), mindestens 8 Zeichen –
+                  bei kurzen Namen volles Jahr (z. B. Melz1966).
+                </p>
+              </div>
+              <Switch
+                id="auftrag-loginname"
+                checked={generateLoginname}
+                onCheckedChange={setGenerateLoginname}
+              />
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="auftrag-besonderheiten">Besonderheiten</Label>
