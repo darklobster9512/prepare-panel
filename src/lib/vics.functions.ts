@@ -21,6 +21,11 @@ export type VicRow = {
   project_id: string | null;
   claimed_by: string | null;
   completed_at: string | null;
+  email_address: string | null;
+  email_street: string | null;
+  email_postal_code: string | null;
+  email_city: string | null;
+  email_birth_date: string | null;
   project_name: string | null;
   auftraege: VicAuftrag[];
   phone_number: string | null;
