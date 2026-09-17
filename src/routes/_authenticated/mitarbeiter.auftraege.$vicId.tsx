@@ -14,7 +14,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { AuftragLogo } from "@/components/auftrag-logo";
+import { AuftragLogo, preloadAuftragFiles } from "@/components/auftrag-logo";
 import { CopyButton } from "@/components/copy-button";
 import { PanelShell } from "@/components/panel-shell";
 import {
@@ -212,6 +212,17 @@ function WizardPage() {
   }, [needsIdentity]);
 
   const steps = item?.auftraege ?? [];
+  const assetPaths = useMemo(
+    () => steps.flatMap((auftrag) => [auftrag.logo_path, ...auftrag.images]),
+    [steps],
+  );
+  const assetsQuery = useQuery({
+    queryKey: ["mitarbeiter", "work-item-assets", vicId, assetPaths.join("|")],
+    queryFn: () => preloadAuftragFiles(assetPaths),
+    enabled: Boolean(item) && assetPaths.length > 0,
+    staleTime: Infinity,
+  });
+  const loadingAssets = Boolean(item) && assetPaths.length > 0 && assetsQuery.isPending;
   const openCount = steps.filter((step) => step.status === "offen").length;
   const allDone = steps.length > 0 && openCount === 0;
   const isCompleted = Boolean(item?.completed_at);
@@ -253,7 +264,7 @@ function WizardPage() {
         Zurück zur Übersicht
       </Link>
 
-      {itemQuery.isLoading ? (
+      {itemQuery.isLoading || loadingAssets ? (
         <p className="mt-6 text-sm text-muted-foreground">Wird geladen …</p>
       ) : itemQuery.isError || !item ? (
         <p className="mt-6 text-sm text-destructive">

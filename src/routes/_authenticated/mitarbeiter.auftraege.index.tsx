@@ -2,10 +2,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Phone } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { PanelShell } from "@/components/panel-shell";
-import { AuftragLogo } from "@/components/auftrag-logo";
+import { AuftragLogo, preloadAuftragFiles } from "@/components/auftrag-logo";
 import { useAuth } from "@/hooks/use-auth";
 import { mitarbeiterNav } from "@/lib/mitarbeiter-nav";
 import { statusLabel, statusRingClass } from "@/lib/auftrag-status";
@@ -65,6 +65,17 @@ function MitarbeiterAuftraege() {
   });
 
   const items = itemsQuery.data ?? [];
+  const logoPaths = useMemo(
+    () => items.flatMap((item) => item.auftraege.map((auftrag) => auftrag.logo_path)),
+    [items],
+  );
+  const logosQuery = useQuery({
+    queryKey: ["mitarbeiter", "work-item-logos", logoPaths.join("|")],
+    queryFn: () => preloadAuftragFiles(logoPaths),
+    enabled: !itemsQuery.isLoading && !itemsQuery.isError && logoPaths.length > 0,
+    staleTime: Infinity,
+  });
+  const loadingImages = logoPaths.length > 0 && logosQuery.isPending;
   const mine = items.filter((item) => item.claimed_by === user?.id && !item.completed_at);
   const done = items.filter((item) => item.claimed_by === user?.id && item.completed_at);
   const available = items.filter((item) => !item.claimed_by);
@@ -89,7 +100,7 @@ function MitarbeiterAuftraege() {
         </p>
       ) : null}
 
-      {itemsQuery.isLoading ? (
+      {itemsQuery.isLoading || loadingImages ? (
         <p className="text-sm text-muted-foreground">Wird geladen …</p>
       ) : itemsQuery.isError ? (
         <p className="text-sm text-destructive">
