@@ -136,6 +136,23 @@ export const assignAuftrag = createServerFn({ method: "POST" })
       .single();
 
     if (error) throw new Error("Auftrag konnte nicht zugewiesen werden.");
+
+    if (!credentials.admin_only) {
+      // Abgeschlossene Datensätze wieder öffnen, damit der Mitarbeiter weiterarbeiten kann.
+      const { data: vic } = await context.supabase
+        .from("vics")
+        .select("completed_at")
+        .eq("id", data.vic_id)
+        .maybeSingle();
+
+      if (vic?.completed_at) {
+        await context.supabase
+          .from("vics")
+          .update({ completed_at: null, completed_by: null })
+          .eq("id", data.vic_id);
+      }
+    }
+
     return mapRow(row);
   });
 
