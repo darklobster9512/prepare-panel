@@ -60,12 +60,28 @@ export const listAnosimNumbers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AnosimNumberRow[]> => {
     await assertAdmin(context.supabase, context.userId);
-    const { anosimFetch } = await import("./anosim.server");
-    const bookings = await anosimFetch<
-      import("./anosim.server").AnosimBooking[]
-    >("/OrderBookings");
+    const { anosimFetch, AnosimError } = await import("./anosim.server");
+
+    let bookings: import("./anosim.server").AnosimBooking[] | null = null;
+    try {
+      bookings = await anosimFetch<import("./anosim.server").AnosimBooking[]>(
+        "/OrderBookings",
+      );
+    } catch (err) {
+      // Ein leeres Konto meldet AnoSIM mit 400 "No OrderBooking found".
+      if (
+        err instanceof AnosimError &&
+        err.status === 400 &&
+        err.detail.toLowerCase().includes("no orderbooking")
+      ) {
+        bookings = [];
+      } else {
+        throw err;
+      }
+    }
 
     const list = Array.isArray(bookings) ? bookings : [];
+
 
     const { data: notes } = await context.supabase
       .from("anosim_numbers")
