@@ -3,10 +3,15 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+export type IdentType = "videoident" | "postident";
+
 export type AuftragRow = {
   id: string;
   name: string;
   logo_path: string | null;
+  ident_type: IdentType | null;
+  besonderheiten: string | null;
+  images: string[];
   created_at: string;
 };
 
