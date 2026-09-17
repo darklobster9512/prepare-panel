@@ -271,17 +271,16 @@ export const assignNumberToVic = createServerFn({ method: "POST" })
       if (!(err instanceof AnosimError)) throw err;
     }
 
-    const payload: Record<string, unknown> = {
-      order_booking_id: data.orderBookingId,
-      vic_id: data.vicId,
-      created_by: context.userId,
-    };
-    if (number) payload.number = number;
-    if (endDate) payload.end_date = endDate;
-
-    const { error } = await context.supabase
-      .from("anosim_numbers")
-      .upsert(payload, { onConflict: "order_booking_id" });
+    const { error } = await context.supabase.from("anosim_numbers").upsert(
+      {
+        order_booking_id: data.orderBookingId,
+        vic_id: data.vicId,
+        created_by: context.userId,
+        ...(number ? { number } : {}),
+        ...(endDate ? { end_date: endDate } : {}),
+      },
+      { onConflict: "order_booking_id" },
+    );
 
     if (error) throw new Error("Nummer konnte nicht zugewiesen werden.");
     return { ok: true, number, endDate };
