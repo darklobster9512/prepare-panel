@@ -430,6 +430,7 @@ function AdminVics() {
 
   const vics = vicsQuery.data ?? [];
   const assignVic = vics.find((vic) => vic.id === assignVicId) ?? null;
+  const detailVic = vics.find((vic) => vic.id === detailVicId) ?? null;
   const projects = projectsQuery.data ?? [];
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
