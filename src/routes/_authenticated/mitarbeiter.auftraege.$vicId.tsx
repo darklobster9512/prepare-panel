@@ -5,7 +5,6 @@ import {
   ArrowLeft,
   Check,
   ClipboardCheck,
-  ClipboardList,
   Info,
   MessageSquare,
   Phone,

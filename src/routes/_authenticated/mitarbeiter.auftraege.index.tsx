@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ClipboardList, Phone } from "lucide-react";
+import { Phone } from "lucide-react";
 import { useState } from "react";
 
 import { PanelShell } from "@/components/panel-shell";
