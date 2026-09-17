@@ -166,6 +166,36 @@ function CredentialRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function LinkRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-28 shrink-0 text-muted-foreground">{label}</span>
+      <a
+        href={value}
+        target="_blank"
+        rel="noreferrer"
+        className="truncate font-medium text-primary hover:underline"
+      >
+        {value}
+      </a>
+      <button
+        type="button"
+        onClick={() => navigator.clipboard?.writeText(value)}
+        aria-label={`${label} kopieren`}
+        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-secondary"
+      >
+        <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+function formatDateTime(value: string | null) {
+  if (!value) return "–";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString("de-DE");
+}
+
 type DialogMode = "form" | "import" | "preview";
 
 function AdminVics() {
@@ -1067,6 +1097,43 @@ function AdminVics() {
                 </dl>
               </div>
 
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">E-Mail-Konto</h3>
+                {detailVic.email_address ? (
+                  <div className="mt-3 space-y-1 text-sm">
+                    <CredentialRow
+                      label="Erstellte E-Mail"
+                      value={detailVic.email_address}
+                    />
+                    {detailVic.email_street ||
+                    detailVic.email_postal_code ||
+                    detailVic.email_city ? (
+                      <CredentialRow
+                        label="Adresse (generiert)"
+                        value={[
+                          detailVic.email_street,
+                          [detailVic.email_postal_code, detailVic.email_city]
+                            .filter(Boolean)
+                            .join(" "),
+                        ]
+                          .filter(Boolean)
+                          .join(", ")}
+                      />
+                    ) : null}
+                    {detailVic.email_birth_date ? (
+                      <CredentialRow
+                        label="Geburtsdatum (generiert)"
+                        value={formatDate(detailVic.email_birth_date)}
+                      />
+                    ) : null}
+                  </div>
+                ) : (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Noch keine E-Mail hinterlegt.
+                  </p>
+                )}
+              </div>
+
               {detailVic.notes ? (
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">Notizen</h3>
@@ -1107,8 +1174,22 @@ function AdminVics() {
                           <span className="text-sm font-medium text-foreground">
                             {item.auftrag_name}
                           </span>
+                          <span
+                            className={`ml-auto rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+                              item.status === "erfolgreich"
+                                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600"
+                                : item.status === "fehlgeschlagen"
+                                  ? "border-destructive/40 bg-destructive/10 text-destructive"
+                                  : "border-border bg-secondary text-muted-foreground"
+                            }`}
+                          >
+                            {statusLabel(item.status, detailVic.claimed_by !== null)}
+                          </span>
                         </div>
                         <div className="mt-3 space-y-1 border-t border-border/60 pt-3 text-sm">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            Generiert
+                          </p>
                           {item.login_name ? (
                             <CredentialRow label="Anmeldename" value={item.login_name} />
                           ) : null}
@@ -1118,6 +1199,44 @@ function AdminVics() {
                           {!item.login_name && !item.password ? (
                             <p className="text-muted-foreground">
                               Keine Zugangsdaten hinterlegt.
+                            </p>
+                          ) : null}
+
+                          {item.used_login_name ||
+                          item.used_password ||
+                          item.webid_link ||
+                          item.postident_link ? (
+                            <div className="mt-3 space-y-1 border-t border-border/60 pt-3">
+                              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                Verwendet
+                              </p>
+                              {item.used_login_name ? (
+                                <CredentialRow
+                                  label="Anmeldename"
+                                  value={item.used_login_name}
+                                />
+                              ) : null}
+                              {item.used_password ? (
+                                <CredentialRow
+                                  label="Passwort"
+                                  value={item.used_password}
+                                />
+                              ) : null}
+                              {item.webid_link ? (
+                                <LinkRow label="WebID-Link" value={item.webid_link} />
+                              ) : null}
+                              {item.postident_link ? (
+                                <LinkRow
+                                  label="Postident-Link"
+                                  value={item.postident_link}
+                                />
+                              ) : null}
+                            </div>
+                          ) : null}
+
+                          {item.completed_at ? (
+                            <p className="pt-2 text-xs text-muted-foreground">
+                              Abgeschlossen am {formatDateTime(item.completed_at)}
                             </p>
                           ) : null}
                         </div>

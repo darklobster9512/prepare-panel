@@ -21,6 +21,11 @@ export type VicRow = {
   project_id: string | null;
   claimed_by: string | null;
   completed_at: string | null;
+  email_address: string | null;
+  email_street: string | null;
+  email_postal_code: string | null;
+  email_city: string | null;
+  email_birth_date: string | null;
   project_name: string | null;
   auftraege: VicAuftrag[];
   phone_number: string | null;
@@ -83,7 +88,7 @@ const assignmentSchema = z.object({
 });
 
 const SELECT_COLUMNS =
-  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, claimed_by, completed_at, created_at, projects(name), anosim_numbers(number, end_date), vic_auftraege(id, auftrag_id, login_name, password, status, auftraege(name, logo_path))";
+  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, claimed_by, completed_at, email_address, email_street, email_postal_code, email_city, email_birth_date, created_at, projects(name), anosim_numbers(number, end_date), vic_auftraege(id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, completed_at, auftraege(name, logo_path))";
 
 type RawVicRow = Omit<
   VicRow,
@@ -110,6 +115,11 @@ function mapVic(row: RawVicRow): VicRow {
       login_name: item.login_name ?? null,
       password: item.password ?? null,
       status: (item.status ?? "offen") as VicAuftrag["status"],
+      used_login_name: item.used_login_name ?? null,
+      used_password: item.used_password ?? null,
+      webid_link: item.webid_link ?? null,
+      postident_link: item.postident_link ?? null,
+      completed_at: item.completed_at ?? null,
     })),
   };
 }
