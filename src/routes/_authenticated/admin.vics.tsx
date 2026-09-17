@@ -4,17 +4,20 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   AlertCircle,
   ClipboardPaste,
+  Copy,
   FolderKanban,
   IdCard,
   LayoutDashboard,
   Pencil,
   Plus,
+  RefreshCw,
   Trash2,
   Users,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { AuftraegeSection } from "@/components/auftraege-section";
+import { AuftragLogo } from "@/components/auftrag-logo";
 import { PanelShell } from "@/components/panel-shell";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +41,13 @@ import {
   updateVic,
   type VicRow,
 } from "@/lib/vics.functions";
+import { listAuftraege } from "@/lib/auftraege.functions";
+import {
+  assignAuftrag,
+  regenerateCredentials,
+  unassignAuftrag,
+} from "@/lib/vic-auftraege.functions";
+import type { VicAuftrag } from "@/lib/vic-auftraege.types";
 import { listProjects } from "@/lib/projects.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/vics")({
