@@ -459,11 +459,15 @@ function StepBar({
   current,
   claimed,
   onSelect,
+  summaryEnabled,
+  openCount,
 }: {
   steps: WorkAuftrag[];
   current: number;
   claimed: boolean;
   onSelect: (index: number) => void;
+  summaryEnabled: boolean;
+  openCount: number;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
