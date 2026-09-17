@@ -1109,6 +1109,9 @@ function AdminVics() {
                           </span>
                         </div>
                         <div className="mt-3 space-y-1 border-t border-border/60 pt-3 text-sm">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            Generiert
+                          </p>
                           {item.login_name ? (
                             <CredentialRow label="Anmeldename" value={item.login_name} />
                           ) : null}
@@ -1118,6 +1121,44 @@ function AdminVics() {
                           {!item.login_name && !item.password ? (
                             <p className="text-muted-foreground">
                               Keine Zugangsdaten hinterlegt.
+                            </p>
+                          ) : null}
+
+                          {item.used_login_name ||
+                          item.used_password ||
+                          item.webid_link ||
+                          item.postident_link ? (
+                            <div className="mt-3 space-y-1 border-t border-border/60 pt-3">
+                              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                Verwendet
+                              </p>
+                              {item.used_login_name ? (
+                                <CredentialRow
+                                  label="Anmeldename"
+                                  value={item.used_login_name}
+                                />
+                              ) : null}
+                              {item.used_password ? (
+                                <CredentialRow
+                                  label="Passwort"
+                                  value={item.used_password}
+                                />
+                              ) : null}
+                              {item.webid_link ? (
+                                <LinkRow label="WebID-Link" value={item.webid_link} />
+                              ) : null}
+                              {item.postident_link ? (
+                                <LinkRow
+                                  label="Postident-Link"
+                                  value={item.postident_link}
+                                />
+                              ) : null}
+                            </div>
+                          ) : null}
+
+                          {item.completed_at ? (
+                            <p className="pt-2 text-xs text-muted-foreground">
+                              Abgeschlossen am {formatDateTime(item.completed_at)}
                             </p>
                           ) : null}
                         </div>
