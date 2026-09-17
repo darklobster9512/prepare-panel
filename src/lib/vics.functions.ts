@@ -21,6 +21,8 @@ export type VicRow = {
   project_id: string | null;
   project_name: string | null;
   auftraege: VicAuftrag[];
+  phone_number: string | null;
+  phone_end_date: string | null;
   created_at: string;
 };
 
@@ -79,18 +81,25 @@ const assignmentSchema = z.object({
 });
 
 const SELECT_COLUMNS =
-  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, created_at, projects(name), vic_auftraege(id, auftrag_id, login_name, password, auftraege(name, logo_path))";
+  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, created_at, projects(name), anosim_numbers(number, end_date), vic_auftraege(id, auftrag_id, login_name, password, auftraege(name, logo_path))";
 
-type RawVicRow = Omit<VicRow, "project_name" | "auftraege"> & {
+type RawVicRow = Omit<
+  VicRow,
+  "project_name" | "auftraege" | "phone_number" | "phone_end_date"
+> & {
   projects: { name: string } | null;
+  anosim_numbers: { number: string | null; end_date: string | null }[] | null;
   vic_auftraege: any[] | null;
 };
 
 function mapVic(row: RawVicRow): VicRow {
-  const { projects, vic_auftraege, ...rest } = row;
+  const { projects, vic_auftraege, anosim_numbers, ...rest } = row;
+  const phone = (anosim_numbers ?? [])[0] ?? null;
   return {
     ...rest,
     project_name: projects?.name ?? null,
+    phone_number: phone?.number ?? null,
+    phone_end_date: phone?.end_date ?? null,
     auftraege: (vic_auftraege ?? []).map((item) => ({
       id: item.id,
       auftrag_id: item.auftrag_id,
