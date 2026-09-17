@@ -57,16 +57,22 @@ export const listEmployees = createServerFn({ method: "GET" })
     }));
   });
 
-const onboardingSchema = z.object({
+const updateSchema = z.object({
   userId: z.string().uuid(),
   onboardingEnabled: z.boolean(),
   gologinEmail: z.string().trim().max(200).optional().nullable(),
   gologinPassword: z.string().trim().max(200).optional().nullable(),
+  newPassword: z
+    .string()
+    .min(6, "Das Passwort muss mindestens 6 Zeichen haben.")
+    .max(200)
+    .optional()
+    .nullable(),
 });
 
-export const updateEmployeeOnboarding = createServerFn({ method: "POST" })
+export const updateEmployee = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => onboardingSchema.parse(data))
+  .inputValidator((data: unknown) => updateSchema.parse(data))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
 
@@ -79,7 +85,16 @@ export const updateEmployeeOnboarding = createServerFn({ method: "POST" })
       })
       .eq("user_id", data.userId);
 
-    if (error) throw new Error("Onboarding konnte nicht gespeichert werden.");
+    if (error) throw new Error("Änderungen konnten nicht gespeichert werden.");
+
+    if (data.newPassword) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { error: pwError } = await supabaseAdmin.auth.admin.updateUserById(
+        data.userId,
+        { password: data.newPassword },
+      );
+      if (pwError) throw new Error("Passwort konnte nicht geändert werden.");
+    }
 
     return { success: true as const };
   });
