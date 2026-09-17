@@ -765,6 +765,142 @@ function AdminVics() {
         </DialogContent>
       </Dialog>
 
+      <Dialog
+        open={detailVicId !== null}
+        onOpenChange={(value) => {
+          if (!value) setDetailVicId(null);
+        }}
+      >
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {detailVic
+                ? `${detailVic.first_name} ${detailVic.last_name}`.trim()
+                : "Datensatz"}
+            </DialogTitle>
+            <DialogDescription>
+              {detailVic?.project_name
+                ? `Projekt: ${detailVic.project_name}`
+                : "Kein Projekt zugewiesen"}
+            </DialogDescription>
+          </DialogHeader>
+
+          {detailVic ? (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  Persönliche Daten
+                </h3>
+                <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+                  {[
+                    ["Geburtsname", detailVic.birth_name],
+                    ["Geburtsdatum", formatDate(detailVic.birth_date)],
+                    ["Geburtsort", detailVic.birth_place],
+                    ["Straße", detailVic.street],
+                    ["PLZ", detailVic.postal_code],
+                    ["Ort", detailVic.city],
+                    ["Familienstand", detailVic.marital_status],
+                    ["Steuer-ID", detailVic.tax_id],
+                    ["Bank", detailVic.bank],
+                    ["Angelegt am", formatDate(detailVic.created_at)],
+                  ].map(([label, value]) => (
+                    <div key={label} className="flex gap-2">
+                      <dt className="w-32 shrink-0 text-muted-foreground">{label}</dt>
+                      <dd className="font-medium text-foreground">{value || "–"}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+
+              {detailVic.notes ? (
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">Notizen</h3>
+                  <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
+                    {detailVic.notes}
+                  </p>
+                </div>
+              ) : null}
+
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  Zugewiesene Aufträge
+                </h3>
+                {(detailVic.auftraege ?? []).length === 0 ? (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Noch keine Aufträge zugewiesen.
+                  </p>
+                ) : (
+                  <div className="mt-3 space-y-2">
+                    {(detailVic.auftraege ?? []).map((item) => (
+                      <div
+                        key={item.id}
+                        className="rounded-xl border border-border bg-card px-4 py-3"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg border border-border bg-background">
+                            <AuftragLogo
+                              value={item.logo_path}
+                              alt={item.auftrag_name}
+                              className="h-full w-full object-contain p-1"
+                              fallback={
+                                <span className="text-[0.65rem] font-semibold text-muted-foreground">
+                                  {item.auftrag_name.slice(0, 2).toUpperCase()}
+                                </span>
+                              }
+                            />
+                          </span>
+                          <span className="text-sm font-medium text-foreground">
+                            {item.auftrag_name}
+                          </span>
+                        </div>
+                        <div className="mt-3 space-y-1 border-t border-border/60 pt-3 text-sm">
+                          {item.login_name ? (
+                            <CredentialRow label="Anmeldename" value={item.login_name} />
+                          ) : null}
+                          {item.password ? (
+                            <CredentialRow label="Passwort" value={item.password} />
+                          ) : null}
+                          {!item.login_name && !item.password ? (
+                            <p className="text-muted-foreground">
+                              Keine Zugangsdaten hinterlegt.
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-wrap justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={() => {
+                    setAssignError(null);
+                    setAssignVicId(detailVic.id);
+                    setDetailVicId(null);
+                  }}
+                >
+                  Aufträge zuweisen
+                </Button>
+                <Button
+                  type="button"
+                  className="rounded-full"
+                  onClick={() => {
+                    setDetailVicId(null);
+                    openEdit(detailVic);
+                  }}
+                >
+                  Bearbeiten
+                </Button>
+              </div>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
