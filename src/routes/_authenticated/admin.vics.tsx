@@ -1155,7 +1155,9 @@ function AdminVics() {
                           </span>
                           <span
                             className={`ml-auto rounded-full border px-2.5 py-0.5 text-xs font-medium ${
-                              item.status === "erfolgreich"
+                               item.admin_only
+                                 ? "border-purple-500/40 bg-purple-500/10 text-purple-600"
+                                 : item.status === "erfolgreich"
                                 ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600"
                                 : item.status === "fehlgeschlagen"
                                   ? "border-destructive/40 bg-destructive/10 text-destructive"
@@ -1166,6 +1168,14 @@ function AdminVics() {
                           </span>
                         </div>
                           <div className="mt-3 space-y-1 border-t border-border/60 pt-3 text-sm">
+                          {item.admin_only && item.password ? (
+                            <div className="space-y-1">
+                              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                Intern generiert
+                              </p>
+                              <CredentialRow label="Passwort" value={item.password} />
+                            </div>
+                          ) : null}
                           {item.used_login_name ||
                           item.used_password ||
                           item.webid_link ||
