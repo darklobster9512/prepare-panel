@@ -88,7 +88,7 @@ const assignmentSchema = z.object({
 });
 
 const SELECT_COLUMNS =
-  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, claimed_by, completed_at, email_address, email_street, email_postal_code, email_city, email_birth_date, created_at, projects(name), anosim_numbers(number, end_date), vic_auftraege(id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, completed_at, auftraege(name, logo_path))";
+  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, claimed_by, completed_at, email_address, email_street, email_postal_code, email_city, email_birth_date, created_at, projects(name), anosim_numbers(number, end_date), vic_auftraege(id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, completed_at, auftraege(name, logo_path, admin_only))";
 
 type RawVicRow = Omit<
   VicRow,
@@ -112,6 +112,7 @@ function mapVic(row: RawVicRow): VicRow {
       auftrag_id: item.auftrag_id,
       auftrag_name: item.auftraege?.name ?? "",
       logo_path: item.auftraege?.logo_path ?? null,
+      admin_only: Boolean(item.auftraege?.admin_only),
       login_name: item.login_name ?? null,
       password: item.password ?? null,
       status: (item.status ?? "offen") as VicAuftrag["status"],
