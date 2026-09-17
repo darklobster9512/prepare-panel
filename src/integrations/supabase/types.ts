@@ -131,6 +131,54 @@ export type Database = {
         }
         Relationships: []
       }
+      vic_auftraege: {
+        Row: {
+          auftrag_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          login_name: string | null
+          password: string | null
+          updated_at: string
+          vic_id: string
+        }
+        Insert: {
+          auftrag_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          login_name?: string | null
+          password?: string | null
+          updated_at?: string
+          vic_id: string
+        }
+        Update: {
+          auftrag_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          login_name?: string | null
+          password?: string | null
+          updated_at?: string
+          vic_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vic_auftraege_auftrag_id_fkey"
+            columns: ["auftrag_id"]
+            isOneToOne: false
+            referencedRelation: "auftraege"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vic_auftraege_vic_id_fkey"
+            columns: ["vic_id"]
+            isOneToOne: false
+            referencedRelation: "vics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vics: {
         Row: {
           bank: string | null
