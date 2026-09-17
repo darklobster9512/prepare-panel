@@ -1186,6 +1186,7 @@ function AdminVics() {
                             {statusLabel(item.status, detailVic.claimed_by !== null)}
                           </span>
                         </div>
+                          <div className="mt-3 space-y-1 border-t border-border/60 pt-3 text-sm">
                           {item.used_login_name ||
                           item.used_password ||
                           item.webid_link ||
