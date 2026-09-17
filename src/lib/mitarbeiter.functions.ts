@@ -217,6 +217,36 @@ export const completeAuftrag = createServerFn({ method: "POST" })
     return getWorkItemInternal(context.supabase, data.vic_id);
   });
 
+export const finishVic = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => z.object({ vic_id: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }): Promise<WorkItem> => {
+    await assertClaimed(context.supabase, data.vic_id, context.userId);
+
+    const { data: open, error: openError } = await context.supabase
+      .from("vic_auftraege")
+      .select("id")
+      .eq("vic_id", data.vic_id)
+      .eq("status", "offen");
+
+    if (openError) throw new Error("Aufträge konnten nicht geprüft werden.");
+    if ((open ?? []).length > 0) {
+      throw new Error("Es sind noch Aufträge offen.");
+    }
+
+    const { error } = await context.supabase
+      .from("vics")
+      .update({
+        claimed_by: context.userId,
+        completed_at: new Date().toISOString(),
+        completed_by: context.userId,
+      })
+      .eq("id", data.vic_id);
+
+    if (error) throw new Error("Datensatz konnte nicht abgeschlossen werden.");
+    return getWorkItemInternal(context.supabase, data.vic_id);
+  });
+
 export type VicSmsRow = {
   messageDate: string;
   messageSender: string;
