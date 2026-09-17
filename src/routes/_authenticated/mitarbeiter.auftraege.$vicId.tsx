@@ -281,24 +281,41 @@ function WizardPage() {
               </p>
             ) : null}
 
+            {isCompleted ? (
+              <p className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-foreground">
+                Dieser Datensatz wurde am {formatDateTime(item.completed_at!)} abgeschlossen und
+                kann nicht mehr geändert werden.
+              </p>
+            ) : null}
+
             <StepBar
               steps={steps}
               current={current}
               claimed={Boolean(item.claimed_by)}
               onSelect={setActiveIndex}
+              summaryEnabled={allDone}
+              openCount={openCount}
             />
 
-            {step ? (
+            {showSummary ? (
+              <SummaryCard
+                item={item}
+                canFinish={isMine && allDone && !isCompleted}
+                pending={finishMutation.isPending}
+                error={(finishMutation.error as Error | null)?.message ?? null}
+                onFinish={() => finishMutation.mutate()}
+              />
+            ) : step ? (
               <StepCard
                 key={step.id}
                 item={item}
                 step={step}
-                editable={isMine}
+                editable={isMine && !isCompleted}
                 onSaved={(next) => {
                   setItem(next);
                   queryClient.invalidateQueries({ queryKey: ["mitarbeiter", "work-items"] });
                   const nextOpen = next.auftraege.findIndex((a) => a.status === "offen");
-                  setActiveIndex(nextOpen >= 0 ? nextOpen : current);
+                  setActiveIndex(nextOpen >= 0 ? nextOpen : next.auftraege.length);
                 }}
                 saveEmail={(email) =>
                   saveEmailFn({ data: { vic_id: vicId, email_address: email } })
