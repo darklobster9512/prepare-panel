@@ -26,8 +26,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/use-auth";
-import { createEmployee, listEmployees } from "@/lib/admin-users.functions";
+import {
+  createEmployee,
+  listEmployees,
+  updateEmployeeOnboarding,
+  type EmployeeRow,
+} from "@/lib/admin-users.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/mitarbeiter")({
   head: () => ({
