@@ -68,6 +68,7 @@ export const createAuftrag = createServerFn({ method: "POST" })
       ident_type: data.ident_type ?? null,
       besonderheiten: data.besonderheiten ?? null,
       images: data.images ?? [],
+      generate_password: data.generate_password ?? false,
       created_by: context.userId,
     });
 
