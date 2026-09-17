@@ -1105,27 +1105,6 @@ function AdminVics() {
                       label="Erstellte E-Mail"
                       value={detailVic.email_address}
                     />
-                    {detailVic.email_street ||
-                    detailVic.email_postal_code ||
-                    detailVic.email_city ? (
-                      <CredentialRow
-                        label="Adresse (generiert)"
-                        value={[
-                          detailVic.email_street,
-                          [detailVic.email_postal_code, detailVic.email_city]
-                            .filter(Boolean)
-                            .join(" "),
-                        ]
-                          .filter(Boolean)
-                          .join(", ")}
-                      />
-                    ) : null}
-                    {detailVic.email_birth_date ? (
-                      <CredentialRow
-                        label="Geburtsdatum (generiert)"
-                        value={formatDate(detailVic.email_birth_date)}
-                      />
-                    ) : null}
                   </div>
                 ) : (
                   <p className="mt-2 text-sm text-muted-foreground">
