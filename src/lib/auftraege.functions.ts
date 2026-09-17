@@ -12,6 +12,7 @@ export type AuftragRow = {
   ident_type: IdentType | null;
   besonderheiten: string | null;
   images: string[];
+  generate_password: boolean;
   created_at: string;
 };
 
