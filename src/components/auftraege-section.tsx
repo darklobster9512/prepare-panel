@@ -31,6 +31,7 @@ type Props = { enabled: boolean };
 const IDENT_LABELS: Record<IdentType, string> = {
   videoident: "Videoident",
   postident: "Postident",
+  email: "E-Mail",
 };
 
 export function AuftraegeSection({ enabled }: Props) {
@@ -324,7 +325,7 @@ export function AuftraegeSection({ enabled }: Props) {
             <fieldset className="space-y-2">
               <legend className="text-sm font-medium text-foreground">Ident-Art</legend>
               <div className="flex flex-wrap gap-2">
-                {(["videoident", "postident"] as IdentType[]).map((value) => (
+                {(["videoident", "postident", "email"] as IdentType[]).map((value) => (
                   <label
                     key={value}
                     className={`flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${

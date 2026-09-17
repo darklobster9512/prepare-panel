@@ -1,0 +1,2 @@
+ALTER TABLE public.auftraege DROP CONSTRAINT IF EXISTS auftraege_ident_type_check;
+ALTER TABLE public.auftraege ADD CONSTRAINT auftraege_ident_type_check CHECK (ident_type IN ('videoident','postident','email'));
