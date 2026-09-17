@@ -77,6 +77,11 @@ function mapRow(row: any): VicAuftrag {
     login_name: row.login_name ?? null,
     password: row.password ?? null,
     status: (row.status ?? "offen") as VicAuftrag["status"],
+    used_login_name: row.used_login_name ?? null,
+    used_password: row.used_password ?? null,
+    webid_link: row.webid_link ?? null,
+    postident_link: row.postident_link ?? null,
+    completed_at: row.completed_at ?? null,
   };
 }
 
