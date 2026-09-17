@@ -9,6 +9,7 @@ export type Profile = {
   first_name: string;
   last_name: string;
   email: string;
+  onboarding_enabled?: boolean;
 };
 
 export function panelPathForRole(role: AppRole | null): "/admin" | "/mitarbeiter" {
@@ -28,7 +29,7 @@ export async function fetchRole(userId: string): Promise<AppRole> {
 export async function fetchProfile(userId: string): Promise<Profile | null> {
   const { data } = await supabase
     .from("profiles")
-    .select("first_name, last_name, email")
+    .select("first_name, last_name, email, onboarding_enabled")
     .eq("user_id", userId)
     .maybeSingle();
 
