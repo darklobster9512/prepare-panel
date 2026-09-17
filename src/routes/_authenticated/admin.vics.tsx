@@ -50,6 +50,13 @@ import {
 } from "@/lib/vic-auftraege.functions";
 import type { VicAuftrag } from "@/lib/vic-auftraege.types";
 import { listProjects } from "@/lib/projects.functions";
+import {
+  assignNumberToVic,
+  buyAnosimNumber,
+  getAnosimFullServiceProduct,
+  listAssignableNumbers,
+  unassignNumberFromVic,
+} from "@/lib/anosim.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/vics")({
   head: () => ({
