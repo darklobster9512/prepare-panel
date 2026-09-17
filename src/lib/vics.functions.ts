@@ -115,6 +115,11 @@ function mapVic(row: RawVicRow): VicRow {
       login_name: item.login_name ?? null,
       password: item.password ?? null,
       status: (item.status ?? "offen") as VicAuftrag["status"],
+      used_login_name: item.used_login_name ?? null,
+      used_password: item.used_password ?? null,
+      webid_link: item.webid_link ?? null,
+      postident_link: item.postident_link ?? null,
+      completed_at: item.completed_at ?? null,
     })),
   };
 }
