@@ -61,15 +61,17 @@ import {
 export const Route = createFileRoute("/_authenticated/admin/vics")({
   head: () => ({
     meta: [
-      { title: "Vic-Datensätze – Admin-Panel" },
+      { title: "Vic-Datensätze – Admin-Panel | IdentPanel" },
       {
         name: "description",
-        content: "Vic-Datensätze anlegen, bearbeiten und einsehen.",
+        content:
+          "Vic-Datensätze anlegen, Aufträge zuweisen und den Bearbeitungsstand verfolgen.",
       },
-      { property: "og:title", content: "Vic-Datensätze – Admin-Panel" },
+      { property: "og:title", content: "Vic-Datensätze – Admin-Panel | IdentPanel" },
       {
         property: "og:description",
-        content: "Vic-Datensätze anlegen, bearbeiten und einsehen.",
+        content:
+          "Vic-Datensätze anlegen, Aufträge zuweisen und den Bearbeitungsstand verfolgen.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

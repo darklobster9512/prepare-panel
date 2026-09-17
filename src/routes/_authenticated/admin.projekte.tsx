@@ -37,10 +37,16 @@ import {
 export const Route = createFileRoute("/_authenticated/admin/projekte")({
   head: () => ({
     meta: [
-      { title: "Projekte – Admin-Panel" },
-      { name: "description", content: "Projekte anlegen und verwalten." },
-      { property: "og:title", content: "Projekte – Admin-Panel" },
-      { property: "og:description", content: "Projekte anlegen und verwalten." },
+      { title: "Projekte – Admin-Panel | IdentPanel" },
+      {
+        name: "description",
+        content: "Projekte anlegen, umbenennen und Datensätzen zuordnen.",
+      },
+      { property: "og:title", content: "Projekte – Admin-Panel | IdentPanel" },
+      {
+        property: "og:description",
+        content: "Projekte anlegen, umbenennen und Datensätzen zuordnen.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex" },

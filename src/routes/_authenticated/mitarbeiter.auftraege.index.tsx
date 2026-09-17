@@ -20,12 +20,12 @@ import type { WorkItem } from "@/lib/mitarbeiter.types";
 export const Route = createFileRoute("/_authenticated/mitarbeiter/auftraege/")({
   head: () => ({
     meta: [
-      { title: "Aufträge – Mitarbeiter-Panel" },
+      { title: "Aufträge – Mitarbeiter-Panel | IdentPanel" },
       {
         name: "description",
         content: "Verfügbare Datensätze beanspruchen und Aufträge Schritt für Schritt abarbeiten.",
       },
-      { property: "og:title", content: "Aufträge – Mitarbeiter-Panel" },
+      { property: "og:title", content: "Aufträge – Mitarbeiter-Panel | IdentPanel" },
       {
         property: "og:description",
         content: "Verfügbare Datensätze beanspruchen und Aufträge Schritt für Schritt abarbeiten.",

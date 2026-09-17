@@ -10,17 +10,17 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Anmelden & Registrieren – Internes Panel" },
+      { title: "Anmelden – IdentPanel" },
       {
         name: "description",
         content:
-          "Melden Sie sich im internen Panel an oder registrieren Sie ein neues Mitarbeiterkonto.",
+          "Im IdentPanel anmelden oder ein neues Mitarbeiterkonto registrieren.",
       },
-      { property: "og:title", content: "Anmelden & Registrieren – Internes Panel" },
+      { property: "og:title", content: "Anmelden – IdentPanel" },
       {
         property: "og:description",
         content:
-          "Melden Sie sich im internen Panel an oder registrieren Sie ein neues Mitarbeiterkonto.",
+          "Im IdentPanel anmelden oder ein neues Mitarbeiterkonto registrieren.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

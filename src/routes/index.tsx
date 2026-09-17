@@ -3,20 +3,20 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Panel – Interne Vorbereitung Unternehmensprozesse" },
+      { title: "IdentPanel – Interne Vorbereitung für Unternehmensprozesse" },
       {
         name: "description",
         content:
-          "Internes Panel zur Vorbereitung von Unternehmensprozessen – derzeit im Aufbau.",
+          "IdentPanel bündelt die interne Vorbereitung von Unternehmensprozessen: Datensätze, Aufträge und Zugänge an einem Ort.",
       },
       {
         property: "og:title",
-        content: "Panel – Interne Vorbereitung Unternehmensprozesse",
+        content: "IdentPanel – Interne Vorbereitung für Unternehmensprozesse",
       },
       {
         property: "og:description",
         content:
-          "Internes Panel zur Vorbereitung von Unternehmensprozessen – derzeit im Aufbau.",
+          "IdentPanel bündelt die interne Vorbereitung von Unternehmensprozessen: Datensätze, Aufträge und Zugänge an einem Ort.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

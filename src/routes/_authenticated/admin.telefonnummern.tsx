@@ -41,15 +41,15 @@ import {
 export const Route = createFileRoute("/_authenticated/admin/telefonnummern")({
   head: () => ({
     meta: [
-      { title: "Telefonnummern – Admin-Panel" },
+      { title: "Telefonnummern – Admin-Panel | IdentPanel" },
       {
         name: "description",
-        content: "AnoSIM-Nummern verwalten, Guthaben prüfen und Nummern kaufen.",
+        content: "Nummern kaufen, Laufzeiten im Blick behalten und Guthaben prüfen.",
       },
-      { property: "og:title", content: "Telefonnummern – Admin-Panel" },
+      { property: "og:title", content: "Telefonnummern – Admin-Panel | IdentPanel" },
       {
         property: "og:description",
-        content: "AnoSIM-Nummern verwalten, Guthaben prüfen und Nummern kaufen.",
+        content: "Nummern kaufen, Laufzeiten im Blick behalten und Guthaben prüfen.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
