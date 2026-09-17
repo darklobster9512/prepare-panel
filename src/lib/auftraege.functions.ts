@@ -30,6 +30,9 @@ async function assertAdmin(supabase: any, userId: string) {
 const auftragSchema = z.object({
   name: z.string().trim().min(1, "Bitte einen Namen eingeben.").max(200),
   logo_path: z.string().trim().max(500).nullable().optional(),
+  ident_type: z.enum(["videoident", "postident"]).nullable().optional(),
+  besonderheiten: z.string().trim().max(5000).nullable().optional(),
+  images: z.array(z.string().trim().max(500)).max(50).optional(),
 });
 
 export const listAuftraege = createServerFn({ method: "GET" })
