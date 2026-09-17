@@ -145,6 +145,10 @@ function AdminVics() {
   const removeVic = useServerFn(deleteVic);
   const assignProject = useServerFn(assignVicProject);
   const fetchProjects = useServerFn(listProjects);
+  const fetchAuftraege = useServerFn(listAuftraege);
+  const addAssignment = useServerFn(assignAuftrag);
+  const removeAssignment = useServerFn(unassignAuftrag);
+  const renewCredentials = useServerFn(regenerateCredentials);
 
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<DialogMode>("form");
@@ -156,6 +160,8 @@ function AdminVics() {
   const [importText, setImportText] = useState("");
   const [parsed, setParsed] = useState<ParsedVic[]>([]);
   const [selected, setSelected] = useState<boolean[]>([]);
+  const [assignVicId, setAssignVicId] = useState<string | null>(null);
+  const [assignError, setAssignError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && role && role !== "admin") {
