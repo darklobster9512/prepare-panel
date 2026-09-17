@@ -179,6 +179,7 @@ function AdminVics() {
   const [selected, setSelected] = useState<boolean[]>([]);
   const [assignVicId, setAssignVicId] = useState<string | null>(null);
   const [assignError, setAssignError] = useState<string | null>(null);
+  const [detailVicId, setDetailVicId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && role && role !== "admin") {
@@ -521,7 +522,19 @@ function AdminVics() {
                 </tr>
               ) : (
                 filtered.map((vic) => (
-                  <tr key={vic.id} className="border-b border-border/60 last:border-0">
+                  <tr
+                    key={vic.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setDetailVicId(vic.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setDetailVicId(vic.id);
+                      }
+                    }}
+                    className="cursor-pointer border-b border-border/60 transition-colors last:border-0 hover:bg-secondary/50"
+                  >
                     <td className="px-5 py-4 font-medium text-foreground">
                       {[vic.first_name, vic.last_name].filter(Boolean).join(" ")}
                     </td>
@@ -532,7 +545,7 @@ function AdminVics() {
                       {vic.birth_place || "–"}
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">{vic.bank || "–"}</td>
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4" onClick={(event) => event.stopPropagation()}>
                       <select
                         value={vic.project_id ?? ""}
                         onChange={(event) =>
@@ -583,7 +596,7 @@ function AdminVics() {
                         </div>
                       )}
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4" onClick={(event) => event.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
                         <button
                           type="button"
