@@ -4,7 +4,7 @@ import { CalendarDays, CheckSquare, FileText, LayoutDashboard } from "lucide-rea
 import { PanelShell, StatCard } from "@/components/panel-shell";
 import { useAuth } from "@/hooks/use-auth";
 
-export const Route = createFileRoute("/_authenticated/mitarbeiter")({
+export const Route = createFileRoute("/_authenticated/mitarbeiter/")({
   head: () => ({
     meta: [
       { title: "Mitarbeiter-Panel – Interne Prozessvorbereitung" },
