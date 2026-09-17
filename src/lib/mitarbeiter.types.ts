@@ -34,6 +34,8 @@ export type WorkItem = {
   notes: string | null;
   claimed_by: string | null;
   claimed_at: string | null;
+  completed_at: string | null;
+  completed_by: string | null;
   email_street: string | null;
   email_postal_code: string | null;
   email_city: string | null;
