@@ -21,15 +21,15 @@ import { createEmployee, listEmployees } from "@/lib/admin-users.functions";
 export const Route = createFileRoute("/_authenticated/admin/mitarbeiter")({
   head: () => ({
     meta: [
-      { title: "Mitarbeiterverwaltung – Admin-Panel" },
+      { title: "Mitarbeiter – Admin-Panel | IdentPanel" },
       {
         name: "description",
-        content: "Mitarbeiterkonten anlegen und verwalten.",
+        content: "Mitarbeiterkonten anlegen, einsehen und verwalten.",
       },
-      { property: "og:title", content: "Mitarbeiterverwaltung – Admin-Panel" },
+      { property: "og:title", content: "Mitarbeiter – Admin-Panel | IdentPanel" },
       {
         property: "og:description",
-        content: "Mitarbeiterkonten anlegen und verwalten.",
+        content: "Mitarbeiterkonten anlegen, einsehen und verwalten.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

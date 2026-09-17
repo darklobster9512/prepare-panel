@@ -8,15 +8,15 @@ import { useAuth } from "@/hooks/use-auth";
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({
     meta: [
-      { title: "Admin-Panel – Interne Prozessvorbereitung" },
+      { title: "Übersicht – Admin-Panel | IdentPanel" },
       {
         name: "description",
-        content: "Übersicht über Mitarbeitende, Prozesse und Freigaben.",
+        content: "Zentrale Übersicht über Mitarbeitende, Datensätze und Freigaben.",
       },
-      { property: "og:title", content: "Admin-Panel – Interne Prozessvorbereitung" },
+      { property: "og:title", content: "Übersicht – Admin-Panel | IdentPanel" },
       {
         property: "og:description",
-        content: "Übersicht über Mitarbeitende, Prozesse und Freigaben.",
+        content: "Zentrale Übersicht über Mitarbeitende, Datensätze und Freigaben.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

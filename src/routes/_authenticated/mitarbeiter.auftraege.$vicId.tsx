@@ -43,12 +43,12 @@ import type { WorkAuftrag, WorkItem } from "@/lib/mitarbeiter.types";
 export const Route = createFileRoute("/_authenticated/mitarbeiter/auftraege/$vicId")({
   head: () => ({
     meta: [
-      { title: "Auftrag bearbeiten – Mitarbeiter-Panel" },
+      { title: "Auftrag bearbeiten – Mitarbeiter-Panel | IdentPanel" },
       {
         name: "description",
         content: "Datensatz, Telefonnummer, SMS und Zugangsdaten für die Auftragsbearbeitung.",
       },
-      { property: "og:title", content: "Auftrag bearbeiten – Mitarbeiter-Panel" },
+      { property: "og:title", content: "Auftrag bearbeiten – Mitarbeiter-Panel | IdentPanel" },
       {
         property: "og:description",
         content: "Datensatz, Telefonnummer, SMS und Zugangsdaten für die Auftragsbearbeitung.",

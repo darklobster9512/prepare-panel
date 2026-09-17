@@ -13,14 +13,14 @@ import { useAuth } from "@/hooks/use-auth";
 export const Route = createFileRoute("/_authenticated/mitarbeiter/")({
   head: () => ({
     meta: [
-      { title: "Mitarbeiter-Panel – Interne Prozessvorbereitung" },
+      { title: "Übersicht – Mitarbeiter-Panel | IdentPanel" },
       {
         name: "description",
         content: "Persönliche Aufgaben, Fristen und Dokumente auf einen Blick.",
       },
       {
         property: "og:title",
-        content: "Mitarbeiter-Panel – Interne Prozessvorbereitung",
+        content: "Übersicht – Mitarbeiter-Panel | IdentPanel",
       },
       {
         property: "og:description",

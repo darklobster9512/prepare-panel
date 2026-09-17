@@ -1,29 +1,18 @@
-# Welcome to your Lovable project
+# IdentPanel
 
-This project was built with [Lovable](https://lovable.dev).
+Internes Panel zur Vorbereitung von Unternehmensprozessen: Vic-Datensätze,
+Projekte, Auftragsvorlagen, Telefonnummern und die schrittweise Abarbeitung
+durch Mitarbeitende.
 
-## Build with Lovable
-
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+## Entwicklung
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+bun install
+bun run dev
 ```
 
-## Built with
+Die Anwendung läuft anschließend unter http://localhost:8080.
 
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+## Technik
+
+React, TypeScript, TanStack Start, Tailwind CSS, shadcn/ui und Supabase.
