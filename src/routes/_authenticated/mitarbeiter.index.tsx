@@ -1,5 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CalendarDays, CheckSquare, FileText, LayoutDashboard } from "lucide-react";
+import {
+  CalendarDays,
+  CheckSquare,
+  ClipboardList,
+  FileText,
+  LayoutDashboard,
+} from "lucide-react";
 
 import { PanelShell, StatCard } from "@/components/panel-shell";
 import { useAuth } from "@/hooks/use-auth";
