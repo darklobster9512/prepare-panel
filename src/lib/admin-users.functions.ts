@@ -8,6 +8,9 @@ export type EmployeeRow = {
   email: string;
   role: string;
   created_at: string;
+  onboarding_enabled: boolean;
+  gologin_email: string | null;
+  gologin_password: string | null;
 };
 
 async function assertAdmin(supabase: any, userId: string) {
