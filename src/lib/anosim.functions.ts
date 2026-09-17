@@ -148,7 +148,7 @@ export const getAnosimFullServiceProduct = createServerFn({ method: "GET" })
 
     let match: ProductPrice | undefined;
 
-    for (const rentalTypeId of [3, 2, 4, 1]) {
+    for (const rentalTypeId of [2, 3, 1, 4]) {
       const products = await anosimFetch<ProductPrice[]>("/ProductPrices", {
         countryId: GERMANY_COUNTRY_ID,
         rentalTypeId,
