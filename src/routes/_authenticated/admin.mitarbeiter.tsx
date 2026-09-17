@@ -77,8 +77,10 @@ function AdminEmployees() {
   const [gologinPassword, setGologinPassword] = useState("");
   const [showGologinPassword, setShowGologinPassword] = useState(false);
   const [onboardingError, setOnboardingError] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
-  const saveOnboarding = useServerFn(updateEmployeeOnboarding);
+  const saveOnboarding = useServerFn(updateEmployee);
 
   useEffect(() => {
     if (!loading && role && role !== "admin") {
