@@ -701,20 +701,55 @@ function StepCard({
           {step.images.length > 0 ? (
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {step.images.map((image) => (
-                <AuftragLogo
+                <button
                   key={image}
-                  value={image}
-                  alt={`Screenshot ${step.name}`}
-                  className="w-full rounded-xl border border-border object-contain"
-                  fallback={
-                    <p className="rounded-xl border border-dashed border-border px-3 py-6 text-center text-xs text-muted-foreground">
-                      Bild nicht verfügbar
-                    </p>
-                  }
-                />
+                  type="button"
+                  onClick={() => setLightboxImage(image)}
+                  className="cursor-zoom-in overflow-hidden rounded-xl transition-opacity hover:opacity-90"
+                  aria-label={`Screenshot ${step.name} vergrößern`}
+                >
+                  <AuftragLogo
+                    value={image}
+                    alt={`Screenshot ${step.name}`}
+                    className="w-full rounded-xl border border-border object-contain"
+                    fallback={
+                      <p className="rounded-xl border border-dashed border-border px-3 py-6 text-center text-xs text-muted-foreground">
+                        Bild nicht verfügbar
+                      </p>
+                    }
+                  />
+                </button>
               ))}
             </div>
           ) : null}
+
+          <Dialog open={lightboxImage !== null} onOpenChange={(open) => !open && setLightboxImage(null)}>
+            <DialogContent
+              className="max-h-[95vh] max-w-[95vw] border-none bg-transparent p-0 shadow-none focus:outline-none sm:rounded-xl"
+              showCloseButton={false}
+            >
+              <span className="sr-only">Screenshot vergrößert</span>
+              {lightboxImage ? (
+                <button
+                  type="button"
+                  onClick={() => setLightboxImage(null)}
+                  className="block max-h-[90vh] max-w-[90vw] cursor-zoom-out"
+                  aria-label="Vergrößerten Screenshot schließen"
+                >
+                  <AuftragLogo
+                    value={lightboxImage}
+                    alt={`Screenshot ${step.name} vergrößert`}
+                    className="max-h-[90vh] w-auto max-w-[90vw] rounded-xl object-contain"
+                    fallback={
+                      <p className="rounded-xl bg-background px-6 py-10 text-center text-sm text-muted-foreground">
+                        Bild nicht verfügbar
+                      </p>
+                    }
+                  />
+                </button>
+              ) : null}
+            </DialogContent>
+          </Dialog>
         </DialogContent>
       </Dialog>
     </section>
