@@ -166,6 +166,36 @@ function CredentialRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function LinkRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-28 shrink-0 text-muted-foreground">{label}</span>
+      <a
+        href={value}
+        target="_blank"
+        rel="noreferrer"
+        className="truncate font-medium text-primary hover:underline"
+      >
+        {value}
+      </a>
+      <button
+        type="button"
+        onClick={() => navigator.clipboard?.writeText(value)}
+        aria-label={`${label} kopieren`}
+        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-secondary"
+      >
+        <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+function formatDateTime(value: string | null) {
+  if (!value) return "–";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString("de-DE");
+}
+
 type DialogMode = "form" | "import" | "preview";
 
 function AdminVics() {
