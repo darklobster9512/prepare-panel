@@ -50,6 +50,13 @@ import {
 } from "@/lib/vic-auftraege.functions";
 import type { VicAuftrag } from "@/lib/vic-auftraege.types";
 import { listProjects } from "@/lib/projects.functions";
+import {
+  assignNumberToVic,
+  buyAnosimNumber,
+  getAnosimFullServiceProduct,
+  listAssignableNumbers,
+  unassignNumberFromVic,
+} from "@/lib/anosim.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/vics")({
   head: () => ({
@@ -133,6 +140,15 @@ function formatDate(value: string | null) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString("de-DE");
 }
 
+function describeValidity(endDate: string | null) {
+  if (!endDate) return "Laufzeit unbekannt";
+  const end = new Date(endDate);
+  if (Number.isNaN(end.getTime())) return "Laufzeit unbekannt";
+  const days = Math.ceil((end.getTime() - Date.now()) / 86_400_000);
+  if (days <= 0) return `Gültig bis ${formatDate(endDate)} · abgelaufen`;
+  return `Gültig bis ${formatDate(endDate)} · noch ${days} ${days === 1 ? "Tag" : "Tage"}`;
+}
+
 function CredentialRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-2">
@@ -182,6 +198,15 @@ function AdminVics() {
   const [assignVicId, setAssignVicId] = useState<string | null>(null);
   const [assignError, setAssignError] = useState<string | null>(null);
   const [detailVicId, setDetailVicId] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [selectedNumber, setSelectedNumber] = useState("");
+  const [buyOpen, setBuyOpen] = useState(false);
+
+  const fetchAssignableNumbers = useServerFn(listAssignableNumbers);
+  const assignNumber = useServerFn(assignNumberToVic);
+  const unassignNumber = useServerFn(unassignNumberFromVic);
+  const fetchProduct = useServerFn(getAnosimFullServiceProduct);
+  const buyNumber = useServerFn(buyAnosimNumber);
 
   useEffect(() => {
     if (!loading && role && role !== "admin") {
@@ -252,6 +277,64 @@ function AdminVics() {
       setAssignError(null);
     },
     onError: () => setAssignError("Zugangsdaten konnten nicht neu erzeugt werden."),
+  });
+
+  const freeNumbersQuery = useQuery({
+    queryKey: ["admin", "anosim", "assignable"],
+    queryFn: () => fetchAssignableNumbers(),
+    enabled: role === "admin" && assignVicId !== null,
+    staleTime: 60_000,
+  });
+
+  const productQuery = useQuery({
+    queryKey: ["admin", "anosim", "product"],
+    queryFn: () => fetchProduct(),
+    enabled: role === "admin" && buyOpen,
+    staleTime: 60_000,
+  });
+
+  const assignNumberMutation = useMutation({
+    mutationFn: (values: { vicId: string; orderBookingId: number }) =>
+      assignNumber({ data: values }),
+    onSuccess: () => {
+      setPhoneError(null);
+      setSelectedNumber("");
+      queryClient.invalidateQueries({ queryKey: ["admin", "anosim"] });
+      invalidate();
+    },
+    onError: (err: unknown) =>
+      setPhoneError(
+        err instanceof Error && err.message
+          ? err.message
+          : "Nummer konnte nicht zugewiesen werden.",
+      ),
+  });
+
+  const unassignNumberMutation = useMutation({
+    mutationFn: (vicId: string) => unassignNumber({ data: { vicId } }),
+    onSuccess: () => {
+      setPhoneError(null);
+      queryClient.invalidateQueries({ queryKey: ["admin", "anosim"] });
+      invalidate();
+    },
+    onError: () => setPhoneError("Zuweisung konnte nicht entfernt werden."),
+  });
+
+  const buyNumberMutation = useMutation({
+    mutationFn: (values: { productId: number; vicId: string }) =>
+      buyNumber({ data: values }),
+    onSuccess: () => {
+      setPhoneError(null);
+      setBuyOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["admin", "anosim"] });
+      invalidate();
+    },
+    onError: (err: unknown) =>
+      setPhoneError(
+        err instanceof Error && err.message
+          ? err.message
+          : "Kauf fehlgeschlagen. Bitte erneut versuchen.",
+      ),
   });
 
 
@@ -663,6 +746,111 @@ function AdminVics() {
             </p>
           ) : null}
 
+          <div className="rounded-xl border border-border bg-secondary/40 px-4 py-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <Phone className="h-4 w-4" aria-hidden="true" />
+              Telefonnummer
+            </div>
+
+            {assignVic?.phone_number ? (
+              <div className="mt-2 space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-semibold text-foreground">
+                    {assignVic.phone_number}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigator.clipboard?.writeText(assignVic.phone_number ?? "")
+                    }
+                    aria-label="Nummer kopieren"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-secondary"
+                  >
+                    <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {describeValidity(assignVic.phone_end_date)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Gilt für alle Aufträge dieses Datensatzes.
+                </p>
+                <button
+                  type="button"
+                  disabled={unassignNumberMutation.isPending}
+                  onClick={() => {
+                    if (!assignVicId) return;
+                    if (!window.confirm("Zuweisung der Telefonnummer entfernen?")) return;
+                    unassignNumberMutation.mutate(assignVicId);
+                  }}
+                  className="text-xs font-medium text-destructive hover:underline"
+                >
+                  Zuweisung entfernen
+                </button>
+              </div>
+            ) : (
+              <div className="mt-2 space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Diesem Datensatz ist noch keine Telefonnummer zugewiesen.
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    value={selectedNumber}
+                    onChange={(event) => setSelectedNumber(event.target.value)}
+                    className="h-9 min-w-[12rem] rounded-lg border border-border bg-background px-2 text-sm text-foreground"
+                  >
+                    <option value="">
+                      {freeNumbersQuery.isLoading
+                        ? "Wird geladen …"
+                        : (freeNumbersQuery.data ?? []).length === 0
+                          ? "Keine freie Nummer vorhanden"
+                          : "Freie Nummer wählen"}
+                    </option>
+                    {(freeNumbersQuery.data ?? []).map((item) => (
+                      <option key={item.orderBookingId} value={String(item.orderBookingId)}>
+                        {item.number} · bis {formatDate(item.endDate)}
+                      </option>
+                    ))}
+                  </select>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="rounded-full"
+                    disabled={!selectedNumber || assignNumberMutation.isPending}
+                    onClick={() => {
+                      if (!assignVicId || !selectedNumber) return;
+                      assignNumberMutation.mutate({
+                        vicId: assignVicId,
+                        orderBookingId: Number(selectedNumber),
+                      });
+                    }}
+                  >
+                    Zuweisen
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => {
+                      setPhoneError(null);
+                      setBuyOpen(true);
+                    }}
+                  >
+                    Neue Nummer kaufen
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {phoneError ? (
+              <p className="mt-2 flex items-center gap-2 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4" aria-hidden="true" />
+                {phoneError}
+              </p>
+            ) : null}
+          </div>
+
           <div className="space-y-2">
             {auftraegeQuery.isLoading ? (
               <p className="text-sm text-muted-foreground">Wird geladen …</p>
@@ -763,6 +951,83 @@ function AdminVics() {
                 );
               })
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={buyOpen}
+        onOpenChange={(value) => {
+          if (!value && !buyNumberMutation.isPending) setBuyOpen(false);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Telefonnummer kaufen</DialogTitle>
+            <DialogDescription>
+              Deutschland · FullService · 30 Tage – wird nach der Bestätigung gekauft und
+              diesem Datensatz zugewiesen.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm">
+            {productQuery.isLoading ? (
+              <p className="text-muted-foreground">Preis wird geladen …</p>
+            ) : productQuery.isError ? (
+              <p className="text-destructive">Preis konnte nicht geladen werden.</p>
+            ) : (
+              <>
+                <p className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Preis</span>
+                  <span className="text-base font-semibold text-foreground">
+                    {(productQuery.data?.price ?? 0).toFixed(2)} USD
+                  </span>
+                </p>
+                <p className="mt-1 flex items-center justify-between">
+                  <span className="text-muted-foreground">Verfügbar</span>
+                  <span className="text-foreground">
+                    {productQuery.data?.availableCount ?? 0}
+                  </span>
+                </p>
+              </>
+            )}
+          </div>
+
+          {phoneError ? (
+            <p className="flex items-center gap-2 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4" aria-hidden="true" />
+              {phoneError}
+            </p>
+          ) : null}
+
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-full"
+              disabled={buyNumberMutation.isPending}
+              onClick={() => setBuyOpen(false)}
+            >
+              Abbrechen
+            </Button>
+            <Button
+              type="button"
+              className="rounded-full"
+              disabled={
+                buyNumberMutation.isPending ||
+                !productQuery.data?.productId ||
+                !assignVicId
+              }
+              onClick={() => {
+                if (!assignVicId || !productQuery.data?.productId) return;
+                buyNumberMutation.mutate({
+                  productId: productQuery.data.productId,
+                  vicId: assignVicId,
+                });
+              }}
+            >
+              {buyNumberMutation.isPending ? "Wird gekauft …" : "Kaufen bestätigen"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
