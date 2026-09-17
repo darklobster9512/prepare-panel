@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      anosim_numbers: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          number: string | null
+          order_booking_id: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          number?: string | null
+          order_booking_id: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          number?: string | null
+          order_booking_id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       auftraege: {
         Row: {
           besonderheiten: string | null
