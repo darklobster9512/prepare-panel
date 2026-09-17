@@ -480,6 +480,16 @@ function StepCard({
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!lightboxImage) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setLightboxImage(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [lightboxImage]);
+
+
   const emailMutation = useMutation({
     mutationFn: () => saveEmail(email.trim()),
     onSuccess: onSaved,
