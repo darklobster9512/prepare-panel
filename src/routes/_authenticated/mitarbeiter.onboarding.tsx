@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, Eye, EyeOff, Globe2, MonitorSmartphone } from "lucide-react";
+import { Download, Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import gologinLogo from "@/assets/gologin-logo.svg.asset.json";
@@ -45,14 +45,16 @@ function Step({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-      <div className="flex items-center gap-3">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+    <section className="pt-8">
+      <div className="flex items-baseline gap-3">
+        <span className="flex h-7 w-7 shrink-0 translate-y-0.5 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
           {index}
         </span>
-        <h3 className="text-base font-bold tracking-tight text-foreground">{title}</h3>
+        <h3 className="text-base font-bold tracking-tight text-foreground">
+          Schritt {index}: {title}
+        </h3>
       </div>
-      <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
+      <div className="mt-3 space-y-3 pl-10 text-sm leading-relaxed text-muted-foreground">
         {children}
       </div>
     </section>
@@ -92,30 +94,37 @@ function OnboardingPage() {
       userName={profile?.email || "Mitarbeiter"}
       nav={mitarbeiterNav(true)}
     >
-      <div className="flex flex-col gap-6">
-        <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <img
-              src={gologinLogo.url}
-              alt="GoLogin Logo"
-              className="h-8 w-auto"
-              loading="lazy"
-            />
-            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              Offizieller Arbeitsbrowser
-            </span>
+      <article className="mx-auto max-w-3xl rounded-2xl border border-border bg-card px-8 py-10 shadow-sm sm:px-12 sm:py-12">
+        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-6">
+          <img
+            src={gologinLogo.url}
+            alt="GoLogin Logo"
+            className="h-9 w-auto"
+            loading="lazy"
+          />
+          <div className="text-right">
+            <h2 className="text-lg font-bold tracking-tight text-foreground">
+              Onboarding-Anleitung
+            </h2>
+            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              Arbeitsbrowser einrichten
+            </p>
           </div>
-          <h2 className="mt-5 text-lg font-bold tracking-tight text-foreground">
+        </header>
+
+        <div className="pt-8 text-sm leading-relaxed text-muted-foreground">
+          <h3 className="text-base font-bold tracking-tight text-foreground">
             Warum GoLogin?
-          </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+          </h3>
+          <p className="mt-3">
             GoLogin ist ein Browser, in dem du für jeden Datensatz eine komplett
             eigene, saubere Browser-Umgebung anlegst. Jedes Profil hat eigene
             Cookies, eigene Kennungen und eine eigene deutsche IP-Adresse. So
             bleiben die Vorgänge sauber getrennt und die Registrierungen laufen
-            zuverlässig durch.
+            zuverlässig durch. Folge den nachfolgenden Schritten in dieser
+            Reihenfolge.
           </p>
-        </section>
+        </div>
 
         <Step index={1} title="GoLogin-App herunterladen">
           <p>
@@ -198,31 +207,22 @@ function OnboardingPage() {
         </Step>
 
         <Step index={3} title="Pro Datensatz ein eigenes Profil anlegen">
-          <p className="flex items-start gap-2">
-            <MonitorSmartphone
-              className="mt-0.5 h-4 w-4 shrink-0 text-primary"
-              aria-hidden="true"
-            />
-            <span>
-              Lege in GoLogin für jeden Datensatz ein neues Profil an – jeder
-              Datensatz bekommt also seinen eigenen Browser. Benenne das Profil
-              genauso wie den Datensatz (Vorname und Nachname), damit du es
-              jederzeit zuordnen kannst.
-            </span>
+          <p>
+            Lege in GoLogin für jeden Datensatz ein neues Profil an – jeder
+            Datensatz bekommt also seinen eigenen Browser. Benenne das Profil
+            genauso wie den Datensatz (Vorname und Nachname), damit du es
+            jederzeit zuordnen kannst.
           </p>
         </Step>
 
         <Step index={4} title="Deutsche IP zuweisen">
-          <p className="flex items-start gap-2">
-            <Globe2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-            <span>
-              Öffne im Profil den Punkt <strong className="text-foreground">Location</strong>{" "}
-              und wähle <strong className="text-foreground">Germany</strong>. Damit
-              bekommt das Profil automatisch einen eigenen deutschen Proxy
-              (Germany 2, Germany 3 und so weiter). Achte darauf, dass wirklich
-              jedes Profil einen eigenen Proxy hat – niemals zwei Profile mit
-              derselben IP betreiben.
-            </span>
+          <p>
+            Öffne im Profil den Punkt <strong className="text-foreground">Location</strong>{" "}
+            und wähle <strong className="text-foreground">Germany</strong>. Damit
+            bekommt das Profil automatisch einen eigenen deutschen Proxy
+            (Germany 2, Germany 3 und so weiter). Achte darauf, dass wirklich
+            jedes Profil einen eigenen Proxy hat – niemals zwei Profile mit
+            derselben IP betreiben.
           </p>
         </Step>
 
@@ -233,7 +233,11 @@ function OnboardingPage() {
             für den nächsten Datensatz an und mach genauso weiter.
           </p>
         </Step>
-      </div>
+
+        <footer className="mt-10 border-t border-border pt-4 text-xs text-muted-foreground">
+          IdentPanel · Onboarding
+        </footer>
+      </article>
     </PanelShell>
   );
 }
