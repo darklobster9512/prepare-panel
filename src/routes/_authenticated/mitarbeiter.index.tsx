@@ -56,8 +56,8 @@ function EmployeePanel() {
       roleLabel="Mitarbeiter"
       userName={userName}
       nav={[
-        { label: "Übersicht", icon: LayoutDashboard, active: true },
-        { label: "Meine Aufgaben", icon: CheckSquare },
+        { label: "Übersicht", icon: LayoutDashboard, to: "/mitarbeiter", exact: true },
+        { label: "Aufträge", icon: ClipboardList, to: "/mitarbeiter/auftraege" },
         { label: "Termine", icon: CalendarDays },
         { label: "Dokumente", icon: FileText },
       ]}
