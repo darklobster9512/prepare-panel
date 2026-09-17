@@ -95,10 +95,15 @@ export const claimVic = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-async function assertClaimed(supabase: any, vicId: string, userId: string) {
+async function assertClaimed(
+  supabase: any,
+  vicId: string,
+  userId: string,
+  options: { allowCompleted?: boolean } = {},
+) {
   const { data, error } = await supabase
     .from("vics")
-    .select("claimed_by, birth_date")
+    .select("claimed_by, birth_date, completed_at")
     .eq("id", vicId)
     .maybeSingle();
 
@@ -106,7 +111,10 @@ async function assertClaimed(supabase: any, vicId: string, userId: string) {
   if (data.claimed_by !== userId) {
     throw new Error("Dieser Datensatz ist dir nicht zugewiesen.");
   }
-  return data as { claimed_by: string; birth_date: string | null };
+  if (!options.allowCompleted && data.completed_at) {
+    throw new Error("Dieser Datensatz ist bereits abgeschlossen und kann nicht mehr geändert werden.");
+  }
+  return data as { claimed_by: string; birth_date: string | null; completed_at: string | null };
 }
 
 export const ensureEmailIdentity = createServerFn({ method: "POST" })
