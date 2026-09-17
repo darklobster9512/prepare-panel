@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { VicAuftrag } from "@/lib/vic-auftraege.types";
 
 export type VicRow = {
   id: string;
@@ -19,6 +20,7 @@ export type VicRow = {
   notes: string | null;
   project_id: string | null;
   project_name: string | null;
+  auftraege: VicAuftrag[];
   created_at: string;
 };
 
