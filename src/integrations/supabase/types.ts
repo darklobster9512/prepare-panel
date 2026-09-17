@@ -160,6 +160,36 @@ export type Database = {
         }
         Relationships: []
       }
+      telegram_recipients: {
+        Row: {
+          active: boolean
+          chat_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          chat_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          chat_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

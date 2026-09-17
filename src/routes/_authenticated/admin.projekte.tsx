@@ -9,6 +9,7 @@ import {
   Pencil,
   Phone,
   Plus,
+  Send,
   Trash2,
   Users,
 } from "lucide-react";
@@ -61,6 +62,7 @@ const nav = [
   { label: "Vics", icon: IdCard, to: "/admin/vics" },
   { label: "Projekte", icon: FolderKanban, to: "/admin/projekte" },
   { label: "Telefonnummern", icon: Phone, to: "/admin/telefonnummern" },
+  { label: "Telegram", icon: Send, to: "/admin/telegram" },
 ];
 
 function formatDate(value: string) {

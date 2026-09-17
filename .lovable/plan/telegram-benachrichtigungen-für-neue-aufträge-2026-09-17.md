@@ -1,47 +1,48 @@
 # Telegram-Benachrichtigungen für neue Aufträge
 
-## Ziel
+## Neuer Reiter „Telegram" (/admin/telegram)
 
-Ein neuer Reiter „Telegram" im Admin-Panel, in dem du Chat-IDs pflegst. Aufträge im Zuweisen-Popup werden gesammelt und erst beim Klick auf „Speichern" übernommen – danach geht genau eine Benachrichtigung an alle aktiven Chats.
+Im Admin-Panel kommt ein Reiter „Telegram" dazu. Dort kannst du:
 
-## Reiter /admin/telegram
+- Chat-IDs hinzufügen (Chat-ID + freier Name, z. B. „Team-Gruppe").
+- Empfänger aktiv/inaktiv schalten und wieder löschen.
+- Pro Empfänger einen Test senden („Testnachricht"), damit du siehst, ob die Chat-ID stimmt.
 
-- Liste aller hinterlegten Chats: Chat-ID, optionale Bezeichnung (z. B. „Team Nord"), Schalter aktiv/inaktiv, Löschen.
-- Knopf „Chat hinzufügen" mit Popup: Chat-ID + Bezeichnung.
-- Pro Eintrag ein Knopf „Testnachricht senden" mit Rückmeldung, ob es geklappt hat.
-- Fehler von Telegram (z. B. falsche Chat-ID, Bot nicht im Chat) werden verständlich auf Deutsch angezeigt.
+Der Bot-Token wird als Secret in Supabase hinterlegt (`TELEGRAM_BOT_TOKEN`) – ich frage dich nach dem Speichern des Plans danach. Der Token wird nur serverseitig gelesen, nie im Browser.
 
-## Zuweisen-Popup (Admin → Vic-Datensätze)
+## Zuweisen-Popup: erst speichern, dann zuweisen
 
-- Klick auf einen Auftrag markiert ihn nur noch vor (An-/Abwählen), es wird nichts sofort gespeichert.
-- Unten „Speichern" und „Abbrechen"; „Speichern" legt alle neu ausgewählten Zuweisungen an und entfernt abgewählte.
-- Telefonnummer-Kauf und -Zuweisung bleiben wie bisher sofort wirksam.
-- Nach dem Speichern geht eine einzige Benachrichtigung raus, die nur die neu hinzugefügten, für Mitarbeiter sichtbaren Aufträge enthält. Interne Aufträge (21bitcoin) lösen keine Benachrichtigung aus.
-- Wurden keine neuen Aufträge hinzugefügt, wird nichts gesendet.
-- Schlägt der Versand fehl, bleiben die Zuweisungen gespeichert und du bekommst nur einen Hinweis.
+Heute wird jeder Auftrag sofort beim Anklicken zugewiesen. Künftig:
+
+- Im Popup wählst du Aufträge an und ab – das ist zunächst nur eine Vormerkung.
+- Unten gibt es „Speichern" und „Abbrechen". Erst beim Speichern werden alle Änderungen (Zuweisen und Entfernen) in einem Rutsch ausgeführt.
+- Danach geht **eine** Benachrichtigung raus, die alle neu zugewiesenen Aufträge zusammenfasst. Entfernte Aufträge lösen keine Benachrichtigung aus.
+- Interne Aufträge (21bitcoin) werden nicht mitgemeldet, da Mitarbeiter sie nicht sehen.
 
 ## Beispiel-Benachrichtigung
 
 ```text
-🚀 3 neue Aufträge verfügbar
+🆕 Es sind 3 neue Aufträge verfügbar
 
-👤 Datensatz: Stefan Berger
+👤 Datensatz: Stefan Müller
+
 📋 Aufträge:
-  • E-Mail-Konto
-  • DKB
-  • Deutsche Bank
+   • E-Mail-Konto
+   • DKB
+   • Deutsche Bank
 
-👉 Jetzt im Panel beanspruchen
+⚡ Jetzt im Mitarbeiter-Panel beanspruchen
 ```
 
-Bei einem einzelnen Auftrag: „🚀 1 neuer Auftrag verfügbar". Ohne Zeitstempel.
+Bei nur einem Auftrag: „🆕 Es ist 1 neuer Auftrag verfügbar".
 
-## Technische Umsetzung
+## Technische Details
 
-- Telegram-Connector „Dev" mit dem Projekt verbinden (Versand über das Lovable-Gateway, Bot-Token bleibt serverseitig).
-- Migration: `public.telegram_chats` (chat_id text unique, label text, active boolean default true, created_by, created_at, updated_at) mit GRANTs und RLS – nur Admins dürfen lesen/schreiben.
-- `src/lib/telegram.server.ts`: `sendTelegramMessage(chatId, text)` über `https://connector-gateway.lovable.dev/telegram/sendMessage` mit `LOVABLE_API_KEY` + `TELEGRAM_API_KEY`, Fehlerbody wird ausgewertet.
-- `src/lib/telegram.functions.ts`: `listTelegramChats`, `createTelegramChat`, `updateTelegramChat`, `deleteTelegramChat`, `sendTelegramTest` – alle mit `requireSupabaseAuth` + Admin-Prüfung.
-- `src/lib/vic-auftraege.functions.ts`: neue Server-Funktion `assignAuftraegeBatch({ vic_id, auftrag_ids[] })` – legt fehlende Zuweisungen an (bestehende Logik aus `assignAuftrag` inkl. Passwortlogik und Wiederöffnen abgeschlossener Datensätze), entfernt abgewählte, und verschickt am Ende eine Sammel-Nachricht an alle aktiven Chats.
-- `src/routes/_authenticated/admin.telegram.tsx`: neue Route mit head()/noindex, React Query, deutschen Inline-Meldungen im Raisin-Stil; Navigationseintrag „Telegram" (Icon Send) in allen Admin-Seiten.
-- `admin.vics.tsx`: lokaler Auswahl-State im Zuweisen-Dialog, Speichern-/Abbrechen-Knöpfe, danach `invalidateQueries`.
+- Migration `public.telegram_recipients` (id uuid pk, chat_id text not null unique, label text, active boolean not null default true, created_by uuid, created_at, updated_at) inkl. `GRANT SELECT, INSERT, UPDATE, DELETE ... TO authenticated` und `GRANT ALL ... TO service_role`; RLS mit `has_role(auth.uid(),'admin')` für alle Operationen.
+- Secret `TELEGRAM_BOT_TOKEN` über das Secrets-Tool (Supabase-Umgebung), Abruf per `process.env` ausschließlich im Handler.
+- `src/lib/telegram.server.ts`: `sendTelegramMessage(chatId, text)` direkt gegen `https://api.telegram.org/bot<token>/sendMessage` (kein Lovable-Gateway), `parse_mode: "HTML"`, Fehler mit Status + Body protokollieren, nie werfen wenn nur ein Empfänger fehlschlägt.
+- `src/lib/telegram.functions.ts`: `listTelegramRecipients`, `createTelegramRecipient`, `updateTelegramRecipient`, `deleteTelegramRecipient`, `sendTelegramTest` – alle mit `requireSupabaseAuth` + Admin-Prüfung via `has_role`, zod-Validierung, deutsche Fehlermeldungen.
+- `src/lib/vic-auftraege.functions.ts`: neue Server-Funktion `assignAuftraegeBulk({ vicId, auftragIds, removeAuftragIds })` – führt die bestehende Zuweisungs-/Entfernungslogik (inkl. `buildCredentials`, admin_only-Sofortabschluss, Reaktivierung abgeschlossener Datensätze) pro ID aus und verschickt danach einmalig die Sammel-Benachrichtigung an alle aktiven Empfänger.
+- `src/routes/_authenticated/admin.vics.tsx`: Zuweisen-Dialog bekommt lokalen State `pendingIds` (Set), initialisiert aus den vorhandenen Zuweisungen; Klick toggelt nur lokal; „Speichern" ruft `assignAuftraegeBulk` mit Differenz auf und invalidiert `["admin","vics"]`; „Abbrechen" verwirft. `assignAuftrag`/`unassignAuftrag` bleiben für andere Aufrufer erhalten.
+- `src/routes/_authenticated/admin.telegram.tsx`: neue Route mit `head()` (Titel „Telegram – Admin-Panel | IdentPanel", noindex), Tabelle der Empfänger, Dialog zum Hinzufügen, Rollen-Weiterleitung wie in den übrigen Admin-Seiten. Nav-Eintrag „Telegram" (Icon `Send`) in allen Admin-Seiten ergänzen.
+- Styling nur über bestehende Design-Tokens, alle Meldungen deutsch und inline.

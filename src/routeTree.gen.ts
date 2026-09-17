@@ -16,6 +16,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminMitarbeiterRouteImport } from './routes/_authenticated/admin.mitarbeiter'
 import { Route as AuthenticatedAdminProjekteRouteImport } from './routes/_authenticated/admin.projekte'
 import { Route as AuthenticatedAdminTelefonnummernRouteImport } from './routes/_authenticated/admin.telefonnummern'
+import { Route as AuthenticatedAdminTelegramRouteImport } from './routes/_authenticated/admin.telegram'
 import { Route as AuthenticatedAdminVicsRouteImport } from './routes/_authenticated/admin.vics'
 import { Route as AuthenticatedMitarbeiterIndexRouteImport } from './routes/_authenticated/mitarbeiter.index'
 import { Route as AuthenticatedMitarbeiterAuftraegeIndexRouteImport } from './routes/_authenticated/mitarbeiter.auftraege.index'
@@ -58,6 +59,12 @@ const AuthenticatedAdminTelefonnummernRoute =
     path: '/admin/telefonnummern',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminTelegramRoute =
+  AuthenticatedAdminTelegramRouteImport.update({
+    id: '/admin/telegram',
+    path: '/admin/telegram',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminVicsRoute = AuthenticatedAdminVicsRouteImport.update({
   id: '/admin/vics',
   path: '/admin/vics',
@@ -88,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/admin/mitarbeiter': typeof AuthenticatedAdminMitarbeiterRoute
   '/admin/projekte': typeof AuthenticatedAdminProjekteRoute
   '/admin/telefonnummern': typeof AuthenticatedAdminTelefonnummernRoute
+  '/admin/telegram': typeof AuthenticatedAdminTelegramRoute
   '/admin/vics': typeof AuthenticatedAdminVicsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/mitarbeiter/': typeof AuthenticatedMitarbeiterIndexRoute
@@ -100,6 +108,7 @@ export interface FileRoutesByTo {
   '/admin/mitarbeiter': typeof AuthenticatedAdminMitarbeiterRoute
   '/admin/projekte': typeof AuthenticatedAdminProjekteRoute
   '/admin/telefonnummern': typeof AuthenticatedAdminTelefonnummernRoute
+  '/admin/telegram': typeof AuthenticatedAdminTelegramRoute
   '/admin/vics': typeof AuthenticatedAdminVicsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/mitarbeiter': typeof AuthenticatedMitarbeiterIndexRoute
@@ -114,6 +123,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/mitarbeiter': typeof AuthenticatedAdminMitarbeiterRoute
   '/_authenticated/admin/projekte': typeof AuthenticatedAdminProjekteRoute
   '/_authenticated/admin/telefonnummern': typeof AuthenticatedAdminTelefonnummernRoute
+  '/_authenticated/admin/telegram': typeof AuthenticatedAdminTelegramRoute
   '/_authenticated/admin/vics': typeof AuthenticatedAdminVicsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/mitarbeiter/': typeof AuthenticatedMitarbeiterIndexRoute
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/admin/mitarbeiter'
     | '/admin/projekte'
     | '/admin/telefonnummern'
+    | '/admin/telegram'
     | '/admin/vics'
     | '/admin/'
     | '/mitarbeiter/'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/admin/mitarbeiter'
     | '/admin/projekte'
     | '/admin/telefonnummern'
+    | '/admin/telegram'
     | '/admin/vics'
     | '/admin'
     | '/mitarbeiter'
@@ -153,6 +165,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/mitarbeiter'
     | '/_authenticated/admin/projekte'
     | '/_authenticated/admin/telefonnummern'
+    | '/_authenticated/admin/telegram'
     | '/_authenticated/admin/vics'
     | '/_authenticated/admin/'
     | '/_authenticated/mitarbeiter/'
@@ -217,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminTelefonnummernRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/telegram': {
+      id: '/_authenticated/admin/telegram'
+      path: '/admin/telegram'
+      fullPath: '/admin/telegram'
+      preLoaderRoute: typeof AuthenticatedAdminTelegramRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/vics': {
       id: '/_authenticated/admin/vics'
       path: '/admin/vics'
@@ -252,6 +272,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminMitarbeiterRoute: typeof AuthenticatedAdminMitarbeiterRoute
   AuthenticatedAdminProjekteRoute: typeof AuthenticatedAdminProjekteRoute
   AuthenticatedAdminTelefonnummernRoute: typeof AuthenticatedAdminTelefonnummernRoute
+  AuthenticatedAdminTelegramRoute: typeof AuthenticatedAdminTelegramRoute
   AuthenticatedAdminVicsRoute: typeof AuthenticatedAdminVicsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedMitarbeiterIndexRoute: typeof AuthenticatedMitarbeiterIndexRoute
@@ -263,6 +284,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminMitarbeiterRoute: AuthenticatedAdminMitarbeiterRoute,
   AuthenticatedAdminProjekteRoute: AuthenticatedAdminProjekteRoute,
   AuthenticatedAdminTelefonnummernRoute: AuthenticatedAdminTelefonnummernRoute,
+  AuthenticatedAdminTelegramRoute: AuthenticatedAdminTelegramRoute,
   AuthenticatedAdminVicsRoute: AuthenticatedAdminVicsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedMitarbeiterIndexRoute: AuthenticatedMitarbeiterIndexRoute,
