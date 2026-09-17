@@ -57,7 +57,7 @@ export function PanelShell({
 
   return (
     <div className="flex min-h-screen bg-background">
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-foreground px-5 py-7 lg:flex">
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-foreground px-5 py-7 lg:sticky lg:flex lg:top-0 lg:h-screen lg:self-start lg:overflow-y-auto">
         <span className="text-lg font-extrabold tracking-tight text-background">
           Panel
         </span>
