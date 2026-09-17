@@ -12,12 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedMitarbeiterRouteImport } from './routes/_authenticated/mitarbeiter'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminMitarbeiterRouteImport } from './routes/_authenticated/admin.mitarbeiter'
 import { Route as AuthenticatedAdminProjekteRouteImport } from './routes/_authenticated/admin.projekte'
 import { Route as AuthenticatedAdminTelefonnummernRouteImport } from './routes/_authenticated/admin.telefonnummern'
 import { Route as AuthenticatedAdminVicsRouteImport } from './routes/_authenticated/admin.vics'
+import { Route as AuthenticatedMitarbeiterIndexRouteImport } from './routes/_authenticated/mitarbeiter.index'
+import { Route as AuthenticatedMitarbeiterAuftraegeIndexRouteImport } from './routes/_authenticated/mitarbeiter.auftraege.index'
+import { Route as AuthenticatedMitarbeiterAuftraegeVicIdRouteImport } from './routes/_authenticated/mitarbeiter.auftraege.$vicId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -33,12 +35,6 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedMitarbeiterRoute =
-  AuthenticatedMitarbeiterRouteImport.update({
-    id: '/mitarbeiter',
-    path: '/mitarbeiter',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
@@ -67,71 +63,101 @@ const AuthenticatedAdminVicsRoute = AuthenticatedAdminVicsRouteImport.update({
   path: '/admin/vics',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMitarbeiterIndexRoute =
+  AuthenticatedMitarbeiterIndexRouteImport.update({
+    id: '/mitarbeiter/',
+    path: '/mitarbeiter/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMitarbeiterAuftraegeIndexRoute =
+  AuthenticatedMitarbeiterAuftraegeIndexRouteImport.update({
+    id: '/mitarbeiter/auftraege/',
+    path: '/mitarbeiter/auftraege/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMitarbeiterAuftraegeVicIdRoute =
+  AuthenticatedMitarbeiterAuftraegeVicIdRouteImport.update({
+    id: '/mitarbeiter/auftraege/$vicId',
+    path: '/mitarbeiter/auftraege/$vicId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/mitarbeiter': typeof AuthenticatedMitarbeiterRoute
   '/admin/mitarbeiter': typeof AuthenticatedAdminMitarbeiterRoute
   '/admin/projekte': typeof AuthenticatedAdminProjekteRoute
   '/admin/telefonnummern': typeof AuthenticatedAdminTelefonnummernRoute
   '/admin/vics': typeof AuthenticatedAdminVicsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/mitarbeiter/': typeof AuthenticatedMitarbeiterIndexRoute
+  '/mitarbeiter/auftraege/$vicId': typeof AuthenticatedMitarbeiterAuftraegeVicIdRoute
+  '/mitarbeiter/auftraege/': typeof AuthenticatedMitarbeiterAuftraegeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/mitarbeiter': typeof AuthenticatedMitarbeiterRoute
   '/admin/mitarbeiter': typeof AuthenticatedAdminMitarbeiterRoute
   '/admin/projekte': typeof AuthenticatedAdminProjekteRoute
   '/admin/telefonnummern': typeof AuthenticatedAdminTelefonnummernRoute
   '/admin/vics': typeof AuthenticatedAdminVicsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/mitarbeiter': typeof AuthenticatedMitarbeiterIndexRoute
+  '/mitarbeiter/auftraege/$vicId': typeof AuthenticatedMitarbeiterAuftraegeVicIdRoute
+  '/mitarbeiter/auftraege': typeof AuthenticatedMitarbeiterAuftraegeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/mitarbeiter': typeof AuthenticatedMitarbeiterRoute
   '/_authenticated/admin/mitarbeiter': typeof AuthenticatedAdminMitarbeiterRoute
   '/_authenticated/admin/projekte': typeof AuthenticatedAdminProjekteRoute
   '/_authenticated/admin/telefonnummern': typeof AuthenticatedAdminTelefonnummernRoute
   '/_authenticated/admin/vics': typeof AuthenticatedAdminVicsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/mitarbeiter/': typeof AuthenticatedMitarbeiterIndexRoute
+  '/_authenticated/mitarbeiter/auftraege/$vicId': typeof AuthenticatedMitarbeiterAuftraegeVicIdRoute
+  '/_authenticated/mitarbeiter/auftraege/': typeof AuthenticatedMitarbeiterAuftraegeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
-    | '/mitarbeiter'
     | '/admin/mitarbeiter'
     | '/admin/projekte'
     | '/admin/telefonnummern'
     | '/admin/vics'
     | '/admin/'
+    | '/mitarbeiter/'
+    | '/mitarbeiter/auftraege/$vicId'
+    | '/mitarbeiter/auftraege/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/mitarbeiter'
     | '/admin/mitarbeiter'
     | '/admin/projekte'
     | '/admin/telefonnummern'
     | '/admin/vics'
     | '/admin'
+    | '/mitarbeiter'
+    | '/mitarbeiter/auftraege/$vicId'
+    | '/mitarbeiter/auftraege'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/_authenticated/mitarbeiter'
     | '/_authenticated/admin/mitarbeiter'
     | '/_authenticated/admin/projekte'
     | '/_authenticated/admin/telefonnummern'
     | '/_authenticated/admin/vics'
     | '/_authenticated/admin/'
+    | '/_authenticated/mitarbeiter/'
+    | '/_authenticated/mitarbeiter/auftraege/$vicId'
+    | '/_authenticated/mitarbeiter/auftraege/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -162,13 +188,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/mitarbeiter': {
-      id: '/_authenticated/mitarbeiter'
-      path: '/mitarbeiter'
-      fullPath: '/mitarbeiter'
-      preLoaderRoute: typeof AuthenticatedMitarbeiterRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
@@ -205,25 +224,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminVicsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mitarbeiter/': {
+      id: '/_authenticated/mitarbeiter/'
+      path: '/mitarbeiter'
+      fullPath: '/mitarbeiter/'
+      preLoaderRoute: typeof AuthenticatedMitarbeiterIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/mitarbeiter/auftraege/': {
+      id: '/_authenticated/mitarbeiter/auftraege/'
+      path: '/mitarbeiter/auftraege'
+      fullPath: '/mitarbeiter/auftraege/'
+      preLoaderRoute: typeof AuthenticatedMitarbeiterAuftraegeIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/mitarbeiter/auftraege/$vicId': {
+      id: '/_authenticated/mitarbeiter/auftraege/$vicId'
+      path: '/mitarbeiter/auftraege/$vicId'
+      fullPath: '/mitarbeiter/auftraege/$vicId'
+      preLoaderRoute: typeof AuthenticatedMitarbeiterAuftraegeVicIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedMitarbeiterRoute: typeof AuthenticatedMitarbeiterRoute
   AuthenticatedAdminMitarbeiterRoute: typeof AuthenticatedAdminMitarbeiterRoute
   AuthenticatedAdminProjekteRoute: typeof AuthenticatedAdminProjekteRoute
   AuthenticatedAdminTelefonnummernRoute: typeof AuthenticatedAdminTelefonnummernRoute
   AuthenticatedAdminVicsRoute: typeof AuthenticatedAdminVicsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedMitarbeiterIndexRoute: typeof AuthenticatedMitarbeiterIndexRoute
+  AuthenticatedMitarbeiterAuftraegeVicIdRoute: typeof AuthenticatedMitarbeiterAuftraegeVicIdRoute
+  AuthenticatedMitarbeiterAuftraegeIndexRoute: typeof AuthenticatedMitarbeiterAuftraegeIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedMitarbeiterRoute: AuthenticatedMitarbeiterRoute,
   AuthenticatedAdminMitarbeiterRoute: AuthenticatedAdminMitarbeiterRoute,
   AuthenticatedAdminProjekteRoute: AuthenticatedAdminProjekteRoute,
   AuthenticatedAdminTelefonnummernRoute: AuthenticatedAdminTelefonnummernRoute,
   AuthenticatedAdminVicsRoute: AuthenticatedAdminVicsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedMitarbeiterIndexRoute: AuthenticatedMitarbeiterIndexRoute,
+  AuthenticatedMitarbeiterAuftraegeVicIdRoute:
+    AuthenticatedMitarbeiterAuftraegeVicIdRoute,
+  AuthenticatedMitarbeiterAuftraegeIndexRoute:
+    AuthenticatedMitarbeiterAuftraegeIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

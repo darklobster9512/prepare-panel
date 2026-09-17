@@ -1,10 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CalendarDays, CheckSquare, FileText, LayoutDashboard } from "lucide-react";
+import {
+  CalendarDays,
+  CheckSquare,
+  ClipboardList,
+  FileText,
+  LayoutDashboard,
+} from "lucide-react";
 
 import { PanelShell, StatCard } from "@/components/panel-shell";
 import { useAuth } from "@/hooks/use-auth";
 
-export const Route = createFileRoute("/_authenticated/mitarbeiter")({
+export const Route = createFileRoute("/_authenticated/mitarbeiter/")({
   head: () => ({
     meta: [
       { title: "Mitarbeiter-Panel – Interne Prozessvorbereitung" },
@@ -56,8 +62,8 @@ function EmployeePanel() {
       roleLabel="Mitarbeiter"
       userName={userName}
       nav={[
-        { label: "Übersicht", icon: LayoutDashboard, active: true },
-        { label: "Meine Aufgaben", icon: CheckSquare },
+        { label: "Übersicht", icon: LayoutDashboard, to: "/mitarbeiter", exact: true },
+        { label: "Aufträge", icon: ClipboardList, to: "/mitarbeiter/auftraege" },
         { label: "Termine", icon: CalendarDays },
         { label: "Dokumente", icon: FileText },
       ]}

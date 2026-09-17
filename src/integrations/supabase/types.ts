@@ -70,6 +70,7 @@ export type Database = {
           images: Json
           logo_path: string | null
           name: string
+          sort_order: number
           updated_at: string
         }
         Insert: {
@@ -83,6 +84,7 @@ export type Database = {
           images?: Json
           logo_path?: string | null
           name: string
+          sort_order?: number
           updated_at?: string
         }
         Update: {
@@ -96,6 +98,7 @@ export type Database = {
           images?: Json
           logo_path?: string | null
           name?: string
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
@@ -178,33 +181,54 @@ export type Database = {
       vic_auftraege: {
         Row: {
           auftrag_id: string
+          completed_at: string | null
+          completed_by: string | null
           created_at: string
           created_by: string | null
           id: string
           login_name: string | null
           password: string | null
+          postident_link: string | null
+          status: string
           updated_at: string
+          used_login_name: string | null
+          used_password: string | null
           vic_id: string
+          webid_link: string | null
         }
         Insert: {
           auftrag_id: string
+          completed_at?: string | null
+          completed_by?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
           login_name?: string | null
           password?: string | null
+          postident_link?: string | null
+          status?: string
           updated_at?: string
+          used_login_name?: string | null
+          used_password?: string | null
           vic_id: string
+          webid_link?: string | null
         }
         Update: {
           auftrag_id?: string
+          completed_at?: string | null
+          completed_by?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
           login_name?: string | null
           password?: string | null
+          postident_link?: string | null
+          status?: string
           updated_at?: string
+          used_login_name?: string | null
+          used_password?: string | null
           vic_id?: string
+          webid_link?: string | null
         }
         Relationships: [
           {
@@ -230,8 +254,15 @@ export type Database = {
           birth_name: string | null
           birth_place: string | null
           city: string | null
+          claimed_at: string | null
+          claimed_by: string | null
           created_at: string
           created_by: string | null
+          email_address: string | null
+          email_birth_date: string | null
+          email_city: string | null
+          email_postal_code: string | null
+          email_street: string | null
           first_name: string
           id: string
           last_name: string
@@ -250,8 +281,15 @@ export type Database = {
           birth_name?: string | null
           birth_place?: string | null
           city?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
           created_at?: string
           created_by?: string | null
+          email_address?: string | null
+          email_birth_date?: string | null
+          email_city?: string | null
+          email_postal_code?: string | null
+          email_street?: string | null
           first_name: string
           id?: string
           last_name: string
@@ -270,8 +308,15 @@ export type Database = {
           birth_name?: string | null
           birth_place?: string | null
           city?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
           created_at?: string
           created_by?: string | null
+          email_address?: string | null
+          email_birth_date?: string | null
+          email_city?: string | null
+          email_postal_code?: string | null
+          email_street?: string | null
           first_name?: string
           id?: string
           last_name?: string

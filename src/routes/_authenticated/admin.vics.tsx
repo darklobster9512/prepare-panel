@@ -19,6 +19,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { AuftraegeSection } from "@/components/auftraege-section";
 import { AuftragLogo } from "@/components/auftrag-logo";
+import { statusLabel, statusRingClass } from "@/lib/auftrag-status";
 import { PanelShell } from "@/components/panel-shell";
 import { Button } from "@/components/ui/button";
 import {
@@ -652,8 +653,8 @@ function AdminVics() {
                           {(vic.auftraege ?? []).slice(0, 4).map((item) => (
                             <span
                               key={item.id}
-                              title={item.auftrag_name}
-                              className="inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-md border border-border bg-background"
+                              title={`${item.auftrag_name} · ${statusLabel(item.status, Boolean(vic.claimed_by))}`}
+                              className={`inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-md bg-background ${statusRingClass(item.status, Boolean(vic.claimed_by))}`}
                             >
                               <AuftragLogo
                                 value={item.logo_path}

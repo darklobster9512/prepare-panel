@@ -54,6 +54,7 @@ export function AuftraegeSection({ enabled }: Props) {
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
   const [generatePassword, setGeneratePassword] = useState(false);
   const [generateLoginname, setGenerateLoginname] = useState(false);
+  const [sortOrder, setSortOrder] = useState("100");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -97,6 +98,7 @@ export function AuftraegeSection({ enabled }: Props) {
     setNewImages([]);
     setGeneratePassword(false);
     setGenerateLoginname(false);
+    setSortOrder("100");
     setError(null);
   };
 
@@ -117,6 +119,7 @@ export function AuftraegeSection({ enabled }: Props) {
     setNewImages([]);
     setGeneratePassword(auftrag.generate_password ?? false);
     setGenerateLoginname(auftrag.generate_loginname ?? false);
+    setSortOrder(String(auftrag.sort_order ?? 100));
     setError(null);
     setOpen(true);
   };
@@ -171,6 +174,7 @@ export function AuftraegeSection({ enabled }: Props) {
         images: imagePaths,
         generate_password: generatePassword,
         generate_loginname: generateLoginname,
+        sort_order: Number.isFinite(Number(sortOrder)) ? Number(sortOrder) : 100,
       };
 
       if (editing) {
@@ -385,6 +389,23 @@ export function AuftraegeSection({ enabled }: Props) {
                 id="auftrag-loginname"
                 checked={generateLoginname}
                 onCheckedChange={setGenerateLoginname}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="auftrag-sortorder">Reihenfolge</Label>
+              <p className="text-xs text-muted-foreground">
+                Kleinere Zahl = früher im Ablauf der Mitarbeitenden (E-Mail 10, DKB 20,
+                Deutsche Bank 30, BBVA 40, Consorsbank 50, Commerzbank 60, Targobank 70,
+                Santander 80).
+              </p>
+              <Input
+                id="auftrag-sortorder"
+                type="number"
+                min={0}
+                max={9999}
+                value={sortOrder}
+                onChange={(event) => setSortOrder(event.target.value)}
               />
             </div>
 

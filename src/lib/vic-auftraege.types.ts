@@ -1,3 +1,5 @@
+import type { AuftragStatus } from "@/lib/mitarbeiter.types";
+
 export type VicAuftrag = {
   id: string;
   auftrag_id: string;
@@ -5,4 +7,5 @@ export type VicAuftrag = {
   logo_path: string | null;
   login_name: string | null;
   password: string | null;
+  status: AuftragStatus;
 };
