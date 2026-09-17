@@ -36,6 +36,7 @@ const auftragSchema = z.object({
   besonderheiten: z.string().trim().max(5000).nullable().optional(),
   images: z.array(z.string().trim().max(500)).max(50).optional(),
   generate_password: z.boolean().optional(),
+  generate_loginname: z.boolean().optional(),
 });
 
 export const listAuftraege = createServerFn({ method: "GET" })
@@ -46,7 +47,7 @@ export const listAuftraege = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("auftraege")
       .select(
-        "id, name, logo_path, ident_type, besonderheiten, images, generate_password, created_at",
+        "id, name, logo_path, ident_type, besonderheiten, images, generate_password, generate_loginname, created_at",
       )
       .order("created_at", { ascending: true });
 
@@ -70,6 +71,7 @@ export const createAuftrag = createServerFn({ method: "POST" })
       besonderheiten: data.besonderheiten ?? null,
       images: data.images ?? [],
       generate_password: data.generate_password ?? false,
+      generate_loginname: data.generate_loginname ?? false,
       created_by: context.userId,
     });
 
@@ -94,6 +96,7 @@ export const updateAuftrag = createServerFn({ method: "POST" })
         besonderheiten: data.besonderheiten ?? null,
         images: data.images ?? [],
         generate_password: data.generate_password ?? false,
+        generate_loginname: data.generate_loginname ?? false,
       })
       .eq("id", data.id);
 
