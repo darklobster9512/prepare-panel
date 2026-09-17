@@ -270,6 +270,64 @@ function AdminVics() {
     onError: () => setAssignError("Zugangsdaten konnten nicht neu erzeugt werden."),
   });
 
+  const freeNumbersQuery = useQuery({
+    queryKey: ["admin", "anosim", "assignable"],
+    queryFn: () => fetchAssignableNumbers(),
+    enabled: role === "admin" && assignVicId !== null,
+    staleTime: 60_000,
+  });
+
+  const productQuery = useQuery({
+    queryKey: ["admin", "anosim", "product"],
+    queryFn: () => fetchProduct(),
+    enabled: role === "admin" && buyOpen,
+    staleTime: 60_000,
+  });
+
+  const assignNumberMutation = useMutation({
+    mutationFn: (values: { vicId: string; orderBookingId: number }) =>
+      assignNumber({ data: values }),
+    onSuccess: () => {
+      setPhoneError(null);
+      setSelectedNumber("");
+      queryClient.invalidateQueries({ queryKey: ["admin", "anosim"] });
+      invalidate();
+    },
+    onError: (err: unknown) =>
+      setPhoneError(
+        err instanceof Error && err.message
+          ? err.message
+          : "Nummer konnte nicht zugewiesen werden.",
+      ),
+  });
+
+  const unassignNumberMutation = useMutation({
+    mutationFn: (vicId: string) => unassignNumber({ data: { vicId } }),
+    onSuccess: () => {
+      setPhoneError(null);
+      queryClient.invalidateQueries({ queryKey: ["admin", "anosim"] });
+      invalidate();
+    },
+    onError: () => setPhoneError("Zuweisung konnte nicht entfernt werden."),
+  });
+
+  const buyNumberMutation = useMutation({
+    mutationFn: (values: { productId: number; vicId: string }) =>
+      buyNumber({ data: values }),
+    onSuccess: () => {
+      setPhoneError(null);
+      setBuyOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["admin", "anosim"] });
+      invalidate();
+    },
+    onError: (err: unknown) =>
+      setPhoneError(
+        err instanceof Error && err.message
+          ? err.message
+          : "Kauf fehlgeschlagen. Bitte erneut versuchen.",
+      ),
+  });
+
 
   const saveMutation = useMutation({
     mutationFn: (values: FormState & { id?: string }) => {
