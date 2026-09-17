@@ -42,11 +42,14 @@ export const listAuftraege = createServerFn({ method: "GET" })
 
     const { data, error } = await context.supabase
       .from("auftraege")
-      .select("id, name, logo_path, created_at")
+      .select("id, name, logo_path, ident_type, besonderheiten, images, created_at")
       .order("created_at", { ascending: true });
 
     if (error) throw new Error("Aufträge konnten nicht geladen werden.");
-    return (data ?? []) as AuftragRow[];
+    return ((data ?? []) as any[]).map((row) => ({
+      ...row,
+      images: Array.isArray(row.images) ? (row.images as string[]) : [],
+    })) as AuftragRow[];
   });
 
 export const createAuftrag = createServerFn({ method: "POST" })
