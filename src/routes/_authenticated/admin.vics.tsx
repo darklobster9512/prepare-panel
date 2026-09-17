@@ -1107,6 +1107,17 @@ function AdminVics() {
                           <span className="text-sm font-medium text-foreground">
                             {item.auftrag_name}
                           </span>
+                          <span
+                            className={`ml-auto rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+                              item.status === "erfolgreich"
+                                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600"
+                                : item.status === "fehlgeschlagen"
+                                  ? "border-destructive/40 bg-destructive/10 text-destructive"
+                                  : "border-border bg-secondary text-muted-foreground"
+                            }`}
+                          >
+                            {statusLabel(item.status, detailVic.claimed_by !== null)}
+                          </span>
                         </div>
                         <div className="mt-3 space-y-1 border-t border-border/60 pt-3 text-sm">
                           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
