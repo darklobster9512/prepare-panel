@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertCircle, ImageIcon, Pencil, Plus, Trash2 } from "lucide-react";
+import { AlertCircle, ImageIcon, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { AUFTRAG_LOGO_BUCKET, AuftragLogo } from "@/components/auftrag-logo";
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import {
   createAuftrag,
@@ -21,9 +22,15 @@ import {
   listAuftraege,
   updateAuftrag,
   type AuftragRow,
+  type IdentType,
 } from "@/lib/auftraege.functions";
 
 type Props = { enabled: boolean };
+
+const IDENT_LABELS: Record<IdentType, string> = {
+  videoident: "Videoident",
+  postident: "Postident",
+};
 
 export function AuftraegeSection({ enabled }: Props) {
   const queryClient = useQueryClient();
@@ -38,6 +45,11 @@ export function AuftraegeSection({ enabled }: Props) {
   const [logoPath, setLogoPath] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [identType, setIdentType] = useState<IdentType | "">("");
+  const [besonderheiten, setBesonderheiten] = useState("");
+  const [images, setImages] = useState<string[]>([]);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -47,6 +59,12 @@ export function AuftraegeSection({ enabled }: Props) {
     setPreview(url);
     return () => URL.revokeObjectURL(url);
   }, [logoFile]);
+
+  useEffect(() => {
+    const urls = newImages.map((file) => URL.createObjectURL(file));
+    setNewImagePreviews(urls);
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, [newImages]);
 
   const auftraegeQuery = useQuery({
     queryKey: ["admin", "auftraege"],
@@ -69,6 +87,10 @@ export function AuftraegeSection({ enabled }: Props) {
     setLogoPath(null);
     setLogoFile(null);
     setPreview(null);
+    setIdentType("");
+    setBesonderheiten("");
+    setImages([]);
+    setNewImages([]);
     setError(null);
   };
 
@@ -83,6 +105,10 @@ export function AuftraegeSection({ enabled }: Props) {
     setLogoPath(auftrag.logo_path);
     setLogoFile(null);
     setPreview(null);
+    setIdentType(auftrag.ident_type ?? "");
+    setBesonderheiten(auftrag.besonderheiten ?? "");
+    setImages(auftrag.images ?? []);
+    setNewImages([]);
     setError(null);
     setOpen(true);
   };
@@ -114,10 +140,33 @@ export function AuftraegeSection({ enabled }: Props) {
         path = target;
       }
 
+      const imagePaths = [...images];
+      for (const file of newImages) {
+        const ext = file.name.split(".").pop() ?? "png";
+        const target = `bilder/${crypto.randomUUID()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from(AUFTRAG_LOGO_BUCKET)
+          .upload(target, file, { contentType: file.type });
+        if (uploadError) {
+          setError("Ein Bild konnte nicht hochgeladen werden.");
+          setSaving(false);
+          return;
+        }
+        imagePaths.push(target);
+      }
+
+      const payload = {
+        name: name.trim(),
+        logo_path: path,
+        ident_type: identType === "" ? null : identType,
+        besonderheiten: besonderheiten.trim() ? besonderheiten.trim() : null,
+        images: imagePaths,
+      };
+
       if (editing) {
-        await editAuftrag({ data: { id: editing.id, name: name.trim(), logo_path: path } });
+        await editAuftrag({ data: { id: editing.id, ...payload } });
       } else {
-        await addAuftrag({ data: { name: name.trim(), logo_path: path } });
+        await addAuftrag({ data: payload });
       }
 
       setOpen(false);
@@ -142,7 +191,7 @@ export function AuftraegeSection({ enabled }: Props) {
       <div>
         <h2 className="text-lg font-bold tracking-tight text-foreground">Aufträge</h2>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          Auftragsvorlagen mit Logo und Name anlegen.
+          Auftragsvorlagen mit Logo, Ident-Art und Besonderheiten anlegen.
         </p>
       </div>
 
@@ -150,7 +199,7 @@ export function AuftraegeSection({ enabled }: Props) {
         {auftraege.map((auftrag) => (
           <div
             key={auftrag.id}
-            className="group relative flex aspect-square flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-card p-3 shadow-sm"
+            className="group relative flex aspect-square flex-col items-center justify-center gap-1.5 rounded-2xl border border-border bg-card p-3 shadow-sm"
           >
             <AuftragLogo
               value={auftrag.logo_path}
@@ -165,6 +214,11 @@ export function AuftraegeSection({ enabled }: Props) {
             <span className="line-clamp-2 text-center text-xs font-semibold text-foreground">
               {auftrag.name}
             </span>
+            {auftrag.ident_type ? (
+              <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                {IDENT_LABELS[auftrag.ident_type]}
+              </span>
+            ) : null}
 
             <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
               <Button
@@ -215,11 +269,11 @@ export function AuftraegeSection({ enabled }: Props) {
           if (!value) resetForm();
         }}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{editing ? "Auftrag bearbeiten" : "Neuer Auftrag"}</DialogTitle>
             <DialogDescription>
-              Logo hochladen und einen Namen vergeben.
+              Logo, Name und weitere Infos zum Auftrag hinterlegen.
             </DialogDescription>
           </DialogHeader>
 
@@ -256,6 +310,118 @@ export function AuftraegeSection({ enabled }: Props) {
                 onChange={(event) => setName(event.target.value)}
                 placeholder="z. B. LIMEX"
               />
+            </div>
+
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-medium text-foreground">Ident-Art</legend>
+              <div className="flex flex-wrap gap-2">
+                {(["videoident", "postident"] as IdentType[]).map((value) => (
+                  <label
+                    key={value}
+                    className={`flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                      identType === value
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border text-muted-foreground hover:border-primary/50"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="ident-type"
+                      value={value}
+                      checked={identType === value}
+                      onChange={() => setIdentType(value)}
+                      className="h-4 w-4 accent-[var(--primary)]"
+                    />
+                    {IDENT_LABELS[value]}
+                  </label>
+                ))}
+                {identType ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => setIdentType("")}
+                  >
+                    Auswahl entfernen
+                  </Button>
+                ) : null}
+              </div>
+            </fieldset>
+
+            <div className="space-y-2">
+              <Label htmlFor="auftrag-besonderheiten">Besonderheiten</Label>
+              <Textarea
+                id="auftrag-besonderheiten"
+                value={besonderheiten}
+                onChange={(event) => setBesonderheiten(event.target.value)}
+                placeholder="Hinweise zum Auftrag …"
+                rows={4}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="auftrag-bilder">Bilder</Label>
+              <Input
+                id="auftrag-bilder"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(event) => {
+                  const files = Array.from(event.target.files ?? []);
+                  if (files.length) setNewImages((prev) => [...prev, ...files]);
+                  event.target.value = "";
+                }}
+              />
+
+              {images.length || newImagePreviews.length ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {images.map((path) => (
+                    <div
+                      key={path}
+                      className="relative h-20 w-20 overflow-hidden rounded-lg border border-border bg-muted"
+                    >
+                      <AuftragLogo
+                        value={path}
+                        alt="Bild"
+                        className="h-full w-full object-cover"
+                        fallback={
+                          <div className="flex h-full w-full items-center justify-center">
+                            <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        }
+                      />
+                      <button
+                        type="button"
+                        aria-label="Bild entfernen"
+                        onClick={() => setImages((prev) => prev.filter((p) => p !== path))}
+                        className="absolute right-1 top-1 rounded-full bg-background/90 p-1 text-destructive shadow-sm"
+                      >
+                        <X className="h-3 w-3" aria-hidden="true" />
+                      </button>
+                    </div>
+                  ))}
+
+                  {newImagePreviews.map((url, index) => (
+                    <div
+                      key={url}
+                      className="relative h-20 w-20 overflow-hidden rounded-lg border border-dashed border-border bg-muted"
+                    >
+                      <img src={url} alt="Neues Bild" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        aria-label="Bild entfernen"
+                        onClick={() =>
+                          setNewImages((prev) => prev.filter((_, i) => i !== index))
+                        }
+                        className="absolute right-1 top-1 rounded-full bg-background/90 p-1 text-destructive shadow-sm"
+                      >
+                        <X className="h-3 w-3" aria-hidden="true" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </div>
 
             {error ? (

@@ -16,25 +16,34 @@ export type Database = {
     Tables: {
       auftraege: {
         Row: {
+          besonderheiten: string | null
           created_at: string
           created_by: string | null
           id: string
+          ident_type: string | null
+          images: Json
           logo_path: string | null
           name: string
           updated_at: string
         }
         Insert: {
+          besonderheiten?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
+          ident_type?: string | null
+          images?: Json
           logo_path?: string | null
           name: string
           updated_at?: string
         }
         Update: {
+          besonderheiten?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
+          ident_type?: string | null
+          images?: Json
           logo_path?: string | null
           name?: string
           updated_at?: string

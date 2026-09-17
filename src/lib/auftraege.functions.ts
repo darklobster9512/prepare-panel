@@ -3,10 +3,15 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+export type IdentType = "videoident" | "postident";
+
 export type AuftragRow = {
   id: string;
   name: string;
   logo_path: string | null;
+  ident_type: IdentType | null;
+  besonderheiten: string | null;
+  images: string[];
   created_at: string;
 };
 
@@ -25,6 +30,9 @@ async function assertAdmin(supabase: any, userId: string) {
 const auftragSchema = z.object({
   name: z.string().trim().min(1, "Bitte einen Namen eingeben.").max(200),
   logo_path: z.string().trim().max(500).nullable().optional(),
+  ident_type: z.enum(["videoident", "postident"]).nullable().optional(),
+  besonderheiten: z.string().trim().max(5000).nullable().optional(),
+  images: z.array(z.string().trim().max(500)).max(50).optional(),
 });
 
 export const listAuftraege = createServerFn({ method: "GET" })
@@ -34,11 +42,14 @@ export const listAuftraege = createServerFn({ method: "GET" })
 
     const { data, error } = await context.supabase
       .from("auftraege")
-      .select("id, name, logo_path, created_at")
+      .select("id, name, logo_path, ident_type, besonderheiten, images, created_at")
       .order("created_at", { ascending: true });
 
     if (error) throw new Error("Aufträge konnten nicht geladen werden.");
-    return (data ?? []) as AuftragRow[];
+    return ((data ?? []) as any[]).map((row) => ({
+      ...row,
+      images: Array.isArray(row.images) ? (row.images as string[]) : [],
+    })) as AuftragRow[];
   });
 
 export const createAuftrag = createServerFn({ method: "POST" })
@@ -50,6 +61,9 @@ export const createAuftrag = createServerFn({ method: "POST" })
     const { error } = await context.supabase.from("auftraege").insert({
       name: data.name,
       logo_path: data.logo_path ?? null,
+      ident_type: data.ident_type ?? null,
+      besonderheiten: data.besonderheiten ?? null,
+      images: data.images ?? [],
       created_by: context.userId,
     });
 
@@ -67,7 +81,13 @@ export const updateAuftrag = createServerFn({ method: "POST" })
 
     const { error } = await context.supabase
       .from("auftraege")
-      .update({ name: data.name, logo_path: data.logo_path ?? null })
+      .update({
+        name: data.name,
+        logo_path: data.logo_path ?? null,
+        ident_type: data.ident_type ?? null,
+        besonderheiten: data.besonderheiten ?? null,
+        images: data.images ?? [],
+      })
       .eq("id", data.id);
 
     if (error) throw new Error("Auftrag konnte nicht aktualisiert werden.");
