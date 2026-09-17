@@ -84,10 +84,14 @@ export const updateTelegramRecipient = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<TelegramRecipient> => {
     await assertAdmin(context.supabase, context.userId);
 
-    const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
-    if (typeof data.active === "boolean") patch["active"] = data.active;
+    const patch: {
+      updated_at: string;
+      active?: boolean;
+      label?: string | null;
+    } = { updated_at: new Date().toISOString() };
+    if (typeof data.active === "boolean") patch.active = data.active;
     if (data.label !== undefined) {
-      patch["label"] = data.label?.trim() ? data.label.trim() : null;
+      patch.label = data.label?.trim() ? data.label.trim() : null;
     }
 
     const { data: row, error } = await context.supabase
