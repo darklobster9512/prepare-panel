@@ -90,10 +90,6 @@ export function PanelShell({
             ),
           )}
         </nav>
-
-        <p className="mt-6 text-xs leading-relaxed text-background/40">
-          Vorschau-Ansicht mit Beispieldaten
-        </p>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">

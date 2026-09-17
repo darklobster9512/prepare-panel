@@ -3,13 +3,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft,
-  CalendarDays,
   Check,
   ClipboardCheck,
   ClipboardList,
-  FileText,
   Info,
-  LayoutDashboard,
   MessageSquare,
   Phone,
   RefreshCw,
@@ -246,12 +243,7 @@ function WizardPage() {
       subtitle={item ? `${item.first_name} ${item.last_name}` : "Wird geladen …"}
       roleLabel="Mitarbeiter"
       userName={userName}
-      nav={[
-        { label: "Übersicht", icon: LayoutDashboard, to: "/mitarbeiter", exact: true },
-        { label: "Aufträge", icon: ClipboardList, to: "/mitarbeiter/auftraege" },
-        { label: "Termine", icon: CalendarDays },
-        { label: "Dokumente", icon: FileText },
-      ]}
+      nav={[{ label: "Aufträge", icon: ClipboardList, to: "/mitarbeiter/auftraege" }]}
     >
       <Link
         to="/mitarbeiter/auftraege"

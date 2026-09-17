@@ -1,13 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import {
-  CalendarDays,
-  ClipboardList,
-  FileText,
-  LayoutDashboard,
-  Phone,
-} from "lucide-react";
+import { ClipboardList, Phone } from "lucide-react";
 import { useState } from "react";
 
 import { PanelShell } from "@/components/panel-shell";
@@ -86,12 +80,7 @@ function MitarbeiterAuftraege() {
       subtitle="Datensätze beanspruchen und Aufträge abarbeiten"
       roleLabel="Mitarbeiter"
       userName={userName}
-      nav={[
-        { label: "Übersicht", icon: LayoutDashboard, to: "/mitarbeiter", exact: true },
-        { label: "Aufträge", icon: ClipboardList, to: "/mitarbeiter/auftraege" },
-        { label: "Termine", icon: CalendarDays },
-        { label: "Dokumente", icon: FileText },
-      ]}
+      nav={[{ label: "Aufträge", icon: ClipboardList, to: "/mitarbeiter/auftraege" }]}
     >
       {error ? (
         <p className="mb-4 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
