@@ -279,13 +279,6 @@ function AdminVics() {
     onError: () => setAssignError("Zugangsdaten konnten nicht neu erzeugt werden."),
   });
 
-  const freeNumbersQuery = useQuery({
-    queryKey: ["admin", "anosim", "assignable"],
-    queryFn: () => fetchAssignableNumbers(),
-    enabled: role === "admin" && assignVicId !== null,
-    staleTime: 60_000,
-  });
-
   const productQuery = useQuery({
     queryKey: ["admin", "anosim", "product"],
     queryFn: () => fetchProduct(),
@@ -791,55 +784,21 @@ function AdminVics() {
             ) : (
               <div className="mt-2 space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  Diesem Datensatz ist noch keine Telefonnummer zugewiesen.
+                  Diesem Datensatz ist noch keine Telefonnummer zugewiesen. Es
+                  wird eine neue Nummer gekauft (Deutschland · FullService · 30
+                  Tage) und fest diesem Datensatz zugewiesen.
                 </p>
-                <div className="flex flex-wrap items-center gap-2">
-                  <select
-                    value={selectedNumber}
-                    onChange={(event) => setSelectedNumber(event.target.value)}
-                    className="h-9 min-w-[12rem] rounded-lg border border-border bg-background px-2 text-sm text-foreground"
-                  >
-                    <option value="">
-                      {freeNumbersQuery.isLoading
-                        ? "Wird geladen …"
-                        : (freeNumbersQuery.data ?? []).length === 0
-                          ? "Keine freie Nummer vorhanden"
-                          : "Freie Nummer wählen"}
-                    </option>
-                    {(freeNumbersQuery.data ?? []).map((item) => (
-                      <option key={item.orderBookingId} value={String(item.orderBookingId)}>
-                        {item.number} · bis {formatDate(item.endDate)}
-                      </option>
-                    ))}
-                  </select>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="rounded-full"
-                    disabled={!selectedNumber || assignNumberMutation.isPending}
-                    onClick={() => {
-                      if (!assignVicId || !selectedNumber) return;
-                      assignNumberMutation.mutate({
-                        vicId: assignVicId,
-                        orderBookingId: Number(selectedNumber),
-                      });
-                    }}
-                  >
-                    Zuweisen
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    className="rounded-full"
-                    onClick={() => {
-                      setPhoneError(null);
-                      setBuyOpen(true);
-                    }}
-                  >
-                    Neue Nummer kaufen
-                  </Button>
-                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="rounded-full"
+                  onClick={() => {
+                    setPhoneError(null);
+                    setBuyOpen(true);
+                  }}
+                >
+                  Neue Nummer kaufen
+                </Button>
               </div>
             )}
 
