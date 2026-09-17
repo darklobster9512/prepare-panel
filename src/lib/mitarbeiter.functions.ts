@@ -8,7 +8,7 @@ import type { AuftragStatus, WorkAuftrag, WorkItem } from "@/lib/mitarbeiter.typ
 export type { AuftragStatus, WorkAuftrag, WorkItem };
 
 const SELECT_COLUMNS =
-  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, claimed_by, claimed_at, email_street, email_postal_code, email_city, email_birth_date, email_address, created_at, anosim_numbers(number, end_date, order_booking_id), vic_auftraege!inner(id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, auftraege(name, logo_path, ident_type, besonderheiten, images, sort_order))";
+  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, claimed_by, claimed_at, completed_at, completed_by, email_street, email_postal_code, email_city, email_birth_date, email_address, created_at, anosim_numbers(number, end_date, order_booking_id), vic_auftraege!inner(id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, auftraege(name, logo_path, ident_type, besonderheiten, images, sort_order))";
 
 function mapItem(row: any): WorkItem {
   const { anosim_numbers, vic_auftraege, ...rest } = row;
