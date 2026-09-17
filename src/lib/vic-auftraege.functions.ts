@@ -3,15 +3,9 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { generateLoginName, generateVicPassword } from "@/lib/password";
+import type { VicAuftrag } from "@/lib/vic-auftraege.types";
 
-export type VicAuftrag = {
-  id: string;
-  auftrag_id: string;
-  auftrag_name: string;
-  logo_path: string | null;
-  login_name: string | null;
-  password: string | null;
-};
+export type { VicAuftrag };
 
 async function assertAdmin(supabase: any, userId: string) {
   const { data, error } = await supabase
