@@ -140,6 +140,15 @@ function formatDate(value: string | null) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString("de-DE");
 }
 
+function describeValidity(endDate: string | null) {
+  if (!endDate) return "Laufzeit unbekannt";
+  const end = new Date(endDate);
+  if (Number.isNaN(end.getTime())) return "Laufzeit unbekannt";
+  const days = Math.ceil((end.getTime() - Date.now()) / 86_400_000);
+  if (days <= 0) return `Gültig bis ${formatDate(endDate)} · abgelaufen`;
+  return `Gültig bis ${formatDate(endDate)} · noch ${days} ${days === 1 ? "Tag" : "Tage"}`;
+}
+
 function CredentialRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-2">
