@@ -285,16 +285,17 @@ function WizardPage() {
 }
 
 function VicCard({ item }: { item: WorkItem }) {
-  const rows: [string, string][] = [
-    ["Geburtsname", item.birth_name || "–"],
-    ["Geburtsdatum", formatDate(item.birth_date)],
-    ["Geburtsort", item.birth_place || "–"],
-    ["Straße", item.street || "–"],
-    ["PLZ", item.postal_code || "–"],
-    ["Ort", item.city || "–"],
-    ["Familienstand", item.marital_status || "–"],
-    ["Steuer-ID", item.tax_id || "–"],
-    ["Aktuelle Bank", item.bank || "–"],
+  const rows: { label: string; value: string; copyable: boolean }[] = [
+    { label: "Vorname(n)", value: item.first_name || "–", copyable: true },
+    { label: "Nachname", value: item.last_name || "–", copyable: true },
+    { label: "Geburtsname", value: item.birth_name || "–", copyable: true },
+    { label: "Geburtsdatum", value: formatDate(item.birth_date), copyable: true },
+    { label: "Geburtsort", value: item.birth_place || "–", copyable: true },
+    { label: "Straße", value: item.street || "–", copyable: true },
+    { label: "PLZ", value: item.postal_code || "–", copyable: true },
+    { label: "Ort", value: item.city || "–", copyable: true },
+    { label: "Familienstand", value: item.marital_status || "–", copyable: false },
+    { label: "Steuer-ID", value: item.tax_id || "–", copyable: false },
   ];
 
   return (
@@ -303,10 +304,17 @@ function VicCard({ item }: { item: WorkItem }) {
         {item.first_name} {item.last_name}
       </h2>
       <dl className="mt-4 space-y-2 text-sm">
-        {rows.map(([label, value]) => (
-          <div key={label} className="flex justify-between gap-3">
-            <dt className="text-muted-foreground">{label}</dt>
-            <dd className="text-right font-medium text-foreground">{value}</dd>
+        {rows.map((row) => (
+          <div key={row.label} className="flex items-center justify-between gap-2">
+            <dt className="shrink-0 text-muted-foreground">{row.label}</dt>
+            <dd className="flex min-w-0 items-center gap-1">
+              <span className="truncate text-right font-medium text-foreground">
+                {row.value}
+              </span>
+              {row.copyable && row.value !== "–" ? (
+                <CopyButton value={row.value} label={row.label} />
+              ) : null}
+            </dd>
           </div>
         ))}
       </dl>
@@ -697,6 +705,11 @@ function StepCard({
                   value={image}
                   alt={`Screenshot ${step.name}`}
                   className="w-full rounded-xl border border-border object-contain"
+                  fallback={
+                    <p className="rounded-xl border border-dashed border-border px-3 py-6 text-center text-xs text-muted-foreground">
+                      Bild nicht verfügbar
+                    </p>
+                  }
                 />
               ))}
             </div>
