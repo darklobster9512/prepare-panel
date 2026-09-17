@@ -99,6 +99,28 @@ function fieldsFor(auftrag: WorkAuftrag): FieldConfig {
   return { credentials: false, webid: false, postident: false };
 }
 
+function CopyButton({ value, label }: { value: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      aria-label={`${label} kopieren`}
+      onClick={() => {
+        void navigator.clipboard.writeText(value);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      }}
+      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+    >
+      {copied ? (
+        <Check className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
+      ) : (
+        <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+      )}
+    </button>
+  );
+}
+
 function CopyValue({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
   return (
@@ -123,6 +145,7 @@ function CopyValue({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
 
 function WizardPage() {
   const { vicId } = Route.useParams();
@@ -262,16 +285,17 @@ function WizardPage() {
 }
 
 function VicCard({ item }: { item: WorkItem }) {
-  const rows: [string, string][] = [
-    ["Geburtsname", item.birth_name || "–"],
-    ["Geburtsdatum", formatDate(item.birth_date)],
-    ["Geburtsort", item.birth_place || "–"],
-    ["Straße", item.street || "–"],
-    ["PLZ", item.postal_code || "–"],
-    ["Ort", item.city || "–"],
-    ["Familienstand", item.marital_status || "–"],
-    ["Steuer-ID", item.tax_id || "–"],
-    ["Aktuelle Bank", item.bank || "–"],
+  const rows: { label: string; value: string; copyable: boolean }[] = [
+    { label: "Vorname(n)", value: item.first_name || "–", copyable: true },
+    { label: "Nachname", value: item.last_name || "–", copyable: true },
+    { label: "Geburtsname", value: item.birth_name || "–", copyable: true },
+    { label: "Geburtsdatum", value: formatDate(item.birth_date), copyable: true },
+    { label: "Geburtsort", value: item.birth_place || "–", copyable: true },
+    { label: "Straße", value: item.street || "–", copyable: true },
+    { label: "PLZ", value: item.postal_code || "–", copyable: true },
+    { label: "Ort", value: item.city || "–", copyable: true },
+    { label: "Familienstand", value: item.marital_status || "–", copyable: false },
+    { label: "Steuer-ID", value: item.tax_id || "–", copyable: false },
   ];
 
   return (
@@ -280,10 +304,17 @@ function VicCard({ item }: { item: WorkItem }) {
         {item.first_name} {item.last_name}
       </h2>
       <dl className="mt-4 space-y-2 text-sm">
-        {rows.map(([label, value]) => (
-          <div key={label} className="flex justify-between gap-3">
-            <dt className="text-muted-foreground">{label}</dt>
-            <dd className="text-right font-medium text-foreground">{value}</dd>
+        {rows.map((row) => (
+          <div key={row.label} className="flex items-center justify-between gap-2">
+            <dt className="shrink-0 text-muted-foreground">{row.label}</dt>
+            <dd className="flex min-w-0 items-center gap-1">
+              <span className="truncate text-right font-medium text-foreground">
+                {row.value}
+              </span>
+              {row.copyable && row.value !== "–" ? (
+                <CopyButton value={row.value} label={row.label} />
+              ) : null}
+            </dd>
           </div>
         ))}
       </dl>
@@ -674,6 +705,11 @@ function StepCard({
                   value={image}
                   alt={`Screenshot ${step.name}`}
                   className="w-full rounded-xl border border-border object-contain"
+                  fallback={
+                    <p className="rounded-xl border border-dashed border-border px-3 py-6 text-center text-xs text-muted-foreground">
+                      Bild nicht verfügbar
+                    </p>
+                  }
                 />
               ))}
             </div>
@@ -684,13 +720,22 @@ function StepCard({
   );
 }
 
-function Readonly({ label, value }: { label: string; value: string }) {
+function Readonly({
+  label,
+  value,
+  copyable = true,
+}: {
+  label: string;
+  value: string;
+  copyable?: boolean;
+}) {
   return (
     <div>
       <p className={labelClass}>{label}</p>
-      <p className="mt-1 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm font-medium text-foreground">
-        {value}
-      </p>
+      <div className="mt-1 flex items-center gap-1 rounded-xl border border-border bg-background px-3.5 py-2.5">
+        <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{value}</p>
+        {copyable ? <CopyButton value={value} label={label} /> : null}
+      </div>
     </div>
   );
 }
@@ -701,24 +746,34 @@ function Field({
   onChange,
   disabled,
   placeholder,
+  copyable = true,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
   placeholder?: string;
+  copyable?: boolean;
 }) {
   return (
     <div>
       <label className={labelClass}>{label}</label>
-      <input
-        type="text"
-        value={value}
-        disabled={disabled}
-        placeholder={placeholder}
-        onChange={(event) => onChange(event.target.value)}
-        className={`${inputClass} mt-1`}
-      />
+      <div className="relative mt-1">
+        <input
+          type="text"
+          value={value}
+          disabled={disabled}
+          placeholder={placeholder}
+          onChange={(event) => onChange(event.target.value)}
+          className={`${inputClass} ${copyable ? "pr-11" : ""}`}
+        />
+        {copyable ? (
+          <span className="absolute inset-y-0 right-2 flex items-center">
+            <CopyButton value={value} label={label} />
+          </span>
+        ) : null}
+      </div>
     </div>
   );
 }
+
