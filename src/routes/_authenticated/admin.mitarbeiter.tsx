@@ -8,6 +8,7 @@ import {
   FolderKanban,
   IdCard,
   LayoutDashboard,
+  Pencil,
   Phone,
   Plus,
   Send,
@@ -31,7 +32,7 @@ import { useAuth } from "@/hooks/use-auth";
 import {
   createEmployee,
   listEmployees,
-  updateEmployeeOnboarding,
+  updateEmployee,
   type EmployeeRow,
 } from "@/lib/admin-users.functions";
 
