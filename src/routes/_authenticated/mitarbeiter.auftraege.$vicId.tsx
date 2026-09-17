@@ -33,6 +33,7 @@ import { statusLabel, statusRingClass } from "@/lib/auftrag-status";
 import {
   completeAuftrag,
   ensureEmailIdentity,
+  finishVic,
   getWorkItem,
   listVicSms,
   saveEmailAddress,
