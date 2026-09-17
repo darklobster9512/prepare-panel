@@ -172,6 +172,122 @@ export const unassignAuftrag = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const bulkSchema = z.object({
+  vic_id: z.string().uuid(),
+  add_auftrag_ids: z.array(z.string().uuid()).max(50),
+  remove_auftrag_ids: z.array(z.string().uuid()).max(50),
+});
+
+export const assignAuftraegeBulk = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => bulkSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+
+    if (data.remove_auftrag_ids.length > 0) {
+      const { error } = await context.supabase
+        .from("vic_auftraege")
+        .delete()
+        .eq("vic_id", data.vic_id)
+        .in("auftrag_id", data.remove_auftrag_ids);
+
+      if (error) throw new Error("Zuweisungen konnten nicht entfernt werden.");
+    }
+
+    const added: VicAuftrag[] = [];
+
+    for (const auftragId of data.add_auftrag_ids) {
+      const credentials = await buildCredentials(
+        context.supabase,
+        data.vic_id,
+        auftragId,
+      );
+
+      const { data: row, error } = await context.supabase
+        .from("vic_auftraege")
+        .insert({
+          vic_id: data.vic_id,
+          auftrag_id: auftragId,
+          login_name: credentials.login_name,
+          password: credentials.password,
+          created_by: context.userId,
+          ...(credentials.admin_only
+            ? {
+                status: "erfolgreich",
+                completed_at: new Date().toISOString(),
+                completed_by: context.userId,
+              }
+            : {}),
+        })
+        .select(SELECT_COLUMNS)
+        .single();
+
+      if (error) throw new Error("Auftrag konnte nicht zugewiesen werden.");
+      added.push(mapRow(row));
+    }
+
+    const publicAdded = added.filter((item) => !item.admin_only);
+
+    if (publicAdded.length > 0) {
+      // Abgeschlossene Datensätze wieder öffnen, damit der Mitarbeiter weiterarbeiten kann.
+      const { data: vic } = await context.supabase
+        .from("vics")
+        .select("completed_at")
+        .eq("id", data.vic_id)
+        .maybeSingle();
+
+      if (vic?.completed_at) {
+        await context.supabase
+          .from("vics")
+          .update({ completed_at: null, completed_by: null })
+          .eq("id", data.vic_id);
+      }
+    }
+
+    if (publicAdded.length > 0) {
+      try {
+        const { data: recipients } = await context.supabase
+          .from("telegram_recipients")
+          .select("chat_id")
+          .eq("active", true);
+
+        const chatIds = ((recipients ?? []) as Array<{ chat_id: string }>).map(
+          (row) => row.chat_id,
+        );
+
+        if (chatIds.length > 0) {
+          const { data: vicRow } = await context.supabase
+            .from("vics")
+            .select("first_name, last_name")
+            .eq("id", data.vic_id)
+            .maybeSingle();
+
+          const vicName =
+            `${vicRow?.first_name ?? ""} ${vicRow?.last_name ?? ""}`.trim() ||
+            "Unbekannt";
+
+          const { broadcastTelegramMessage, buildNewAuftraegeMessage } =
+            await import("@/lib/telegram.server");
+
+          await broadcastTelegramMessage(
+            chatIds,
+            buildNewAuftraegeMessage({
+              vicName,
+              auftragNames: publicAdded.map((item) => item.auftrag_name),
+            }),
+          );
+        }
+      } catch (err) {
+        console.error(
+          "Telegram-Benachrichtigung fehlgeschlagen:",
+          err instanceof Error ? err.message : err,
+        );
+      }
+    }
+
+    return { added, removed: data.remove_auftrag_ids };
+  });
+
 export const regenerateCredentials = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => pairSchema.parse(data))

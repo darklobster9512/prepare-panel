@@ -13,6 +13,7 @@ import {
   Phone,
   Plus,
   RefreshCw,
+  Send,
   Trash2,
   Users,
 } from "lucide-react";
@@ -46,9 +47,8 @@ import {
 } from "@/lib/vics.functions";
 import { listAuftraege } from "@/lib/auftraege.functions";
 import {
-  assignAuftrag,
+  assignAuftraegeBulk,
   regenerateCredentials,
-  unassignAuftrag,
 } from "@/lib/vic-auftraege.functions";
 import type { VicAuftrag } from "@/lib/vic-auftraege.types";
 import { listProjects } from "@/lib/projects.functions";
@@ -134,6 +134,7 @@ const nav = [
   { label: "Vics", icon: IdCard, to: "/admin/vics" },
   { label: "Projekte", icon: FolderKanban, to: "/admin/projekte" },
   { label: "Telefonnummern", icon: Phone, to: "/admin/telefonnummern" },
+  { label: "Telegram", icon: Send, to: "/admin/telegram" },
 ];
 
 function formatDate(value: string | null) {
@@ -213,8 +214,7 @@ function AdminVics() {
   const assignProject = useServerFn(assignVicProject);
   const fetchProjects = useServerFn(listProjects);
   const fetchAuftraege = useServerFn(listAuftraege);
-  const addAssignment = useServerFn(assignAuftrag);
-  const removeAssignment = useServerFn(unassignAuftrag);
+  const saveAssignments = useServerFn(assignAuftraegeBulk);
   const renewCredentials = useServerFn(regenerateCredentials);
 
   const [open, setOpen] = useState(false);
@@ -228,6 +228,7 @@ function AdminVics() {
   const [parsed, setParsed] = useState<ParsedVic[]>([]);
   const [selected, setSelected] = useState<boolean[]>([]);
   const [assignVicId, setAssignVicId] = useState<string | null>(null);
+  const [pendingIds, setPendingIds] = useState<string[]>([]);
   const [assignError, setAssignError] = useState<string | null>(null);
   const [detailVicId, setDetailVicId] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
@@ -274,26 +275,23 @@ function AdminVics() {
       ),
     );
 
-  const assignAuftragMutation = useMutation({
-    mutationFn: (values: { vic_id: string; auftrag_id: string }) =>
-      addAssignment({ data: values }),
-    onSuccess: (row, variables) => {
-      patchVicAuftraege(variables.vic_id, (current) => [...current, row]);
+  const saveAssignmentsMutation = useMutation({
+    mutationFn: (values: {
+      vic_id: string;
+      add_auftrag_ids: string[];
+      remove_auftrag_ids: string[];
+    }) => saveAssignments({ data: values }),
+    onSuccess: (_result, variables) => {
       setAssignError(null);
-    },
-    onError: () => setAssignError("Auftrag konnte nicht zugewiesen werden."),
-  });
-
-  const unassignAuftragMutation = useMutation({
-    mutationFn: (values: { vic_id: string; auftrag_id: string }) =>
-      removeAssignment({ data: values }),
-    onSuccess: (_data, variables) => {
-      patchVicAuftraege(variables.vic_id, (current) =>
-        current.filter((item) => item.auftrag_id !== variables.auftrag_id),
+      setAssignVicId(null);
+      setSuccess(
+        variables.add_auftrag_ids.length > 0
+          ? `${variables.add_auftrag_ids.length} ${variables.add_auftrag_ids.length === 1 ? "Auftrag" : "Aufträge"} zugewiesen.`
+          : "Zuweisungen gespeichert.",
       );
-      setAssignError(null);
+      invalidate();
     },
-    onError: () => setAssignError("Zuweisung konnte nicht entfernt werden."),
+    onError: () => setAssignError("Zuweisungen konnten nicht gespeichert werden."),
   });
 
   const regenerateMutation = useMutation({
@@ -512,6 +510,12 @@ function AdminVics() {
     bulkMutation.mutate(chosen);
   };
 
+  const openAssign = (vic: VicRow) => {
+    setAssignError(null);
+    setPendingIds((vic.auftraege ?? []).map((item) => item.auftrag_id));
+    setAssignVicId(vic.id);
+  };
+
   const handleDelete = (vic: VicRow) => {
     const name = `${vic.first_name} ${vic.last_name}`.trim();
     if (!window.confirm(`Datensatz von ${name} wirklich löschen?`)) return;
@@ -724,10 +728,7 @@ function AdminVics() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           type="button"
-                          onClick={() => {
-                            setAssignError(null);
-                            setAssignVicId(vic.id);
-                          }}
+                          onClick={() => openAssign(vic)}
                           aria-label="Aufträge zuweisen"
                           className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary"
                         >
@@ -873,6 +874,7 @@ function AdminVics() {
                 const assignment = (assignVic?.auftraege ?? []).find(
                   (item) => item.auftrag_id === auftrag.id,
                 );
+                const isSelected = pendingIds.includes(auftrag.id);
                 const isEmail = auftrag.ident_type === "email";
                 const previous = position > 0 ? list[position - 1]?.auftrag : null;
                 const showHeading =
@@ -905,25 +907,19 @@ function AdminVics() {
                       </span>
                       <Button
                         type="button"
-                        variant={assignment ? "outline" : "default"}
+                        variant={isSelected ? "outline" : "default"}
                         size="sm"
                         className="rounded-full"
-                        disabled={
-                          !assignVicId ||
-                          assignAuftragMutation.isPending ||
-                          unassignAuftragMutation.isPending
+                        disabled={!assignVicId || saveAssignmentsMutation.isPending}
+                        onClick={() =>
+                          setPendingIds((current) =>
+                            current.includes(auftrag.id)
+                              ? current.filter((id) => id !== auftrag.id)
+                              : [...current, auftrag.id],
+                          )
                         }
-                        onClick={() => {
-                          if (!assignVicId) return;
-                          const values = {
-                            vic_id: assignVicId,
-                            auftrag_id: auftrag.id,
-                          };
-                          if (assignment) unassignAuftragMutation.mutate(values);
-                          else assignAuftragMutation.mutate(values);
-                        }}
                       >
-                        {assignment ? "Entfernen" : "Zuweisen"}
+                        {isSelected ? "Abwählen" : "Auswählen"}
                       </Button>
                     </div>
 
@@ -971,6 +967,44 @@ function AdminVics() {
                 );
               })
             )}
+          </div>
+
+          <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
+            <p className="text-xs text-muted-foreground">
+              Änderungen werden erst beim Speichern übernommen. Danach geht eine
+              Telegram-Benachrichtigung raus.
+            </p>
+            <div className="flex shrink-0 items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-full"
+                disabled={saveAssignmentsMutation.isPending}
+                onClick={() => setAssignVicId(null)}
+              >
+                Abbrechen
+              </Button>
+              <Button
+                type="button"
+                className="rounded-full"
+                disabled={saveAssignmentsMutation.isPending || !assignVicId}
+                onClick={() => {
+                  if (!assignVicId) return;
+                  const current = (assignVic?.auftraege ?? []).map(
+                    (item) => item.auftrag_id,
+                  );
+                  saveAssignmentsMutation.mutate({
+                    vic_id: assignVicId,
+                    add_auftrag_ids: pendingIds.filter((id) => !current.includes(id)),
+                    remove_auftrag_ids: current.filter(
+                      (id) => !pendingIds.includes(id),
+                    ),
+                  });
+                }}
+              >
+                {saveAssignmentsMutation.isPending ? "Wird gespeichert …" : "Speichern"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -1232,8 +1266,7 @@ function AdminVics() {
                   variant="outline"
                   className="rounded-full"
                   onClick={() => {
-                    setAssignError(null);
-                    setAssignVicId(detailVic.id);
+                    openAssign(detailVic);
                     setDetailVicId(null);
                   }}
                 >

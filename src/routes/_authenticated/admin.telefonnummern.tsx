@@ -10,6 +10,7 @@ import {
   Phone,
   Plus,
   RefreshCw,
+  Send,
   Users,
   Wallet,
 } from "lucide-react";
@@ -65,6 +66,7 @@ const nav = [
   { label: "Vics", icon: IdCard, to: "/admin/vics" },
   { label: "Projekte", icon: FolderKanban, to: "/admin/projekte" },
   { label: "Telefonnummern", icon: Phone, to: "/admin/telefonnummern" },
+  { label: "Telegram", icon: Send, to: "/admin/telegram" },
 ];
 
 function formatDateTime(value: string) {
