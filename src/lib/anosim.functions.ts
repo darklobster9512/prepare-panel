@@ -60,12 +60,28 @@ export const listAnosimNumbers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AnosimNumberRow[]> => {
     await assertAdmin(context.supabase, context.userId);
-    const { anosimFetch } = await import("./anosim.server");
-    const bookings = await anosimFetch<
-      import("./anosim.server").AnosimBooking[]
-    >("/OrderBookings");
+    const { anosimFetch, AnosimError } = await import("./anosim.server");
+
+    let bookings: import("./anosim.server").AnosimBooking[] | null = null;
+    try {
+      bookings = await anosimFetch<import("./anosim.server").AnosimBooking[]>(
+        "/OrderBookings",
+      );
+    } catch (err) {
+      // Ein leeres Konto meldet AnoSIM mit 400 "No OrderBooking found".
+      if (
+        err instanceof AnosimError &&
+        err.status === 400 &&
+        err.detail.toLowerCase().includes("no orderbooking")
+      ) {
+        bookings = [];
+      } else {
+        throw err;
+      }
+    }
 
     const list = Array.isArray(bookings) ? bookings : [];
+
 
     const { data: notes } = await context.supabase
       .from("anosim_numbers")
@@ -105,12 +121,18 @@ export const listAnosimSms = createServerFn({ method: "GET" })
   )
   .handler(async ({ data, context }): Promise<AnosimSmsRow[]> => {
     await assertAdmin(context.supabase, context.userId);
-    const { anosimFetch } = await import("./anosim.server");
-    const sms = await anosimFetch<import("./anosim.server").AnosimSms[]>(
-      `/Sms/${data.orderBookingId}`,
-    );
-    return Array.isArray(sms) ? sms : [];
+    const { anosimFetch, AnosimError } = await import("./anosim.server");
+    try {
+      const sms = await anosimFetch<import("./anosim.server").AnosimSms[]>(
+        `/Sms/${data.orderBookingId}`,
+      );
+      return Array.isArray(sms) ? sms : [];
+    } catch (err) {
+      if (err instanceof AnosimError && err.status === 400) return [];
+      throw err;
+    }
   });
+
 
 export const getAnosimFullServiceProduct = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -126,7 +148,7 @@ export const getAnosimFullServiceProduct = createServerFn({ method: "GET" })
 
     let match: ProductPrice | undefined;
 
-    for (const rentalTypeId of [3, 2, 4, 1]) {
+    for (const rentalTypeId of [2, 3, 1, 4]) {
       const products = await anosimFetch<ProductPrice[]>("/ProductPrices", {
         countryId: GERMANY_COUNTRY_ID,
         rentalTypeId,

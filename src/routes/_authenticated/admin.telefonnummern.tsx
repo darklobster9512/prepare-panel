@@ -141,24 +141,35 @@ function AdminTelefonnummern() {
     queryKey: ["admin", "anosim", "balance"],
     queryFn: () => fetchBalance(),
     enabled: isAdmin,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
 
   const numbersQuery = useQuery({
     queryKey: ["admin", "anosim", "numbers"],
     queryFn: () => fetchNumbers(),
     enabled: isAdmin,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
 
   const productQuery = useQuery({
     queryKey: ["admin", "anosim", "product"],
     queryFn: () => fetchProduct(),
     enabled: isAdmin && buyOpen,
+    staleTime: 300_000,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
 
   const smsQuery = useQuery({
     queryKey: ["admin", "anosim", "sms", detailId],
     queryFn: () => fetchSms({ data: { orderBookingId: detailId as number } }),
     enabled: isAdmin && detailId !== null,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
 
   const numbers = numbersQuery.data ?? [];
