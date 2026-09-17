@@ -901,6 +901,7 @@ function AdminVics() {
                       </div>
                     ) : null}
                   </div>
+                  </div>
                 );
               })
             )}
