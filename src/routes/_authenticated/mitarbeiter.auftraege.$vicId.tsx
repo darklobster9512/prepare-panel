@@ -725,8 +725,7 @@ function StepCard({
 
           <Dialog open={lightboxImage !== null} onOpenChange={(open) => !open && setLightboxImage(null)}>
             <DialogContent
-              className="max-h-[95vh] max-w-[95vw] border-none bg-transparent p-0 shadow-none focus:outline-none sm:rounded-xl"
-              showCloseButton={false}
+              className="max-h-[95vh] max-w-[95vw] border-none bg-transparent p-0 shadow-none focus:outline-none [&>button:last-of-type]:hidden sm:rounded-xl"
             >
               <span className="sr-only">Screenshot vergrößert</span>
               {lightboxImage ? (
