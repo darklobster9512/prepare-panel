@@ -1186,22 +1186,7 @@ function AdminVics() {
                             {statusLabel(item.status, detailVic.claimed_by !== null)}
                           </span>
                         </div>
-                        <div className="mt-3 space-y-1 border-t border-border/60 pt-3 text-sm">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                            Generiert
-                          </p>
-                          {item.login_name ? (
-                            <CredentialRow label="Anmeldename" value={item.login_name} />
-                          ) : null}
-                          {item.password ? (
-                            <CredentialRow label="Passwort" value={item.password} />
-                          ) : null}
-                          {!item.login_name && !item.password ? (
-                            <p className="text-muted-foreground">
-                              Keine Zugangsdaten hinterlegt.
-                            </p>
-                          ) : null}
-
+                          <div className="mt-3 space-y-1 border-t border-border/60 pt-3 text-sm">
                           {item.used_login_name ||
                           item.used_password ||
                           item.webid_link ||
@@ -1232,7 +1217,11 @@ function AdminVics() {
                                 />
                               ) : null}
                             </div>
-                          ) : null}
+                          ) : (
+                            <p className="mt-3 border-t border-border/60 pt-3 text-muted-foreground">
+                              Noch keine verwendeten Daten.
+                            </p>
+                          )}
 
                           {item.completed_at ? (
                             <p className="pt-2 text-xs text-muted-foreground">
