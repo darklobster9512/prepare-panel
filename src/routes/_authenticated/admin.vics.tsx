@@ -189,6 +189,15 @@ function AdminVics() {
   const [assignVicId, setAssignVicId] = useState<string | null>(null);
   const [assignError, setAssignError] = useState<string | null>(null);
   const [detailVicId, setDetailVicId] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [selectedNumber, setSelectedNumber] = useState("");
+  const [buyOpen, setBuyOpen] = useState(false);
+
+  const fetchAssignableNumbers = useServerFn(listAssignableNumbers);
+  const assignNumber = useServerFn(assignNumberToVic);
+  const unassignNumber = useServerFn(unassignNumberFromVic);
+  const fetchProduct = useServerFn(getAnosimFullServiceProduct);
+  const buyNumber = useServerFn(buyAnosimNumber);
 
   useEffect(() => {
     if (!loading && role && role !== "admin") {
