@@ -81,7 +81,13 @@ export const updateAuftrag = createServerFn({ method: "POST" })
 
     const { error } = await context.supabase
       .from("auftraege")
-      .update({ name: data.name, logo_path: data.logo_path ?? null })
+      .update({
+        name: data.name,
+        logo_path: data.logo_path ?? null,
+        ident_type: data.ident_type ?? null,
+        besonderheiten: data.besonderheiten ?? null,
+        images: data.images ?? [],
+      })
       .eq("id", data.id);
 
     if (error) throw new Error("Auftrag konnte nicht aktualisiert werden.");
