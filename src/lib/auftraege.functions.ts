@@ -12,6 +12,7 @@ export type AuftragRow = {
   ident_type: IdentType | null;
   besonderheiten: string | null;
   images: string[];
+  generate_password: boolean;
   created_at: string;
 };
 
@@ -33,6 +34,7 @@ const auftragSchema = z.object({
   ident_type: z.enum(["videoident", "postident"]).nullable().optional(),
   besonderheiten: z.string().trim().max(5000).nullable().optional(),
   images: z.array(z.string().trim().max(500)).max(50).optional(),
+  generate_password: z.boolean().optional(),
 });
 
 export const listAuftraege = createServerFn({ method: "GET" })
@@ -42,7 +44,9 @@ export const listAuftraege = createServerFn({ method: "GET" })
 
     const { data, error } = await context.supabase
       .from("auftraege")
-      .select("id, name, logo_path, ident_type, besonderheiten, images, created_at")
+      .select(
+        "id, name, logo_path, ident_type, besonderheiten, images, generate_password, created_at",
+      )
       .order("created_at", { ascending: true });
 
     if (error) throw new Error("Aufträge konnten nicht geladen werden.");
@@ -64,6 +68,7 @@ export const createAuftrag = createServerFn({ method: "POST" })
       ident_type: data.ident_type ?? null,
       besonderheiten: data.besonderheiten ?? null,
       images: data.images ?? [],
+      generate_password: data.generate_password ?? false,
       created_by: context.userId,
     });
 
@@ -87,6 +92,7 @@ export const updateAuftrag = createServerFn({ method: "POST" })
         ident_type: data.ident_type ?? null,
         besonderheiten: data.besonderheiten ?? null,
         images: data.images ?? [],
+        generate_password: data.generate_password ?? false,
       })
       .eq("id", data.id);
 

@@ -19,6 +19,7 @@ export type Database = {
           besonderheiten: string | null
           created_at: string
           created_by: string | null
+          generate_password: boolean
           id: string
           ident_type: string | null
           images: Json
@@ -30,6 +31,7 @@ export type Database = {
           besonderheiten?: string | null
           created_at?: string
           created_by?: string | null
+          generate_password?: boolean
           id?: string
           ident_type?: string | null
           images?: Json
@@ -41,6 +43,7 @@ export type Database = {
           besonderheiten?: string | null
           created_at?: string
           created_by?: string | null
+          generate_password?: boolean
           id?: string
           ident_type?: string | null
           images?: Json

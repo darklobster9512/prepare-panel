@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -50,6 +51,7 @@ export function AuftraegeSection({ enabled }: Props) {
   const [images, setImages] = useState<string[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
+  const [generatePassword, setGeneratePassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -91,6 +93,7 @@ export function AuftraegeSection({ enabled }: Props) {
     setBesonderheiten("");
     setImages([]);
     setNewImages([]);
+    setGeneratePassword(false);
     setError(null);
   };
 
@@ -109,6 +112,7 @@ export function AuftraegeSection({ enabled }: Props) {
     setBesonderheiten(auftrag.besonderheiten ?? "");
     setImages(auftrag.images ?? []);
     setNewImages([]);
+    setGeneratePassword(auftrag.generate_password ?? false);
     setError(null);
     setOpen(true);
   };
@@ -161,6 +165,7 @@ export function AuftraegeSection({ enabled }: Props) {
         ident_type: identType === "" ? null : identType,
         besonderheiten: besonderheiten.trim() ? besonderheiten.trim() : null,
         images: imagePaths,
+        generate_password: generatePassword,
       };
 
       if (editing) {
@@ -348,6 +353,21 @@ export function AuftraegeSection({ enabled }: Props) {
                 ) : null}
               </div>
             </fieldset>
+
+            <div className="flex items-start justify-between gap-4 rounded-xl border border-border bg-muted/40 p-3">
+              <div className="space-y-1">
+                <Label htmlFor="auftrag-passwort">Passwort generieren</Label>
+                <p className="text-xs text-muted-foreground">
+                  Muster: Vorname + 6 zufällige Ziffern (z. B. Stefan856102).
+                </p>
+              </div>
+              <Switch
+                id="auftrag-passwort"
+                checked={generatePassword}
+                onCheckedChange={setGeneratePassword}
+              />
+            </div>
+
 
             <div className="space-y-2">
               <Label htmlFor="auftrag-besonderheiten">Besonderheiten</Label>
