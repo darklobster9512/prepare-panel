@@ -32,7 +32,9 @@ export const listEmployees = createServerFn({ method: "GET" })
 
     const { data: profiles, error } = await context.supabase
       .from("profiles")
-      .select("user_id, email, created_at")
+      .select(
+        "user_id, email, created_at, onboarding_enabled, gologin_email, gologin_password",
+      )
       .order("created_at", { ascending: false });
 
     if (error) throw new Error("Konten konnten nicht geladen werden.");
