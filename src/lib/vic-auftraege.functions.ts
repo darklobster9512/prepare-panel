@@ -36,8 +36,29 @@ async function buildCredentials(supabase: any, vicId: string, auftragId: string)
 
   if (auftragError || !auftrag) throw new Error("Auftrag konnte nicht geladen werden.");
 
+  let password: string | null = null;
+
+  if (auftrag.generate_password) {
+    // Passwörter der anderen Aufträge dieses Vics laden, damit kein Wert doppelt vorkommt.
+    const { data: existing } = await supabase
+      .from("vic_auftraege")
+      .select("auftrag_id, password")
+      .eq("vic_id", vicId);
+
+    const taken = new Set(
+      ((existing ?? []) as Array<{ auftrag_id: string; password: string | null }>)
+        .filter((row) => row.auftrag_id !== auftragId && row.password)
+        .map((row) => row.password as string),
+    );
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      password = generateVicPassword(vic.first_name);
+      if (!taken.has(password)) break;
+    }
+  }
+
   return {
-    password: auftrag.generate_password ? generateVicPassword(vic.first_name) : null,
+    password,
     login_name: auftrag.generate_loginname
       ? generateLoginName(vic.last_name, vic.birth_date)
       : null,
