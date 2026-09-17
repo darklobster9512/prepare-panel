@@ -168,6 +168,7 @@ function CopyValue({ label, value }: { label: string; value: string }) {
 
 function WizardPage() {
   const { vicId } = Route.useParams();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, profile, loading } = useAuth();
 
