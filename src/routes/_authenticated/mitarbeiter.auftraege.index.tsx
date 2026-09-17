@@ -212,6 +212,11 @@ function Section({
               <h3 className="text-base font-bold tracking-tight text-foreground">
                 {item.first_name} {item.last_name}
               </h3>
+              {item.completed_at ? (
+                <p className="mt-1 inline-flex w-fit items-center rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-600">
+                  Abgeschlossen am {formatDate(item.completed_at)}
+                </p>
+              ) : null}
               <dl className="mt-2 space-y-1 text-sm text-muted-foreground">
                 <div className="flex gap-2">
                   <dt>Geburtsdatum:</dt>
