@@ -6,12 +6,12 @@ import {
   CalendarDays,
   Check,
   ClipboardList,
-  Copy,
   FileText,
   Info,
   LayoutDashboard,
   MessageSquare,
   Phone,
+  Plus,
   RefreshCw,
   X,
 } from "lucide-react";
@@ -100,47 +100,67 @@ function fieldsFor(auftrag: WorkAuftrag): FieldConfig {
   return { credentials: false, webid: false, postident: false };
 }
 
-function CopyButton({ value, label }: { value: string; label: string }) {
+function useCopy() {
   const [copied, setCopied] = useState(false);
+  const copy = (value: string) => {
+    void navigator.clipboard.writeText(value);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1500);
+  };
+  return [copied, copy] as const;
+}
+
+function CopyText({
+  value,
+  label,
+  className = "",
+}: {
+  value: string;
+  label: string;
+  className?: string;
+}) {
+  const [copied, copy] = useCopy();
   return (
     <button
       type="button"
       aria-label={`${label} kopieren`}
-      onClick={() => {
-        void navigator.clipboard.writeText(value);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-      }}
-      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+      title="Klicken zum Kopieren"
+      onClick={() => copy(value)}
+      className={`group/copy inline-flex min-w-0 items-center gap-1 rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring ${className}`}
     >
+      <span className="min-w-0 truncate">{value}</span>
       {copied ? (
-        <Check className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
+        <Check className="h-3 w-3 shrink-0 text-emerald-600" aria-hidden="true" />
       ) : (
-        <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+        <Plus
+          className="h-3 w-3 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/copy:opacity-100"
+          aria-hidden="true"
+        />
       )}
     </button>
   );
 }
 
 function CopyValue({ label, value }: { label: string; value: string }) {
-  const [copied, setCopied] = useState(false);
+  const [copied, copy] = useCopy();
   return (
     <div>
       <p className={labelClass}>{label}</p>
       <button
         type="button"
-        onClick={() => {
-          void navigator.clipboard.writeText(value);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1500);
-        }}
-        className="mt-1 inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+        aria-label={`${label} kopieren`}
+        title="Klicken zum Kopieren"
+        onClick={() => copy(value)}
+        className="group/copy mt-1 inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {value}
         {copied ? (
           <Check className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
         ) : (
-          <Copy className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+          <Plus
+            className="h-3.5 w-3.5 text-muted-foreground opacity-0 transition-opacity group-hover/copy:opacity-100"
+            aria-hidden="true"
+          />
         )}
       </button>
     </div>
@@ -308,13 +328,18 @@ function VicCard({ item }: { item: WorkItem }) {
         {rows.map((row) => (
           <div key={row.label} className="flex items-center justify-between gap-2">
             <dt className="shrink-0 text-muted-foreground">{row.label}</dt>
-            <dd className="flex min-w-0 items-center gap-1">
-              <span className="truncate text-right font-medium text-foreground">
-                {row.value}
-              </span>
+            <dd className="flex min-w-0 items-center justify-end">
               {row.copyable && row.value !== "–" ? (
-                <CopyButton value={row.value} label={row.label} />
-              ) : null}
+                <CopyText
+                  value={row.value}
+                  label={row.label}
+                  className="text-right font-medium text-foreground hover:text-foreground"
+                />
+              ) : (
+                <span className="truncate text-right font-medium text-foreground">
+                  {row.value}
+                </span>
+              )}
             </dd>
           </div>
         ))}
@@ -793,12 +818,36 @@ function Readonly({
   value: string;
   copyable?: boolean;
 }) {
+  const [copied, copy] = useCopy();
   return (
     <div>
       <p className={labelClass}>{label}</p>
       <div className="mt-1 flex items-center gap-1 rounded-xl border border-border bg-background px-3.5 py-2.5">
-        <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{value}</p>
-        {copyable ? <CopyButton value={value} label={label} /> : null}
+        {copyable ? (
+          <button
+            type="button"
+            aria-label={`${label} kopieren`}
+            title="Klicken zum Kopieren"
+            onClick={() => copy(value)}
+            className="group/copy flex min-w-0 flex-1 items-center gap-1 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+              {value}
+            </span>
+            {copied ? (
+              <Check className="h-3 w-3 shrink-0 text-emerald-600" aria-hidden="true" />
+            ) : (
+              <Plus
+                className="h-3 w-3 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/copy:opacity-100"
+                aria-hidden="true"
+              />
+            )}
+          </button>
+        ) : (
+          <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+            {value}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -810,33 +859,24 @@ function Field({
   onChange,
   disabled,
   placeholder,
-  copyable = false,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
   placeholder?: string;
-  copyable?: boolean;
 }) {
   return (
     <div>
       <label className={labelClass}>{label}</label>
-      <div className="relative mt-1">
-        <input
-          type="text"
-          value={value}
-          disabled={disabled}
-          placeholder={placeholder}
-          onChange={(event) => onChange(event.target.value)}
-          className={`${inputClass} ${copyable ? "pr-11" : ""}`}
-        />
-        {copyable ? (
-          <span className="absolute inset-y-0 right-2 flex items-center">
-            <CopyButton value={value} label={label} />
-          </span>
-        ) : null}
-      </div>
+      <input
+        type="text"
+        value={value}
+        disabled={disabled}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+        className={inputClass}
+      />
     </div>
   );
 }
