@@ -31,11 +31,10 @@ Ein neuer Reiter „Telegram" im Admin-Panel, in dem du Chat-IDs pflegst. Auftr�
   • DKB
   • Deutsche Bank
 
-⏱ 17.09.2026, 12:31 Uhr
 👉 Jetzt im Panel beanspruchen
 ```
 
-Bei einem einzelnen Auftrag: „🚀 1 neuer Auftrag verfügbar".
+Bei einem einzelnen Auftrag: „🚀 1 neuer Auftrag verfügbar". Ohne Zeitstempel.
 
 ## Technische Umsetzung
 
