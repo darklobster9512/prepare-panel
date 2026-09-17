@@ -20,6 +20,7 @@ export type VicRow = {
   notes: string | null;
   project_id: string | null;
   claimed_by: string | null;
+  completed_at: string | null;
   project_name: string | null;
   auftraege: VicAuftrag[];
   phone_number: string | null;
