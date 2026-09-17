@@ -117,7 +117,9 @@ function MitarbeiterAuftraege() {
                 params={{ vicId: item.id }}
                 className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
-                Weiterarbeiten
+                {item.auftraege.length > 0 && item.auftraege.every((a) => a.status !== "offen")
+                  ? "Abschließen"
+                  : "Weiterarbeiten"}
               </Link>
             )}
           />
