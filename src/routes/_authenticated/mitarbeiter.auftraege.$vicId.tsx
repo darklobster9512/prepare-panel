@@ -684,13 +684,22 @@ function StepCard({
   );
 }
 
-function Readonly({ label, value }: { label: string; value: string }) {
+function Readonly({
+  label,
+  value,
+  copyable = true,
+}: {
+  label: string;
+  value: string;
+  copyable?: boolean;
+}) {
   return (
     <div>
       <p className={labelClass}>{label}</p>
-      <p className="mt-1 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm font-medium text-foreground">
-        {value}
-      </p>
+      <div className="mt-1 flex items-center gap-1 rounded-xl border border-border bg-background px-3.5 py-2.5">
+        <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{value}</p>
+        {copyable ? <CopyButton value={value} label={label} /> : null}
+      </div>
     </div>
   );
 }
@@ -701,24 +710,34 @@ function Field({
   onChange,
   disabled,
   placeholder,
+  copyable = true,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
   placeholder?: string;
+  copyable?: boolean;
 }) {
   return (
     <div>
       <label className={labelClass}>{label}</label>
-      <input
-        type="text"
-        value={value}
-        disabled={disabled}
-        placeholder={placeholder}
-        onChange={(event) => onChange(event.target.value)}
-        className={`${inputClass} mt-1`}
-      />
+      <div className="relative mt-1">
+        <input
+          type="text"
+          value={value}
+          disabled={disabled}
+          placeholder={placeholder}
+          onChange={(event) => onChange(event.target.value)}
+          className={`${inputClass} ${copyable ? "pr-11" : ""}`}
+        />
+        {copyable ? (
+          <span className="absolute inset-y-0 right-2 flex items-center">
+            <CopyButton value={value} label={label} />
+          </span>
+        ) : null}
+      </div>
     </div>
   );
 }
+
