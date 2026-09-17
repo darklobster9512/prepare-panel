@@ -229,12 +229,15 @@ export const finishVic = createServerFn({ method: "POST" })
 
     const { data: open, error: openError } = await context.supabase
       .from("vic_auftraege")
-      .select("id")
+      .select("id, auftraege(admin_only)")
       .eq("vic_id", data.vic_id)
       .eq("status", "offen");
 
     if (openError) throw new Error("Aufträge konnten nicht geprüft werden.");
-    if ((open ?? []).length > 0) {
+    const openVisible = ((open ?? []) as any[]).filter(
+      (row) => !row.auftraege?.admin_only,
+    );
+    if (openVisible.length > 0) {
       throw new Error("Es sind noch Aufträge offen.");
     }
 
