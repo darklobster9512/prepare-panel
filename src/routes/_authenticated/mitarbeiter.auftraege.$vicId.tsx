@@ -99,6 +99,28 @@ function fieldsFor(auftrag: WorkAuftrag): FieldConfig {
   return { credentials: false, webid: false, postident: false };
 }
 
+function CopyButton({ value, label }: { value: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      aria-label={`${label} kopieren`}
+      onClick={() => {
+        void navigator.clipboard.writeText(value);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      }}
+      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+    >
+      {copied ? (
+        <Check className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
+      ) : (
+        <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+      )}
+    </button>
+  );
+}
+
 function CopyValue({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
   return (
@@ -123,6 +145,7 @@ function CopyValue({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
 
 function WizardPage() {
   const { vicId } = Route.useParams();
