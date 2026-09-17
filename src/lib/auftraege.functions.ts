@@ -34,6 +34,7 @@ const auftragSchema = z.object({
   ident_type: z.enum(["videoident", "postident"]).nullable().optional(),
   besonderheiten: z.string().trim().max(5000).nullable().optional(),
   images: z.array(z.string().trim().max(500)).max(50).optional(),
+  generate_password: z.boolean().optional(),
 });
 
 export const listAuftraege = createServerFn({ method: "GET" })
