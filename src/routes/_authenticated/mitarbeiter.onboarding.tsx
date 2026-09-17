@@ -94,15 +94,15 @@ function OnboardingPage() {
       userName={profile?.email || "Mitarbeiter"}
       nav={mitarbeiterNav(true)}
     >
-      <article className="mx-auto max-w-3xl rounded-2xl border border-border bg-card px-8 py-10 shadow-sm sm:px-12 sm:py-12">
-        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-6">
+      <article className="mx-auto max-w-3xl rounded-xl border border-border bg-card px-5 py-7 shadow-sm sm:px-12 sm:py-12">
+        <header className="flex flex-col items-start gap-4 border-b border-border pb-6 sm:flex-row sm:items-center sm:justify-between">
           <img
             src={gologinLogo.url}
             alt="GoLogin Logo"
             className="h-9 w-auto"
             loading="lazy"
           />
-          <div className="text-right">
+          <div className="text-left sm:text-right">
             <h2 className="text-lg font-bold tracking-tight text-foreground">
               Onboarding-Anleitung
             </h2>
@@ -152,12 +152,12 @@ function OnboardingPage() {
             <p>Wird geladen …</p>
           ) : data?.email || data?.password ? (
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-border bg-secondary/40 px-4 py-3">
+              <div className="min-w-0 rounded-xl border border-border bg-secondary/40 px-4 py-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   E-Mail
                 </p>
-                <div className="mt-1 flex items-center gap-2">
-                  <span className="cursor-copy font-medium text-foreground">
+                <div className="mt-1 flex min-w-0 items-center gap-2">
+                  <span className="min-w-0 break-all font-medium text-foreground">
                     {data?.email || "–"}
                   </span>
                   {data?.email ? (
@@ -165,12 +165,12 @@ function OnboardingPage() {
                   ) : null}
                 </div>
               </div>
-              <div className="rounded-xl border border-border bg-secondary/40 px-4 py-3">
+              <div className="min-w-0 rounded-xl border border-border bg-secondary/40 px-4 py-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Passwort
                 </p>
-                <div className="mt-1 flex items-center gap-2">
-                  <span className="cursor-copy font-medium text-foreground">
+                <div className="mt-1 flex min-w-0 items-center gap-2">
+                  <span className="min-w-0 break-all font-medium text-foreground">
                     {data?.password
                       ? showPassword
                         ? data.password
