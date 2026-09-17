@@ -51,10 +51,8 @@ import {
 import type { VicAuftrag } from "@/lib/vic-auftraege.types";
 import { listProjects } from "@/lib/projects.functions";
 import {
-  assignNumberToVic,
   buyAnosimNumber,
   getAnosimFullServiceProduct,
-  listAssignableNumbers,
   unassignNumberFromVic,
 } from "@/lib/anosim.functions";
 
@@ -199,11 +197,8 @@ function AdminVics() {
   const [assignError, setAssignError] = useState<string | null>(null);
   const [detailVicId, setDetailVicId] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
-  const [selectedNumber, setSelectedNumber] = useState("");
   const [buyOpen, setBuyOpen] = useState(false);
 
-  const fetchAssignableNumbers = useServerFn(listAssignableNumbers);
-  const assignNumber = useServerFn(assignNumberToVic);
   const unassignNumber = useServerFn(unassignNumberFromVic);
   const fetchProduct = useServerFn(getAnosimFullServiceProduct);
   const buyNumber = useServerFn(buyAnosimNumber);
@@ -286,22 +281,6 @@ function AdminVics() {
     staleTime: 60_000,
   });
 
-  const assignNumberMutation = useMutation({
-    mutationFn: (values: { vicId: string; orderBookingId: number }) =>
-      assignNumber({ data: values }),
-    onSuccess: () => {
-      setPhoneError(null);
-      setSelectedNumber("");
-      queryClient.invalidateQueries({ queryKey: ["admin", "anosim"] });
-      invalidate();
-    },
-    onError: (err: unknown) =>
-      setPhoneError(
-        err instanceof Error && err.message
-          ? err.message
-          : "Nummer konnte nicht zugewiesen werden.",
-      ),
-  });
 
   const unassignNumberMutation = useMutation({
     mutationFn: (vicId: string) => unassignNumber({ data: { vicId } }),
