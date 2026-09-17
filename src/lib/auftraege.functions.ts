@@ -61,6 +61,9 @@ export const createAuftrag = createServerFn({ method: "POST" })
     const { error } = await context.supabase.from("auftraege").insert({
       name: data.name,
       logo_path: data.logo_path ?? null,
+      ident_type: data.ident_type ?? null,
+      besonderheiten: data.besonderheiten ?? null,
+      images: data.images ?? [],
       created_by: context.userId,
     });
 
