@@ -179,10 +179,140 @@ export const getAnosimFullServiceProduct = createServerFn({ method: "GET" })
     };
   });
 
+export const listAssignableNumbers = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(
+    async ({
+      context,
+    }): Promise<{ orderBookingId: number; number: string; endDate: string }[]> => {
+      await assertAdmin(context.supabase, context.userId);
+      const { anosimFetch, AnosimError } = await import("./anosim.server");
+
+      let bookings: import("./anosim.server").AnosimBooking[] = [];
+      try {
+        const result = await anosimFetch<import("./anosim.server").AnosimBooking[]>(
+          "/OrderBookings",
+        );
+        bookings = Array.isArray(result) ? result : [];
+      } catch (err) {
+        if (
+          err instanceof AnosimError &&
+          err.status === 400 &&
+          err.detail.toLowerCase().includes("no orderbooking")
+        ) {
+          bookings = [];
+        } else {
+          throw err;
+        }
+      }
+
+      const { data: rows } = await context.supabase
+        .from("anosim_numbers")
+        .select("order_booking_id, vic_id")
+        .not("vic_id", "is", null);
+
+      const taken = new Set<number>(
+        (rows ?? []).map((row: { order_booking_id: number }) =>
+          Number(row.order_booking_id),
+        ),
+      );
+
+      const now = Date.now();
+      return bookings
+        .filter(
+          (booking) =>
+            !taken.has(booking.id) &&
+            (!booking.endDate || new Date(booking.endDate).getTime() > now),
+        )
+        .map((booking) => ({
+          orderBookingId: booking.id,
+          number: booking.number,
+          endDate: booking.endDate,
+        }));
+    },
+  );
+
+export const assignNumberToVic = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        vicId: z.string().uuid(),
+        orderBookingId: z.number().int().positive(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+
+    const { data: existing } = await context.supabase
+      .from("anosim_numbers")
+      .select("id, vic_id")
+      .eq("order_booking_id", data.orderBookingId)
+      .maybeSingle();
+
+    if (existing?.vic_id && existing.vic_id !== data.vicId) {
+      throw new Error("Diese Nummer ist bereits einem anderen Datensatz zugewiesen.");
+    }
+
+    const { anosimFetch, AnosimError } = await import("./anosim.server");
+    let number: string | null = null;
+    let endDate: string | null = null;
+    try {
+      const bookings = await anosimFetch<import("./anosim.server").AnosimBooking[]>(
+        "/OrderBookings",
+      );
+      const booking = (Array.isArray(bookings) ? bookings : []).find(
+        (item) => item.id === data.orderBookingId,
+      );
+      number = booking?.number ?? null;
+      endDate = booking?.endDate ?? null;
+    } catch (err) {
+      if (!(err instanceof AnosimError)) throw err;
+    }
+
+    const payload: Record<string, unknown> = {
+      order_booking_id: data.orderBookingId,
+      vic_id: data.vicId,
+      created_by: context.userId,
+    };
+    if (number) payload.number = number;
+    if (endDate) payload.end_date = endDate;
+
+    const { error } = await context.supabase
+      .from("anosim_numbers")
+      .upsert(payload, { onConflict: "order_booking_id" });
+
+    if (error) throw new Error("Nummer konnte nicht zugewiesen werden.");
+    return { ok: true, number, endDate };
+  });
+
+export const unassignNumberFromVic = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({ vicId: z.string().uuid() }).parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+
+    const { error } = await context.supabase
+      .from("anosim_numbers")
+      .update({ vic_id: null })
+      .eq("vic_id", data.vicId);
+
+    if (error) throw new Error("Zuweisung konnte nicht entfernt werden.");
+    return { ok: true };
+  });
+
 export const buyAnosimNumber = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) =>
-    z.object({ productId: z.number().int().positive() }).parse(data),
+    z
+      .object({
+        productId: z.number().int().positive(),
+        vicId: z.string().uuid().nullable().optional(),
+      })
+      .parse(data),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
