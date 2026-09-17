@@ -14,6 +14,7 @@ export type AuftragRow = {
   images: string[];
   generate_password: boolean;
   generate_loginname: boolean;
+  admin_only: boolean;
   sort_order: number;
   created_at: string;
 };
@@ -38,6 +39,7 @@ const auftragSchema = z.object({
   images: z.array(z.string().trim().max(500)).max(50).optional(),
   generate_password: z.boolean().optional(),
   generate_loginname: z.boolean().optional(),
+  admin_only: z.boolean().optional(),
   sort_order: z.number().int().min(0).max(9999).optional(),
 });
 
@@ -49,7 +51,7 @@ export const listAuftraege = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("auftraege")
       .select(
-        "id, name, logo_path, ident_type, besonderheiten, images, generate_password, generate_loginname, sort_order, created_at",
+        "id, name, logo_path, ident_type, besonderheiten, images, generate_password, generate_loginname, admin_only, sort_order, created_at",
       )
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true });
@@ -75,6 +77,7 @@ export const createAuftrag = createServerFn({ method: "POST" })
       images: data.images ?? [],
       generate_password: data.generate_password ?? false,
       generate_loginname: data.generate_loginname ?? false,
+      admin_only: data.admin_only ?? false,
       sort_order: data.sort_order ?? 100,
       created_by: context.userId,
     });
@@ -101,6 +104,7 @@ export const updateAuftrag = createServerFn({ method: "POST" })
         images: data.images ?? [],
         generate_password: data.generate_password ?? false,
         generate_loginname: data.generate_loginname ?? false,
+        admin_only: data.admin_only ?? false,
         sort_order: data.sort_order ?? 100,
       })
       .eq("id", data.id);

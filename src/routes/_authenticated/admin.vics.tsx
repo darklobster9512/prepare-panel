@@ -695,8 +695,8 @@ function AdminVics() {
                           {(vic.auftraege ?? []).slice(0, 4).map((item) => (
                             <span
                               key={item.id}
-                              title={`${item.auftrag_name} · ${statusLabel(item.status, Boolean(vic.claimed_by))}`}
-                              className={`inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-md bg-background ${statusRingClass(item.status, Boolean(vic.claimed_by))}`}
+                              title={`${item.auftrag_name} · ${statusLabel(item.status, Boolean(vic.claimed_by), item.admin_only)}`}
+                              className={`inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-md bg-background ${statusRingClass(item.status, Boolean(vic.claimed_by), item.admin_only)}`}
                             >
                               <AuftragLogo
                                 value={item.logo_path}
@@ -1162,7 +1162,7 @@ function AdminVics() {
                                   : "border-border bg-secondary text-muted-foreground"
                             }`}
                           >
-                            {statusLabel(item.status, detailVic.claimed_by !== null)}
+                            {statusLabel(item.status, detailVic.claimed_by !== null, item.admin_only)}
                           </span>
                         </div>
                           <div className="mt-3 space-y-1 border-t border-border/60 pt-3 text-sm">

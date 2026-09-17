@@ -53,6 +53,7 @@ export function AuftraegeSection({ enabled }: Props) {
   const [newImages, setNewImages] = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
   const [generatePassword, setGeneratePassword] = useState(false);
+  const [adminOnly, setAdminOnly] = useState(false);
   const [generateLoginname, setGenerateLoginname] = useState(false);
   const [sortOrder, setSortOrder] = useState("100");
   const [error, setError] = useState<string | null>(null);
@@ -98,6 +99,7 @@ export function AuftraegeSection({ enabled }: Props) {
     setNewImages([]);
     setGeneratePassword(false);
     setGenerateLoginname(false);
+    setAdminOnly(false);
     setSortOrder("100");
     setError(null);
   };
@@ -119,6 +121,7 @@ export function AuftraegeSection({ enabled }: Props) {
     setNewImages([]);
     setGeneratePassword(auftrag.generate_password ?? false);
     setGenerateLoginname(auftrag.generate_loginname ?? false);
+    setAdminOnly(auftrag.admin_only ?? false);
     setSortOrder(String(auftrag.sort_order ?? 100));
     setError(null);
     setOpen(true);
@@ -174,6 +177,7 @@ export function AuftraegeSection({ enabled }: Props) {
         images: imagePaths,
         generate_password: generatePassword,
         generate_loginname: generateLoginname,
+        admin_only: adminOnly,
         sort_order: Number.isFinite(Number(sortOrder)) ? Number(sortOrder) : 100,
       };
 
@@ -314,6 +318,17 @@ export function AuftraegeSection({ enabled }: Props) {
                   onChange={(event) => setLogoFile(event.target.files?.[0] ?? null)}
                 />
               </div>
+            </div>
+
+            <div className="flex items-start justify-between gap-4 rounded-xl border border-border bg-muted/40 p-3">
+              <div className="space-y-1">
+                <Label htmlFor="auftrag-intern">Nur intern (Admin)</Label>
+                <p className="text-xs text-muted-foreground">
+                  Mitarbeiter sehen diesen Auftrag nicht. Er gilt beim Zuweisen sofort
+                  als erledigt, Passwort-Muster: Vorname + Jahr + „!" (z. B. Stefan2026!).
+                </p>
+              </div>
+              <Switch id="auftrag-intern" checked={adminOnly} onCheckedChange={setAdminOnly} />
             </div>
 
             <div className="space-y-2">

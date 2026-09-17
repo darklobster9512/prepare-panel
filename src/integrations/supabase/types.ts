@@ -60,6 +60,7 @@ export type Database = {
       }
       auftraege: {
         Row: {
+          admin_only: boolean
           besonderheiten: string | null
           created_at: string
           created_by: string | null
@@ -74,6 +75,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admin_only?: boolean
           besonderheiten?: string | null
           created_at?: string
           created_by?: string | null
@@ -88,6 +90,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admin_only?: boolean
           besonderheiten?: string | null
           created_at?: string
           created_by?: string | null

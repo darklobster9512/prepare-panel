@@ -8,13 +8,15 @@ import type { AuftragStatus, WorkAuftrag, WorkItem } from "@/lib/mitarbeiter.typ
 export type { AuftragStatus, WorkAuftrag, WorkItem };
 
 const SELECT_COLUMNS =
-  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, claimed_by, claimed_at, completed_at, completed_by, email_street, email_postal_code, email_city, email_birth_date, email_address, created_at, anosim_numbers(number, end_date, order_booking_id), vic_auftraege!inner(id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, auftraege(name, logo_path, ident_type, besonderheiten, images, sort_order))";
+  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, claimed_by, claimed_at, completed_at, completed_by, email_street, email_postal_code, email_city, email_birth_date, email_address, created_at, anosim_numbers(number, end_date, order_booking_id), vic_auftraege!inner(id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, auftraege(name, logo_path, ident_type, besonderheiten, images, sort_order, admin_only))";
 
 function mapItem(row: any): WorkItem {
   const { anosim_numbers, vic_auftraege, ...rest } = row;
   const phone = (anosim_numbers ?? [])[0] ?? null;
 
-  const auftraege: WorkAuftrag[] = (vic_auftraege ?? []).map((item: any) => ({
+  const auftraege: WorkAuftrag[] = (vic_auftraege ?? [])
+    .filter((item: any) => !item.auftraege?.admin_only)
+    .map((item: any) => ({
     id: item.id,
     auftrag_id: item.auftrag_id,
     name: item.auftraege?.name ?? "",
@@ -53,7 +55,9 @@ export const listWorkItems = createServerFn({ method: "GET" })
       .order("id", { ascending: false });
 
     if (error) throw new Error("Aufträge konnten nicht geladen werden.");
-    return ((data ?? []) as any[]).map(mapItem);
+    return ((data ?? []) as any[])
+      .map(mapItem)
+      .filter((item) => item.auftraege.length > 0);
   });
 
 export const getWorkItem = createServerFn({ method: "GET" })
@@ -225,12 +229,15 @@ export const finishVic = createServerFn({ method: "POST" })
 
     const { data: open, error: openError } = await context.supabase
       .from("vic_auftraege")
-      .select("id")
+      .select("id, auftraege(admin_only)")
       .eq("vic_id", data.vic_id)
       .eq("status", "offen");
 
     if (openError) throw new Error("Aufträge konnten nicht geprüft werden.");
-    if ((open ?? []).length > 0) {
+    const openVisible = ((open ?? []) as any[]).filter(
+      (row) => !row.auftraege?.admin_only,
+    );
+    if (openVisible.length > 0) {
       throw new Error("Es sind noch Aufträge offen.");
     }
 

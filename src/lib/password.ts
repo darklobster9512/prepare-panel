@@ -1,3 +1,13 @@
+/** Erzeugt ein Passwort für interne Aufträge: Vorname + Jahr + "!" (z. B. Stefan2026!). */
+export function generateInternalPassword(firstName: string): string {
+  const base = (firstName ?? "")
+    .trim()
+    .split(/\s+/)[0]
+    ?.replace(/[^\p{L}]/gu, "") ?? "";
+
+  return `${base}${new Date().getFullYear()}!`;
+}
+
 /** Erzeugt ein Passwort nach dem Muster Vorname + 6 zufällige Ziffern. */
 export function generateVicPassword(firstName: string): string {
   const base = (firstName ?? "")

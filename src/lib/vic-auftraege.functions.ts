@@ -2,7 +2,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { generateLoginName, generateVicPassword } from "@/lib/password";
+import {
+  generateInternalPassword,
+  generateLoginName,
+  generateVicPassword,
+} from "@/lib/password";
 import type { VicAuftrag } from "@/lib/vic-auftraege.types";
 
 export type { VicAuftrag };
@@ -30,13 +34,21 @@ async function buildCredentials(supabase: any, vicId: string, auftragId: string)
 
   const { data: auftrag, error: auftragError } = await supabase
     .from("auftraege")
-    .select("generate_password, generate_loginname")
+    .select("generate_password, generate_loginname, admin_only")
     .eq("id", auftragId)
     .maybeSingle();
 
   if (auftragError || !auftrag) throw new Error("Auftrag konnte nicht geladen werden.");
 
   let password: string | null = null;
+
+  if (auftrag.admin_only) {
+    return {
+      admin_only: true,
+      password: generateInternalPassword(vic.first_name),
+      login_name: null,
+    };
+  }
 
   if (auftrag.generate_password) {
     // Passwörter der anderen Aufträge dieses Vics laden, damit kein Wert doppelt vorkommt.
@@ -58,6 +70,7 @@ async function buildCredentials(supabase: any, vicId: string, auftragId: string)
   }
 
   return {
+    admin_only: false,
     password,
     login_name: auftrag.generate_loginname
       ? generateLoginName(vic.last_name, vic.birth_date)
@@ -66,7 +79,7 @@ async function buildCredentials(supabase: any, vicId: string, auftragId: string)
 }
 
 const SELECT_COLUMNS =
-  "id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, completed_at, auftraege(name, logo_path)";
+  "id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, completed_at, auftraege(name, logo_path, admin_only)";
 
 function mapRow(row: any): VicAuftrag {
   return {
@@ -74,6 +87,7 @@ function mapRow(row: any): VicAuftrag {
     auftrag_id: row.auftrag_id,
     auftrag_name: row.auftraege?.name ?? "",
     logo_path: row.auftraege?.logo_path ?? null,
+    admin_only: Boolean(row.auftraege?.admin_only),
     login_name: row.login_name ?? null,
     password: row.password ?? null,
     status: (row.status ?? "offen") as VicAuftrag["status"],
@@ -110,6 +124,13 @@ export const assignAuftrag = createServerFn({ method: "POST" })
         login_name: credentials.login_name,
         password: credentials.password,
         created_by: context.userId,
+        ...(credentials.admin_only
+          ? {
+              status: "erfolgreich",
+              completed_at: new Date().toISOString(),
+              completed_by: context.userId,
+            }
+          : {}),
       })
       .select(SELECT_COLUMNS)
       .single();

@@ -5,6 +5,7 @@ export type VicAuftrag = {
   auftrag_id: string;
   auftrag_name: string;
   logo_path: string | null;
+  admin_only: boolean;
   login_name: string | null;
   password: string | null;
   status: AuftragStatus;
