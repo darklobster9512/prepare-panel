@@ -282,12 +282,14 @@ function AdminEmployees() {
                     <td className="px-6 py-4 text-right">
                       <Button
                         type="button"
-                        variant="outline"
-                        size="sm"
+                        variant="ghost"
+                        size="icon"
                         className="rounded-full"
+                        title="Mitarbeiter bearbeiten"
+                        aria-label="Mitarbeiter bearbeiten"
                         onClick={() => openOnboarding(person)}
                       >
-                        Onboarding bearbeiten
+                        <Pencil className="h-4 w-4" aria-hidden="true" />
                       </Button>
                     </td>
                   </tr>
