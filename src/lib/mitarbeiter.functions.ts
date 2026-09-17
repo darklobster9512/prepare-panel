@@ -55,7 +55,9 @@ export const listWorkItems = createServerFn({ method: "GET" })
       .order("id", { ascending: false });
 
     if (error) throw new Error("Aufträge konnten nicht geladen werden.");
-    return ((data ?? []) as any[]).map(mapItem);
+    return ((data ?? []) as any[])
+      .map(mapItem)
+      .filter((item) => item.auftraege.length > 0);
   });
 
 export const getWorkItem = createServerFn({ method: "GET" })
