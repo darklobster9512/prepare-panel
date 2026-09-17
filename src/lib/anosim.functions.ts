@@ -332,9 +332,11 @@ export const buyAnosimNumber = createServerFn({ method: "POST" })
 
     if (bookings.length > 0) {
       await context.supabase.from("anosim_numbers").upsert(
-        bookings.map((booking) => ({
+        bookings.map((booking, index) => ({
           order_booking_id: booking.id,
           number: booking.number,
+          end_date: booking.endDate ?? null,
+          vic_id: index === 0 ? (data.vicId ?? null) : null,
           created_by: context.userId,
         })),
         { onConflict: "order_booking_id" },
