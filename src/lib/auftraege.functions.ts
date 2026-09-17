@@ -44,7 +44,9 @@ export const listAuftraege = createServerFn({ method: "GET" })
 
     const { data, error } = await context.supabase
       .from("auftraege")
-      .select("id, name, logo_path, ident_type, besonderheiten, images, created_at")
+      .select(
+        "id, name, logo_path, ident_type, besonderheiten, images, generate_password, created_at",
+      )
       .order("created_at", { ascending: true });
 
     if (error) throw new Error("Aufträge konnten nicht geladen werden.");
