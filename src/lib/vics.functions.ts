@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { VicAuftrag } from "@/lib/vic-auftraege.types";
 
 export type VicRow = {
   id: string;
@@ -19,6 +20,7 @@ export type VicRow = {
   notes: string | null;
   project_id: string | null;
   project_name: string | null;
+  auftraege: VicAuftrag[];
   created_at: string;
 };
 
@@ -77,15 +79,27 @@ const assignmentSchema = z.object({
 });
 
 const SELECT_COLUMNS =
-  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, created_at, projects(name)";
+  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, created_at, projects(name), vic_auftraege(id, auftrag_id, login_name, password, auftraege(name, logo_path))";
 
-type RawVicRow = Omit<VicRow, "project_name"> & {
+type RawVicRow = Omit<VicRow, "project_name" | "auftraege"> & {
   projects: { name: string } | null;
+  vic_auftraege: any[] | null;
 };
 
 function mapVic(row: RawVicRow): VicRow {
-  const { projects, ...rest } = row;
-  return { ...rest, project_name: projects?.name ?? null };
+  const { projects, vic_auftraege, ...rest } = row;
+  return {
+    ...rest,
+    project_name: projects?.name ?? null,
+    auftraege: (vic_auftraege ?? []).map((item) => ({
+      id: item.id,
+      auftrag_id: item.auftrag_id,
+      auftrag_name: item.auftraege?.name ?? "",
+      logo_path: item.auftraege?.logo_path ?? null,
+      login_name: item.login_name ?? null,
+      password: item.password ?? null,
+    })),
+  };
 }
 
 export const listVics = createServerFn({ method: "GET" })

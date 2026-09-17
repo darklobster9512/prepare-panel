@@ -4,17 +4,20 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   AlertCircle,
   ClipboardPaste,
+  Copy,
   FolderKanban,
   IdCard,
   LayoutDashboard,
   Pencil,
   Plus,
+  RefreshCw,
   Trash2,
   Users,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { AuftraegeSection } from "@/components/auftraege-section";
+import { AuftragLogo } from "@/components/auftrag-logo";
 import { PanelShell } from "@/components/panel-shell";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +41,13 @@ import {
   updateVic,
   type VicRow,
 } from "@/lib/vics.functions";
+import { listAuftraege } from "@/lib/auftraege.functions";
+import {
+  assignAuftrag,
+  regenerateCredentials,
+  unassignAuftrag,
+} from "@/lib/vic-auftraege.functions";
+import type { VicAuftrag } from "@/lib/vic-auftraege.types";
 import { listProjects } from "@/lib/projects.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/vics")({
@@ -121,6 +131,23 @@ function formatDate(value: string | null) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString("de-DE");
 }
 
+function CredentialRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-28 shrink-0 text-muted-foreground">{label}</span>
+      <span className="font-medium text-foreground">{value}</span>
+      <button
+        type="button"
+        onClick={() => navigator.clipboard?.writeText(value)}
+        aria-label={`${label} kopieren`}
+        className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-secondary"
+      >
+        <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
 type DialogMode = "form" | "import" | "preview";
 
 function AdminVics() {
@@ -135,6 +162,10 @@ function AdminVics() {
   const removeVic = useServerFn(deleteVic);
   const assignProject = useServerFn(assignVicProject);
   const fetchProjects = useServerFn(listProjects);
+  const fetchAuftraege = useServerFn(listAuftraege);
+  const addAssignment = useServerFn(assignAuftrag);
+  const removeAssignment = useServerFn(unassignAuftrag);
+  const renewCredentials = useServerFn(regenerateCredentials);
 
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<DialogMode>("form");
@@ -146,6 +177,8 @@ function AdminVics() {
   const [importText, setImportText] = useState("");
   const [parsed, setParsed] = useState<ParsedVic[]>([]);
   const [selected, setSelected] = useState<boolean[]>([]);
+  const [assignVicId, setAssignVicId] = useState<string | null>(null);
+  const [assignError, setAssignError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && role && role !== "admin") {
@@ -167,6 +200,57 @@ function AdminVics() {
     queryFn: () => fetchProjects(),
     enabled: role === "admin",
   });
+
+  const auftraegeQuery = useQuery({
+    queryKey: ["admin", "auftraege"],
+    queryFn: () => fetchAuftraege(),
+    enabled: role === "admin",
+  });
+
+  const patchVicAuftraege = (
+    vicId: string,
+    update: (current: VicAuftrag[]) => VicAuftrag[],
+  ) =>
+    queryClient.setQueryData<VicRow[]>(["admin", "vics"], (prev) =>
+      (prev ?? []).map((vic) =>
+        vic.id === vicId ? { ...vic, auftraege: update(vic.auftraege ?? []) } : vic,
+      ),
+    );
+
+  const assignAuftragMutation = useMutation({
+    mutationFn: (values: { vic_id: string; auftrag_id: string }) =>
+      addAssignment({ data: values }),
+    onSuccess: (row, variables) => {
+      patchVicAuftraege(variables.vic_id, (current) => [...current, row]);
+      setAssignError(null);
+    },
+    onError: () => setAssignError("Auftrag konnte nicht zugewiesen werden."),
+  });
+
+  const unassignAuftragMutation = useMutation({
+    mutationFn: (values: { vic_id: string; auftrag_id: string }) =>
+      removeAssignment({ data: values }),
+    onSuccess: (_data, variables) => {
+      patchVicAuftraege(variables.vic_id, (current) =>
+        current.filter((item) => item.auftrag_id !== variables.auftrag_id),
+      );
+      setAssignError(null);
+    },
+    onError: () => setAssignError("Zuweisung konnte nicht entfernt werden."),
+  });
+
+  const regenerateMutation = useMutation({
+    mutationFn: (values: { vic_id: string; auftrag_id: string }) =>
+      renewCredentials({ data: values }),
+    onSuccess: (row, variables) => {
+      patchVicAuftraege(variables.vic_id, (current) =>
+        current.map((item) => (item.auftrag_id === variables.auftrag_id ? row : item)),
+      );
+      setAssignError(null);
+    },
+    onError: () => setAssignError("Zugangsdaten konnten nicht neu erzeugt werden."),
+  });
+
 
   const saveMutation = useMutation({
     mutationFn: (values: FormState & { id?: string }) => {
@@ -344,6 +428,7 @@ function AdminVics() {
   };
 
   const vics = vicsQuery.data ?? [];
+  const assignVic = vics.find((vic) => vic.id === assignVicId) ?? null;
   const projects = projectsQuery.data ?? [];
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -413,25 +498,26 @@ function AdminVics() {
                 <th className="px-5 py-3 font-semibold">Steuer-ID</th>
                 <th className="px-5 py-3 font-semibold">Bank</th>
                 <th className="px-5 py-3 font-semibold">Projekt</th>
+                <th className="px-5 py-3 font-semibold">Aufträge</th>
                 <th className="px-5 py-3 font-semibold text-right">Aktionen</th>
               </tr>
             </thead>
             <tbody>
               {vicsQuery.isLoading ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={10}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={11}>
                     Wird geladen …
                   </td>
                 </tr>
               ) : vicsQuery.isError ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={10}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={11}>
                     Datensätze konnten nicht geladen werden.
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td className="px-5 py-6 text-muted-foreground" colSpan={10}>
+                  <td className="px-5 py-6 text-muted-foreground" colSpan={11}>
                     {vics.length === 0
                       ? "Noch keine Datensätze vorhanden."
                       : "Keine Treffer für diese Suche."}
@@ -488,7 +574,49 @@ function AdminVics() {
                       </select>
                     </td>
                     <td className="px-5 py-4">
+                      {(vic.auftraege ?? []).length === 0 ? (
+                        <span className="text-muted-foreground">–</span>
+                      ) : (
+                        <div className="flex flex-wrap items-center gap-1">
+                          {(vic.auftraege ?? []).slice(0, 4).map((item) => (
+                            <span
+                              key={item.id}
+                              title={item.auftrag_name}
+                              className="inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-md border border-border bg-background"
+                            >
+                              <AuftragLogo
+                                value={item.logo_path}
+                                alt={item.auftrag_name}
+                                className="h-full w-full object-contain p-0.5"
+                                fallback={
+                                  <span className="text-[0.6rem] font-semibold text-muted-foreground">
+                                    {item.auftrag_name.slice(0, 2).toUpperCase()}
+                                  </span>
+                                }
+                              />
+                            </span>
+                          ))}
+                          {(vic.auftraege ?? []).length > 4 ? (
+                            <span className="text-xs text-muted-foreground">
+                              +{(vic.auftraege ?? []).length - 4}
+                            </span>
+                          ) : null}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAssignError(null);
+                            setAssignVicId(vic.id);
+                          }}
+                          aria-label="Aufträge zuweisen"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary"
+                        >
+                          <Plus className="h-4 w-4" aria-hidden="true" />
+                        </button>
                         <button
                           type="button"
                           onClick={() => openEdit(vic)}
@@ -514,6 +642,136 @@ function AdminVics() {
           </table>
         </div>
       </section>
+
+      <Dialog
+        open={assignVicId !== null}
+        onOpenChange={(value) => {
+          if (!value) setAssignVicId(null);
+        }}
+      >
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Aufträge zuweisen</DialogTitle>
+            <DialogDescription>
+              {assignVic
+                ? `${assignVic.first_name} ${assignVic.last_name}`.trim()
+                : "Datensatz"}{" "}
+              – Aufträge an- oder abwählen. Zugangsdaten werden automatisch erzeugt,
+              wenn der Auftrag das vorsieht.
+            </DialogDescription>
+          </DialogHeader>
+
+          {assignError ? (
+            <p className="flex items-center gap-2 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4" aria-hidden="true" />
+              {assignError}
+            </p>
+          ) : null}
+
+          <div className="space-y-2">
+            {auftraegeQuery.isLoading ? (
+              <p className="text-sm text-muted-foreground">Wird geladen …</p>
+            ) : (auftraegeQuery.data ?? []).length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Noch keine Aufträge angelegt.
+              </p>
+            ) : (
+              (auftraegeQuery.data ?? []).map((auftrag) => {
+                const assignment = (assignVic?.auftraege ?? []).find(
+                  (item) => item.auftrag_id === auftrag.id,
+                );
+                return (
+                  <div
+                    key={auftrag.id}
+                    className="rounded-xl border border-border bg-card px-4 py-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg border border-border bg-background">
+                        <AuftragLogo
+                          value={auftrag.logo_path}
+                          alt={auftrag.name}
+                          className="h-full w-full object-contain p-1"
+                          fallback={
+                            <span className="text-[0.65rem] font-semibold text-muted-foreground">
+                              {auftrag.name.slice(0, 2).toUpperCase()}
+                            </span>
+                          }
+                        />
+                      </span>
+                      <span className="flex-1 text-sm font-medium text-foreground">
+                        {auftrag.name}
+                      </span>
+                      <Button
+                        type="button"
+                        variant={assignment ? "outline" : "default"}
+                        size="sm"
+                        className="rounded-full"
+                        disabled={
+                          !assignVicId ||
+                          assignAuftragMutation.isPending ||
+                          unassignAuftragMutation.isPending
+                        }
+                        onClick={() => {
+                          if (!assignVicId) return;
+                          const values = {
+                            vic_id: assignVicId,
+                            auftrag_id: auftrag.id,
+                          };
+                          if (assignment) unassignAuftragMutation.mutate(values);
+                          else assignAuftragMutation.mutate(values);
+                        }}
+                      >
+                        {assignment ? "Entfernen" : "Zuweisen"}
+                      </Button>
+                    </div>
+
+                    {assignment ? (
+                      <div className="mt-3 space-y-1 border-t border-border/60 pt-3 text-sm">
+                        {assignment.login_name ? (
+                          <CredentialRow
+                            label="Anmeldename"
+                            value={assignment.login_name}
+                          />
+                        ) : null}
+                        {assignment.password ? (
+                          <CredentialRow label="Passwort" value={assignment.password} />
+                        ) : null}
+                        {!assignment.login_name && !assignment.password ? (
+                          <p className="text-muted-foreground">
+                            Für diesen Auftrag werden keine Zugangsdaten erzeugt.
+                          </p>
+                        ) : null}
+                        {auftrag.generate_loginname && !assignment.login_name ? (
+                          <p className="text-muted-foreground">
+                            Anmeldename nicht möglich – Geburtsdatum fehlt.
+                          </p>
+                        ) : null}
+                        {auftrag.generate_password || auftrag.generate_loginname ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              assignVicId &&
+                              regenerateMutation.mutate({
+                                vic_id: assignVicId,
+                                auftrag_id: auftrag.id,
+                              })
+                            }
+                            className="mt-1 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                          >
+                            <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+                            Neu erzeugen
+                          </button>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
