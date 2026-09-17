@@ -53,6 +53,7 @@ const nav = [
   { label: "Mitarbeiter", icon: Users, to: "/admin/mitarbeiter" },
   { label: "Vics", icon: IdCard, to: "/admin/vics" },
   { label: "Projekte", icon: FolderKanban, to: "/admin/projekte" },
+  { label: "Telefonnummern", icon: Phone, to: "/admin/telefonnummern" },
 ];
 
 function formatDate(value: string) {
