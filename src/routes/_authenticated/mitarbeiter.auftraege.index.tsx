@@ -70,15 +70,8 @@ function MitarbeiterAuftraege() {
   });
 
   const items = itemsQuery.data ?? [];
-  const mine = items.filter(
-    (item) =>
-      item.claimed_by === user?.id &&
-      item.auftraege.some((a) => a.status === "offen"),
-  );
-  const done = items.filter(
-    (item) =>
-      item.claimed_by === user?.id && item.auftraege.every((a) => a.status !== "offen"),
-  );
+  const mine = items.filter((item) => item.claimed_by === user?.id && !item.completed_at);
+  const done = items.filter((item) => item.claimed_by === user?.id && item.completed_at);
   const available = items.filter((item) => !item.claimed_by);
   const taken = items.filter((item) => item.claimed_by && item.claimed_by !== user?.id);
 
