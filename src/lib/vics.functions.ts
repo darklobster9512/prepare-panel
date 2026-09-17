@@ -19,6 +19,7 @@ export type VicRow = {
   bank: string | null;
   notes: string | null;
   project_id: string | null;
+  claimed_by: string | null;
   project_name: string | null;
   auftraege: VicAuftrag[];
   phone_number: string | null;
@@ -81,7 +82,7 @@ const assignmentSchema = z.object({
 });
 
 const SELECT_COLUMNS =
-  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, created_at, projects(name), anosim_numbers(number, end_date), vic_auftraege(id, auftrag_id, login_name, password, auftraege(name, logo_path))";
+  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, claimed_by, created_at, projects(name), anosim_numbers(number, end_date), vic_auftraege(id, auftrag_id, login_name, password, status, auftraege(name, logo_path))";
 
 type RawVicRow = Omit<
   VicRow,
@@ -107,6 +108,7 @@ function mapVic(row: RawVicRow): VicRow {
       logo_path: item.auftraege?.logo_path ?? null,
       login_name: item.login_name ?? null,
       password: item.password ?? null,
+      status: (item.status ?? "offen") as VicAuftrag["status"],
     })),
   };
 }

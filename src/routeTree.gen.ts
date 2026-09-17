@@ -19,6 +19,7 @@ import { Route as AuthenticatedAdminTelefonnummernRouteImport } from './routes/_
 import { Route as AuthenticatedAdminVicsRouteImport } from './routes/_authenticated/admin.vics'
 import { Route as AuthenticatedMitarbeiterIndexRouteImport } from './routes/_authenticated/mitarbeiter.index'
 import { Route as AuthenticatedMitarbeiterAuftraegeIndexRouteImport } from './routes/_authenticated/mitarbeiter.auftraege.index'
+import { Route as AuthenticatedMitarbeiterAuftraegeVicIdRouteImport } from './routes/_authenticated/mitarbeiter.auftraege.$vicId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -74,6 +75,12 @@ const AuthenticatedMitarbeiterAuftraegeIndexRoute =
     path: '/mitarbeiter/auftraege/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMitarbeiterAuftraegeVicIdRoute =
+  AuthenticatedMitarbeiterAuftraegeVicIdRouteImport.update({
+    id: '/mitarbeiter/auftraege/$vicId',
+    path: '/mitarbeiter/auftraege/$vicId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -84,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/admin/vics': typeof AuthenticatedAdminVicsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/mitarbeiter/': typeof AuthenticatedMitarbeiterIndexRoute
+  '/mitarbeiter/auftraege/$vicId': typeof AuthenticatedMitarbeiterAuftraegeVicIdRoute
   '/mitarbeiter/auftraege/': typeof AuthenticatedMitarbeiterAuftraegeIndexRoute
 }
 export interface FileRoutesByTo {
@@ -95,6 +103,7 @@ export interface FileRoutesByTo {
   '/admin/vics': typeof AuthenticatedAdminVicsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/mitarbeiter': typeof AuthenticatedMitarbeiterIndexRoute
+  '/mitarbeiter/auftraege/$vicId': typeof AuthenticatedMitarbeiterAuftraegeVicIdRoute
   '/mitarbeiter/auftraege': typeof AuthenticatedMitarbeiterAuftraegeIndexRoute
 }
 export interface FileRoutesById {
@@ -108,6 +117,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/vics': typeof AuthenticatedAdminVicsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/mitarbeiter/': typeof AuthenticatedMitarbeiterIndexRoute
+  '/_authenticated/mitarbeiter/auftraege/$vicId': typeof AuthenticatedMitarbeiterAuftraegeVicIdRoute
   '/_authenticated/mitarbeiter/auftraege/': typeof AuthenticatedMitarbeiterAuftraegeIndexRoute
 }
 export interface FileRouteTypes {
@@ -121,6 +131,7 @@ export interface FileRouteTypes {
     | '/admin/vics'
     | '/admin/'
     | '/mitarbeiter/'
+    | '/mitarbeiter/auftraege/$vicId'
     | '/mitarbeiter/auftraege/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
     | '/admin/vics'
     | '/admin'
     | '/mitarbeiter'
+    | '/mitarbeiter/auftraege/$vicId'
     | '/mitarbeiter/auftraege'
   id:
     | '__root__'
@@ -144,6 +156,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/vics'
     | '/_authenticated/admin/'
     | '/_authenticated/mitarbeiter/'
+    | '/_authenticated/mitarbeiter/auftraege/$vicId'
     | '/_authenticated/mitarbeiter/auftraege/'
   fileRoutesById: FileRoutesById
 }
@@ -225,6 +238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMitarbeiterAuftraegeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mitarbeiter/auftraege/$vicId': {
+      id: '/_authenticated/mitarbeiter/auftraege/$vicId'
+      path: '/mitarbeiter/auftraege/$vicId'
+      fullPath: '/mitarbeiter/auftraege/$vicId'
+      preLoaderRoute: typeof AuthenticatedMitarbeiterAuftraegeVicIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -235,6 +255,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminVicsRoute: typeof AuthenticatedAdminVicsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedMitarbeiterIndexRoute: typeof AuthenticatedMitarbeiterIndexRoute
+  AuthenticatedMitarbeiterAuftraegeVicIdRoute: typeof AuthenticatedMitarbeiterAuftraegeVicIdRoute
   AuthenticatedMitarbeiterAuftraegeIndexRoute: typeof AuthenticatedMitarbeiterAuftraegeIndexRoute
 }
 
@@ -245,6 +266,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminVicsRoute: AuthenticatedAdminVicsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedMitarbeiterIndexRoute: AuthenticatedMitarbeiterIndexRoute,
+  AuthenticatedMitarbeiterAuftraegeVicIdRoute:
+    AuthenticatedMitarbeiterAuftraegeVicIdRoute,
   AuthenticatedMitarbeiterAuftraegeIndexRoute:
     AuthenticatedMitarbeiterAuftraegeIndexRoute,
 }

@@ -66,7 +66,7 @@ async function buildCredentials(supabase: any, vicId: string, auftragId: string)
 }
 
 const SELECT_COLUMNS =
-  "id, auftrag_id, login_name, password, auftraege(name, logo_path)";
+  "id, auftrag_id, login_name, password, status, auftraege(name, logo_path)";
 
 function mapRow(row: any): VicAuftrag {
   return {
@@ -76,6 +76,7 @@ function mapRow(row: any): VicAuftrag {
     logo_path: row.auftraege?.logo_path ?? null,
     login_name: row.login_name ?? null,
     password: row.password ?? null,
+    status: (row.status ?? "offen") as VicAuftrag["status"],
   };
 }
 
