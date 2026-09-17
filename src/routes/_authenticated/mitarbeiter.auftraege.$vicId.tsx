@@ -11,7 +11,6 @@ import {
   LayoutDashboard,
   MessageSquare,
   Phone,
-  Plus,
   RefreshCw,
   X,
 } from "lucide-react";
