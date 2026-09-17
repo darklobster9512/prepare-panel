@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   CalendarDays,
   Check,
+  ClipboardCheck,
   ClipboardList,
   FileText,
   Info,
