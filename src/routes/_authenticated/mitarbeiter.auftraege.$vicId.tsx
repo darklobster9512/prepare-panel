@@ -260,13 +260,13 @@ function WizardPage() {
           {(itemQuery.error as Error)?.message ?? "Datensatz konnte nicht geladen werden."}
         </p>
       ) : (
-        <div className="mt-6 grid gap-6 xl:grid-cols-[22rem_1fr]">
+        <div className="mt-6 grid min-w-0 gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
           <aside className="space-y-6">
             <VicCard item={item} />
             <PhoneCard item={item} sms={smsQuery.data ?? []} onRefresh={() => smsQuery.refetch()} />
           </aside>
 
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6">
             {!isMine ? (
               <p className="rounded-xl border border-border bg-secondary px-4 py-3 text-sm text-foreground">
                 Dieser Datensatz ist dir nicht zugewiesen – du kannst ihn nur ansehen.
@@ -349,17 +349,17 @@ function VicCard({ item }: { item: WorkItem }) {
       </h2>
       <dl className="mt-4 space-y-2 text-sm">
         {rows.map((row) => (
-          <div key={row.label} className="flex items-center justify-between gap-2">
+          <div key={row.label} className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
             <dt className="shrink-0 text-muted-foreground">{row.label}</dt>
-            <dd className="flex min-w-0 items-center justify-end">
+            <dd className="flex min-w-0 items-center sm:justify-end">
               {row.copyable && row.value !== "–" ? (
                 <CopyText
                   value={row.value}
                   label={row.label}
-                  className="text-right font-medium text-foreground hover:text-foreground"
+                  className="font-medium text-foreground hover:text-foreground sm:text-right"
                 />
               ) : (
-                <span className="truncate text-right font-medium text-foreground">
+                <span className="break-words font-medium text-foreground sm:text-right">
                   {row.value}
                 </span>
               )}
@@ -433,7 +433,7 @@ function PhoneCard({
               key={`${message.messageDate}-${index}`}
               className="rounded-xl border border-border bg-background px-3 py-2"
             >
-              <p className="flex justify-between gap-2 text-[0.7rem] text-muted-foreground">
+              <p className="flex flex-wrap justify-between gap-x-2 text-[0.7rem] text-muted-foreground">
                 <span>{message.messageSender}</span>
                 <span>{formatDateTime(message.messageDate)}</span>
               </p>
@@ -462,14 +462,14 @@ function StepBar({
   openCount: number;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
+    <div className="-mx-1 flex snap-x items-center gap-2 overflow-x-auto rounded-xl border border-border bg-card p-3 shadow-sm sm:mx-0 sm:flex-wrap sm:gap-3 sm:rounded-2xl sm:p-4">
       {steps.map((step, index) => (
         <button
           key={step.id}
           type="button"
           onClick={() => onSelect(index)}
           title={`${step.name} · ${statusLabel(step.status, claimed)}`}
-          className={`inline-flex items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold transition-colors ${
+          className={`inline-flex shrink-0 snap-start items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold transition-colors ${
             index === current ? "bg-secondary text-foreground" : "text-muted-foreground"
           }`}
         >
@@ -504,7 +504,7 @@ function StepBar({
               ? "Zusammenfassung"
               : `Noch ${openCount} ${openCount === 1 ? "Auftrag" : "Aufträge"} offen`
           }
-          className={`inline-flex items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`inline-flex shrink-0 snap-start items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
             current >= steps.length ? "bg-secondary text-foreground" : "text-muted-foreground"
           }`}
         >
@@ -540,7 +540,7 @@ function SummaryCard({
   const failed = item.auftraege.filter((a) => a.status === "fehlgeschlagen").length;
 
   return (
-    <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+    <section className="rounded-xl border border-border bg-card p-4 shadow-sm sm:rounded-2xl sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold tracking-tight text-foreground">Zusammenfassung</h2>
@@ -648,7 +648,7 @@ function SummaryCard({
             type="button"
             disabled={pending}
             onClick={() => setConfirmOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60 sm:w-auto"
           >
             <ClipboardCheck className="h-4 w-4" aria-hidden="true" />
             {pending ? "Wird abgeschlossen …" : "Abschluss bestätigen"}
@@ -664,11 +664,11 @@ function SummaryCard({
               Danach kannst du nichts mehr ändern. Der Datensatz wird als abgeschlossen markiert.
             </DialogDescription>
           </DialogHeader>
-          <div className="mt-4 flex justify-end gap-3">
+          <div className="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={() => setConfirmOpen(false)}
-              className="inline-flex items-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+              className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
             >
               Abbrechen
             </button>
@@ -679,7 +679,7 @@ function SummaryCard({
                 setConfirmOpen(false);
                 onFinish();
               }}
-              className="inline-flex items-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+              className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
             >
               Abschließen
             </button>
@@ -755,9 +755,9 @@ function StepCard({
   });
 
   return (
-    <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+    <section className="rounded-xl border border-border bg-card p-4 shadow-sm sm:rounded-2xl sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
           <span className="inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-border bg-background">
             <AuftragLogo
               value={step.logo_path}
@@ -770,8 +770,8 @@ function StepCard({
               }
             />
           </span>
-          <div>
-            <h2 className="text-lg font-bold tracking-tight text-foreground">{step.name}</h2>
+          <div className="min-w-0">
+            <h2 className="break-words text-lg font-bold tracking-tight text-foreground">{step.name}</h2>
             <p className="text-xs text-muted-foreground">
               {step.ident_type === "email"
                 ? "E-Mail"
@@ -789,7 +789,7 @@ function StepCard({
           <button
             type="button"
             onClick={() => setInfoOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary sm:w-auto"
           >
             <Info className="h-4 w-4" aria-hidden="true" />
             INFOS
@@ -827,7 +827,7 @@ function StepCard({
             <label className={labelClass} htmlFor="email-address">
               Verwendete E-Mail-Adresse
             </label>
-            <div className="mt-1 flex flex-wrap gap-2">
+            <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               <input
                 id="email-address"
                 type="email"
@@ -835,7 +835,7 @@ function StepCard({
                 onChange={(event) => setEmail(event.target.value)}
                 disabled={!editable}
                 placeholder="name@anbieter.de"
-                className={`${inputClass} max-w-sm`}
+                className={`${inputClass} sm:max-w-sm`}
               />
               <button
                 type="button"
@@ -844,7 +844,7 @@ function StepCard({
                   setError(null);
                   emailMutation.mutate();
                 }}
-                className="inline-flex items-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-60"
+                className="inline-flex w-full items-center justify-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-60 sm:w-auto"
               >
                 {emailMutation.isPending ? "Wird gespeichert …" : "E-Mail speichern"}
               </button>
@@ -921,7 +921,7 @@ function StepCard({
 
       {error ? <p className="mt-4 text-sm text-destructive">{error}</p> : null}
 
-      <div className="mt-6 flex flex-wrap gap-3 border-t border-border pt-5">
+      <div className="mt-6 flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:flex-wrap">
         <button
           type="button"
           disabled={!editable || completeMutation.isPending}
@@ -929,7 +929,7 @@ function StepCard({
             setError(null);
             completeMutation.mutate("erfolgreich");
           }}
-          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60 sm:w-auto"
         >
           <Check className="h-4 w-4" aria-hidden="true" />
           Erfolgreich
@@ -941,7 +941,7 @@ function StepCard({
             setError(null);
             completeMutation.mutate("fehlgeschlagen");
           }}
-          className="inline-flex items-center gap-2 rounded-full border border-destructive/50 px-5 py-2.5 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-destructive/50 px-5 py-2.5 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60 sm:w-auto"
         >
           <X className="h-4 w-4" aria-hidden="true" />
           Fehlgeschlagen
@@ -949,7 +949,7 @@ function StepCard({
       </div>
 
       <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Infos zu {step.name}</DialogTitle>
             <DialogDescription>Besonderheiten und hinterlegte Screenshots.</DialogDescription>
@@ -992,7 +992,7 @@ function StepCard({
                   role="dialog"
                   aria-modal="true"
                   aria-label="Vergrößerter Screenshot"
-                  className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
+                  className="fixed inset-0 z-[100] flex items-center justify-center bg-foreground/90 p-3 sm:p-4"
                   onClick={() => setLightboxImage(null)}
                 >
                   <button
@@ -1021,7 +1021,7 @@ function StepCard({
                       event.stopPropagation();
                       setLightboxImage(null);
                     }}
-                    className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+                    className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-background/10 text-background transition-colors hover:bg-background/20 sm:right-4 sm:top-4"
                     aria-label="Vergrößerte Ansicht schließen"
                   >
                     <X className="h-5 w-5" />
@@ -1058,7 +1058,7 @@ function Readonly({
             onClick={() => copy(value)}
             className="group/copy flex min-w-0 cursor-copy flex-1 items-center gap-1 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+            <span className="min-w-0 flex-1 break-all text-sm font-medium text-foreground">
               {value}
             </span>
             {copied ? (
@@ -1066,7 +1066,7 @@ function Readonly({
             ) : null}
           </button>
         ) : (
-          <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+          <span className="min-w-0 flex-1 break-all text-sm font-medium text-foreground">
             {value}
           </span>
         )}

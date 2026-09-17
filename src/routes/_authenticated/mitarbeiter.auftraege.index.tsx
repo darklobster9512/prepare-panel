@@ -105,7 +105,7 @@ function MitarbeiterAuftraege() {
               <Link
                 to="/mitarbeiter/auftraege/$vicId"
                 params={{ vicId: item.id }}
-                className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                className="inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 sm:w-auto"
               >
                 {item.auftraege.length > 0 && item.auftraege.every((a) => a.status !== "offen")
                   ? "Abschließen"
@@ -126,7 +126,7 @@ function MitarbeiterAuftraege() {
                   claimMutation.mutate(item.id);
                 }}
                 disabled={claimMutation.isPending}
-                className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+                className="inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60 sm:w-auto"
               >
                 {claimMutation.isPending && claimMutation.variables === item.id
                   ? "Wird beansprucht …"
@@ -143,7 +143,7 @@ function MitarbeiterAuftraege() {
               <Link
                 to="/mitarbeiter/auftraege/$vicId"
                 params={{ vicId: item.id }}
-                className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+                className="inline-flex w-full items-center justify-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary sm:w-auto"
               >
                 Ansehen
               </Link>
@@ -208,11 +208,11 @@ function Section({
                 </p>
               ) : null}
               <dl className="mt-2 space-y-1 text-sm text-muted-foreground">
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-x-2">
                   <dt>Geburtsdatum:</dt>
                   <dd className="text-foreground">{formatDate(item.birth_date)}</dd>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-x-2">
                   <dt>Geburtsort:</dt>
                   <dd className="text-foreground">{item.birth_place || "–"}</dd>
                 </div>
@@ -246,7 +246,7 @@ function Section({
                 ))}
               </div>
 
-              <div className="mt-5 flex justify-end">{action(item)}</div>
+              <div className="mt-5 flex justify-stretch sm:justify-end">{action(item)}</div>
             </article>
           ))}
         </div>
