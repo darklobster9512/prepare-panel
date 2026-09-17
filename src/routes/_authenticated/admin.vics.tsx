@@ -184,6 +184,57 @@ function AdminVics() {
     enabled: role === "admin",
   });
 
+  const auftraegeQuery = useQuery({
+    queryKey: ["admin", "auftraege"],
+    queryFn: () => fetchAuftraege(),
+    enabled: role === "admin",
+  });
+
+  const patchVicAuftraege = (
+    vicId: string,
+    update: (current: VicAuftrag[]) => VicAuftrag[],
+  ) =>
+    queryClient.setQueryData<VicRow[]>(["admin", "vics"], (prev) =>
+      (prev ?? []).map((vic) =>
+        vic.id === vicId ? { ...vic, auftraege: update(vic.auftraege ?? []) } : vic,
+      ),
+    );
+
+  const assignAuftragMutation = useMutation({
+    mutationFn: (values: { vic_id: string; auftrag_id: string }) =>
+      addAssignment({ data: values }),
+    onSuccess: (row, variables) => {
+      patchVicAuftraege(variables.vic_id, (current) => [...current, row]);
+      setAssignError(null);
+    },
+    onError: () => setAssignError("Auftrag konnte nicht zugewiesen werden."),
+  });
+
+  const unassignAuftragMutation = useMutation({
+    mutationFn: (values: { vic_id: string; auftrag_id: string }) =>
+      removeAssignment({ data: values }),
+    onSuccess: (_data, variables) => {
+      patchVicAuftraege(variables.vic_id, (current) =>
+        current.filter((item) => item.auftrag_id !== variables.auftrag_id),
+      );
+      setAssignError(null);
+    },
+    onError: () => setAssignError("Zuweisung konnte nicht entfernt werden."),
+  });
+
+  const regenerateMutation = useMutation({
+    mutationFn: (values: { vic_id: string; auftrag_id: string }) =>
+      renewCredentials({ data: values }),
+    onSuccess: (row, variables) => {
+      patchVicAuftraege(variables.vic_id, (current) =>
+        current.map((item) => (item.auftrag_id === variables.auftrag_id ? row : item)),
+      );
+      setAssignError(null);
+    },
+    onError: () => setAssignError("Zugangsdaten konnten nicht neu erzeugt werden."),
+  });
+
+
   const saveMutation = useMutation({
     mutationFn: (values: FormState & { id?: string }) => {
       const payload = { ...values, project_id: values.project_id || null };
