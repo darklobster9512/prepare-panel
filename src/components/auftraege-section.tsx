@@ -354,6 +354,21 @@ export function AuftraegeSection({ enabled }: Props) {
               </div>
             </fieldset>
 
+            <div className="flex items-start justify-between gap-4 rounded-xl border border-border bg-muted/40 p-3">
+              <div className="space-y-1">
+                <Label htmlFor="auftrag-passwort">Passwort generieren</Label>
+                <p className="text-xs text-muted-foreground">
+                  Muster: Vorname + 6 zufällige Ziffern (z. B. Stefan856102).
+                </p>
+              </div>
+              <Switch
+                id="auftrag-passwort"
+                checked={generatePassword}
+                onCheckedChange={setGeneratePassword}
+              />
+            </div>
+
+
             <div className="space-y-2">
               <Label htmlFor="auftrag-besonderheiten">Besonderheiten</Label>
               <Textarea
