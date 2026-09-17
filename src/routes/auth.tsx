@@ -238,10 +238,9 @@ function AuthPage() {
           </form>
 
           {/* Vertrauenshinweise */}
-          <div className="mt-12 grid gap-4 border-t border-border pt-8 text-sm text-muted-foreground sm:grid-cols-3">
+          <div className="mt-12 grid gap-4 border-t border-border pt-8 text-sm text-muted-foreground sm:grid-cols-2">
             <Trust icon={Lock} text="Verschlüsselte Übertragung" />
             <Trust icon={ShieldCheck} text="Nur interner Zugang" />
-            <Trust icon={UserCheck} text="Rolle wird automatisch vergeben" />
           </div>
         </div>
       </main>
