@@ -872,6 +872,13 @@ function StepCard({
             </p>
           )}
 
+          {item.phone_number ? (
+            <div className="rounded-xl border border-border bg-secondary px-4 py-3 text-sm">
+              <span className="text-muted-foreground">Für die Registrierung verwenden: </span>
+              <strong className="text-foreground">{item.phone_number}</strong>
+            </div>
+          ) : null}
+
           <div className="grid gap-4 sm:grid-cols-2">
             {step.login_name ? (
               <CopyValue label="Generierter Anmeldename" value={step.login_name} />
