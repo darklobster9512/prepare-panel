@@ -797,13 +797,28 @@ function AdminVics() {
                 Noch keine Aufträge angelegt.
               </p>
             ) : (
-              (auftraegeQuery.data ?? []).map((auftrag) => {
+              [...(auftraegeQuery.data ?? [])]
+                .map((auftrag, index) => ({ auftrag, index }))
+                .sort((a, b) => {
+                  const rank = (v: typeof a) => (v.auftrag.ident_type === "email" ? 0 : 1);
+                  return rank(a) - rank(b) || a.index - b.index;
+                })
+                .map(({ auftrag }, position, list) => {
                 const assignment = (assignVic?.auftraege ?? []).find(
                   (item) => item.auftrag_id === auftrag.id,
                 );
+                const isEmail = auftrag.ident_type === "email";
+                const previous = position > 0 ? list[position - 1]?.auftrag : null;
+                const showHeading =
+                  position === 0 || (previous?.ident_type === "email") !== isEmail;
                 return (
+                  <div key={auftrag.id}>
+                  {showHeading ? (
+                    <p className="px-1 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {isEmail ? "E-Mail" : "Weitere Aufträge"}
+                    </p>
+                  ) : null}
                   <div
-                    key={auftrag.id}
                     className="rounded-xl border border-border bg-card px-4 py-3"
                   >
                     <div className="flex items-center gap-3">
