@@ -737,6 +737,111 @@ function AdminVics() {
             </p>
           ) : null}
 
+          <div className="rounded-xl border border-border bg-secondary/40 px-4 py-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <Phone className="h-4 w-4" aria-hidden="true" />
+              Telefonnummer
+            </div>
+
+            {assignVic?.phone_number ? (
+              <div className="mt-2 space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-semibold text-foreground">
+                    {assignVic.phone_number}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigator.clipboard?.writeText(assignVic.phone_number ?? "")
+                    }
+                    aria-label="Nummer kopieren"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-secondary"
+                  >
+                    <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {describeValidity(assignVic.phone_end_date)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Gilt für alle Aufträge dieses Datensatzes.
+                </p>
+                <button
+                  type="button"
+                  disabled={unassignNumberMutation.isPending}
+                  onClick={() => {
+                    if (!assignVicId) return;
+                    if (!window.confirm("Zuweisung der Telefonnummer entfernen?")) return;
+                    unassignNumberMutation.mutate(assignVicId);
+                  }}
+                  className="text-xs font-medium text-destructive hover:underline"
+                >
+                  Zuweisung entfernen
+                </button>
+              </div>
+            ) : (
+              <div className="mt-2 space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Diesem Datensatz ist noch keine Telefonnummer zugewiesen.
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    value={selectedNumber}
+                    onChange={(event) => setSelectedNumber(event.target.value)}
+                    className="h-9 min-w-[12rem] rounded-lg border border-border bg-background px-2 text-sm text-foreground"
+                  >
+                    <option value="">
+                      {freeNumbersQuery.isLoading
+                        ? "Wird geladen …"
+                        : (freeNumbersQuery.data ?? []).length === 0
+                          ? "Keine freie Nummer vorhanden"
+                          : "Freie Nummer wählen"}
+                    </option>
+                    {(freeNumbersQuery.data ?? []).map((item) => (
+                      <option key={item.orderBookingId} value={String(item.orderBookingId)}>
+                        {item.number} · bis {formatDate(item.endDate)}
+                      </option>
+                    ))}
+                  </select>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="rounded-full"
+                    disabled={!selectedNumber || assignNumberMutation.isPending}
+                    onClick={() => {
+                      if (!assignVicId || !selectedNumber) return;
+                      assignNumberMutation.mutate({
+                        vicId: assignVicId,
+                        orderBookingId: Number(selectedNumber),
+                      });
+                    }}
+                  >
+                    Zuweisen
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => {
+                      setPhoneError(null);
+                      setBuyOpen(true);
+                    }}
+                  >
+                    Neue Nummer kaufen
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {phoneError ? (
+              <p className="mt-2 flex items-center gap-2 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4" aria-hidden="true" />
+                {phoneError}
+              </p>
+            ) : null}
+          </div>
+
           <div className="space-y-2">
             {auftraegeQuery.isLoading ? (
               <p className="text-sm text-muted-foreground">Wird geladen …</p>
