@@ -109,7 +109,7 @@ const RULES: { label: string; value: React.ReactNode }[] = [
 
 function InformationenPage() {
   const navigate = useNavigate();
-  const { role, loading } = useAuth();
+  const { profile, role, loading } = useAuth();
 
   useEffect(() => {
     if (!loading && role === "admin") {
@@ -122,8 +122,8 @@ function InformationenPage() {
       title="Informationen"
       subtitle="Vorgaben für Identvorgänge"
       roleLabel="Mitarbeiter"
-      userName={useAuth().profile?.email || "Mitarbeiter"}
-      nav={mitarbeiterNav(true)}
+      userName={profile?.email || "Mitarbeiter"}
+      nav={mitarbeiterNav(profile?.onboarding_enabled)}
     >
       <article className="mx-auto max-w-3xl rounded-xl border border-border bg-card px-5 py-7 shadow-sm sm:px-12 sm:py-12">
         <header className="flex flex-col items-start gap-4 border-b border-border pb-6 sm:flex-row sm:items-center sm:justify-between">
