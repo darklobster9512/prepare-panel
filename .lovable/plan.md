@@ -23,7 +23,9 @@ pm2 save
 
 1. **Verifikation im Sandbox-Umfeld**: Ich starte das Projekt hier exakt wie auf
    dem VPS unter Node.js 20 (`npm run dev -- --host ... --port 8080`) und prüfe,
-   ob der WebSocket-Fehler mit dem aktuellen Code noch auftritt.
+   ob der WebSocket-Fehler mit dem aktuellen Code noch auftritt. Das Flag
+   `--experimental-websocket` ist unter Node.js 20 (aktuelles Patchlevel)
+   bestätigt vorhanden und aktiviert das native WebSocket.
 2. **Falls ja — robuster Codefix statt Flag-Raten**: `--experimental-websocket`
    existiert je nach Node-20-Patchlevel nicht. Dann setze ich stattdessen im
    Serverstart (ganz oben, vor allen Supabase-Imports) eine echte globale
