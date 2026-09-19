@@ -112,7 +112,7 @@ export const listAnosimNumbers = createServerFn({ method: "GET" })
         startDate: booking.startDate,
         endDate: booking.endDate,
         durationInMinutes: booking.durationInMinutes,
-        priceInUSD: booking.priceInUSD ?? null,
+        priceInUSD: toNumber(booking.priceInUSD),
         state: booking.state,
         note: noteMap.get(booking.id) ?? null,
       }))
@@ -173,15 +173,15 @@ export const getAnosimFullServiceProduct = createServerFn({ method: "GET" })
       );
     }
 
-    const available = match.priceMap?.reduce((sum, entry) => {
+    const available = (match.priceMap ?? []).reduce((sum, entry) => {
       const any = entry.providers?.find((provider) => provider.providerId === 0);
-      return sum + (any?.availableCount ?? 0);
+      return sum + (toNumber(any?.availableCount) ?? 0);
     }, 0);
 
     return {
       productId: match.id,
-      price: Number(match.basePrice ?? 0),
-      availableCount: Number(available ?? match.totalCount ?? 0),
+      price: toNumber(match.basePrice) ?? 0,
+      availableCount: available || (toNumber(match.totalCount) ?? 0),
       country: match.country,
       durationInMinutes: match.durationInMinutes,
     };
