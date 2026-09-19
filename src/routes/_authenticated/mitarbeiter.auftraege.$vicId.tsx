@@ -184,6 +184,8 @@ function WizardPage() {
   const item = itemQuery.data ?? null;
   const isMine = Boolean(item && user && item.claimed_by === user.id);
 
+  const [smsCountdown, setSmsCountdown] = useState(5);
+
   const smsQuery = useQuery({
     queryKey: ["mitarbeiter", "sms", vicId],
     queryFn: () => smsFn({ data: { vic_id: vicId } }),
@@ -191,6 +193,18 @@ function WizardPage() {
     refetchInterval: 5000,
     refetchIntervalInBackground: false,
   });
+
+  const smsActive = Boolean(item?.phone_order_booking_id);
+  const smsUpdatedAt = smsQuery.dataUpdatedAt;
+  useEffect(() => {
+    if (!smsActive) return;
+    setSmsCountdown(5);
+    const interval = window.setInterval(() => {
+      setSmsCountdown((prev) => (prev <= 1 ? 5 : prev - 1));
+    }, 1000);
+    return () => window.clearInterval(interval);
+    // Bei jedem frischen SMS-Abruf zählt der Timer wieder von vorn.
+  }, [smsActive, smsUpdatedAt]);
 
   const setItem = (next: WorkItem) =>
     queryClient.setQueryData(["mitarbeiter", "work-item", vicId], next);
@@ -275,7 +289,15 @@ function WizardPage() {
         <div className="mt-6 grid min-w-0 gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
           <aside className="space-y-6">
             <VicCard item={item} />
-            <PhoneCard item={item} sms={smsQuery.data ?? []} onRefresh={() => smsQuery.refetch()} />
+            <PhoneCard
+              item={item}
+              sms={smsQuery.data ?? []}
+              countdown={smsCountdown}
+              onRefresh={() => {
+                setSmsCountdown(5);
+                smsQuery.refetch();
+              }}
+            />
           </aside>
 
           <div className="min-w-0 space-y-6">
@@ -396,10 +418,12 @@ function VicCard({ item }: { item: WorkItem }) {
 function PhoneCard({
   item,
   sms,
+  countdown,
   onRefresh,
 }: {
   item: WorkItem;
   sms: { messageDate: string; messageSender: string; messageText: string }[];
+  countdown: number;
   onRefresh: () => void;
 }) {
   return (
@@ -409,14 +433,24 @@ function PhoneCard({
           <Phone className="h-4 w-4 text-primary" aria-hidden="true" />
           Telefonnummer
         </h2>
-        <button
-          type="button"
-          onClick={onRefresh}
-          aria-label="SMS aktualisieren"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary"
-        >
-          <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
-        </button>
+        <div className="flex items-center gap-2">
+          {item.phone_order_booking_id ? (
+            <span
+              title="Neue SMS werden alle 5 Sekunden automatisch geladen"
+              className="inline-flex h-8 min-w-8 items-center justify-center rounded-full border border-border bg-secondary px-2 text-xs font-bold tabular-nums text-foreground"
+            >
+              {countdown}&nbsp;s
+            </span>
+          ) : null}
+          <button
+            type="button"
+            onClick={onRefresh}
+            aria-label="SMS aktualisieren"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary"
+          >
+            <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+        </div>
       </div>
 
       {item.phone_number ? (
