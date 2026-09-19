@@ -6,6 +6,7 @@ import {
   generateInternalPassword,
   generateLoginName,
   generateVicPassword,
+  generateYearPassword,
 } from "@/lib/password";
 import type { VicAuftrag } from "@/lib/vic-auftraege.types";
 
