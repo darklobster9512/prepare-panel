@@ -1,27 +1,29 @@
-# Bilder laden auf dem eigenen Server nicht
+# Bilder direkt über Supabase-CDN laden
 
-## Ursache (geprüft)
+## Geprüfter Zustand
 
-Die Bank-Logos, Screenshots und das GoLogin-Logo liegen in einem privaten Supabase-Ordner. Für jedes Bild erzeugt der Server einen signierten Link — dafür braucht er den Admin-Schlüssel (`SUPABASE_SERVICE_ROLE_KEY`).
+- Der Bucket `auftrag-logos` existiert und enthält die hochgeladenen Logos und Screenshots.
+- Er ist derzeit **privat**. Deshalb funktionieren direkte CDN-Links nicht; die App versucht stattdessen, über den eigenen Server kurzlebige signierte Links zu erzeugen.
+- Das GoLogin-Logo liegt noch unter `src/assets` und wird in das gebaute JavaScript-Paket eingebunden, statt als feste öffentliche Datei ausgeliefert zu werden.
 
-Der Schlüssel steht zwar in der mitgelieferten `.env`, aber beim Start mit `npm run dev` landen aus dieser Datei nur die Werte mit `VITE_`-Vorsatz in der App. Alle übrigen Werte — Admin-Schlüssel, AnoSIM, Telegram — kommen beim Server nie an. In Lovable funktioniert es, weil die Umgebung dort diese Werte direkt setzt.
+## Umsetzung
 
-Ergebnis: Anmeldung und Seiten laden (die nutzen die `VITE_`-Werte), aber jede Bildanfrage schlägt still fehl. Aus demselben Grund funktionieren auf dem Server auch Telefonnummern (AnoSIM) und Telegram nicht.
+1. Den bestehenden Supabase-Bucket `auftrag-logos` auf öffentlich stellen.
+2. Bank-Logos und Auftrags-Screenshots direkt über Supabase Storage CDN laden:
+   ```text
+   https://<supabase-projekt>.supabase.co/storage/v1/object/public/auftrag-logos/<dateipfad>
+   ```
+   Damit hängt die Bildanzeige weder vom externen Node-Server noch vom Admin-Schlüssel ab.
+3. `AuftragLogo` und die Vorladefunktion auf diese direkten CDN-Links umstellen; bestehende vollständige URLs und lokale Bilder bleiben kompatibel.
+4. Die serverseitige Signierfunktion aus der Bildanzeige entfernen. Uploads und Verwaltung durch Admins bleiben unverändert geschützt.
+5. Das GoLogin-Logo nach `public/gologin-logo.svg` verschieben und auf der Onboarding-Seite fest als `/gologin-logo.svg` laden.
+6. Mitarbeiter-Auftragsübersicht, Auftrags-Wizard, Admin-Ansichten und Onboarding visuell prüfen.
 
-## Lösung
+## Wichtiger Zugriffshinweis
 
-Beim Start liest das Projekt die `.env` künftig vollständig ein und stellt alle Werte dem Server zur Verfügung — egal ob über `npm run dev` oder einen fertigen Build. Kein manuelles Setzen, kein geänderter Startbefehl.
+Durch den öffentlichen Bucket sind Dateien für jeden erreichbar, der ihre schwer erratbare URL kennt. Das ist für öffentliche Bank-Logos passend; die dort ebenfalls gespeicherten Auftrags-Screenshots werden dadurch genauso direkt erreichbar. Tabellen und Kontodaten bleiben weiterhin geschützt.
 
-Zusätzlich: Wenn der Admin-Schlüssel wirklich einmal fehlt, erscheint statt leerer Bilder eine klare Meldung im Server-Log, damit die Ursache sofort sichtbar ist.
-
-## Technische Umsetzung
-
-- In `vite.config.ts` per `loadEnv("", process.cwd(), "")` alle Variablen aus `.env`/`.env.production` laden und die noch nicht gesetzten nach `process.env` schreiben (echte Umgebungsvariablen behalten Vorrang). Das läuft im selben Node-Prozess wie der SSR-Server, daher sehen `client.server.ts`, `anosim.server.ts` und die Telegram-Funktionen die Werte.
-- Ergänzend in `src/server.ts` als allererstes eine kleine `.env`-Ladefunktion, damit auch ein Produktionsstart ohne Vite (`npm start` / Nitro-Ausgabe) dieselben Werte hat.
-- `getAuftragFileUrls` in `src/lib/storage.functions.ts`: Supabase-Fehlertext mit `console.error` protokollieren statt zu verschlucken.
-- Bestehendes bleibt unverändert: `"dev": "vite"`, Supabase 2.110.5, `allowedHosts`, der PM2-Startbefehl.
-
-## Auf dem Server danach
+## Danach auf dem VPS
 
 ```bash
 cd prepare-panel
