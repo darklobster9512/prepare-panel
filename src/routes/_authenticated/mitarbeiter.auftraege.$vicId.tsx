@@ -188,7 +188,8 @@ function WizardPage() {
     queryKey: ["mitarbeiter", "sms", vicId],
     queryFn: () => smsFn({ data: { vic_id: vicId } }),
     enabled: Boolean(item?.phone_order_booking_id),
-    refetchInterval: 30000,
+    refetchInterval: 5000,
+    refetchIntervalInBackground: false,
   });
 
   const setItem = (next: WorkItem) =>
