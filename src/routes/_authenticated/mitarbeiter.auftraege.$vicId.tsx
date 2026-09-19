@@ -289,7 +289,15 @@ function WizardPage() {
         <div className="mt-6 grid min-w-0 gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
           <aside className="space-y-6">
             <VicCard item={item} />
-            <PhoneCard item={item} sms={smsQuery.data ?? []} onRefresh={() => smsQuery.refetch()} />
+            <PhoneCard
+              item={item}
+              sms={smsQuery.data ?? []}
+              countdown={smsCountdown}
+              onRefresh={() => {
+                setSmsCountdown(5);
+                smsQuery.refetch();
+              }}
+            />
           </aside>
 
           <div className="min-w-0 space-y-6">
