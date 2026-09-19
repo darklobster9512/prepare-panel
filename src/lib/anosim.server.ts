@@ -99,7 +99,7 @@ export type AnosimBooking = {
   startDate: string;
   endDate: string;
   durationInMinutes: number;
-  priceInUSD?: number;
+  priceInUSD?: number | string;
   state: string;
   extentionForId?: number | null;
 };
@@ -112,8 +112,12 @@ export type AnosimSms = {
 };
 
 export type AnosimPriceMapEntry = {
-  price: number;
-  providers: { providerId: number; name: string; availableCount: number }[];
+  price: number | string;
+  providers: {
+    providerId: number;
+    name: string;
+    availableCount: number | string;
+  }[];
 };
 
 export type AnosimProductPrice = {
@@ -122,7 +126,7 @@ export type AnosimProductPrice = {
   rentalType: string;
   service: string;
   durationInMinutes: number;
-  basePrice: number;
-  totalCount: number;
+  basePrice: number | string;
+  totalCount: number | string;
   priceMap: AnosimPriceMapEntry[];
 };
