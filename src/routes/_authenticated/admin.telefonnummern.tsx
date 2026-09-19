@@ -261,7 +261,7 @@ function AdminTelefonnummern() {
                   ? "…"
                   : balanceQuery.isError
                     ? "nicht verfügbar"
-                    : `${balanceQuery.data?.balance.toFixed(2)} USD`}
+                    : formatUsd(balanceQuery.data?.balance)}
               </p>
             </div>
             <button
@@ -383,9 +383,7 @@ function AdminTelefonnummern() {
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">{entry.state}</td>
                     <td className="px-5 py-4 text-muted-foreground">
-                      {entry.priceInUSD !== null
-                        ? `${entry.priceInUSD.toFixed(2)} USD`
-                        : "–"}
+                      {formatUsd(entry.priceInUSD)}
                     </td>
                   </tr>
                 ))
