@@ -1,6 +1,6 @@
 # Roadmap
 
-- [x] Node-20-kompatiblen Supabase-Startschutz ergänzen
-- [x] Vorhandene `.env` als Bestandteil des Projekts und automatischen Start-Input bestätigen
-- [x] VPS-Dokumentation auf Node.js 20 korrigieren
-- [x] Start und Seitenaufrufe unter Node.js 20 abschließend prüfen
+- [x] IdentPanel mit dem funktionierenden s24-panel-Startaufbau abgleichen
+- [x] Supabase exakt auf die Node-20-kompatible Referenzversion setzen
+- [x] Sonderstarter und WebSocket-Attrappe entfernen
+- [ ] Exakten VPS-Ablauf unter Node.js 20 prüfen
