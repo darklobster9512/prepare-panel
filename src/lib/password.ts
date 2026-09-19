@@ -8,6 +8,16 @@ export function generateInternalPassword(firstName: string): string {
   return `${base}${new Date().getFullYear()}!`;
 }
 
+/** Erzeugt ein Passwort nach dem Muster Vorname + Jahr (z. B. Dominik2026). */
+export function generateYearPassword(firstName: string): string {
+  const base = (firstName ?? "")
+    .trim()
+    .split(/\s+/)[0]
+    ?.replace(/[^\p{L}]/gu, "") ?? "";
+
+  return `${base}${new Date().getFullYear()}`;
+}
+
 /** Erzeugt ein Passwort nach dem Muster Vorname + 6 zufällige Ziffern. */
 export function generateVicPassword(firstName: string): string {
   const base = (firstName ?? "")
