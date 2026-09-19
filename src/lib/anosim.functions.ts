@@ -35,6 +35,12 @@ export type AnosimProductInfo = {
   durationInMinutes: number;
 };
 
+function toNumber(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 async function assertAdmin(supabase: any, userId: string) {
   const { data, error } = await supabase
     .from("user_roles")
@@ -52,8 +58,10 @@ export const getAnosimBalance = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<{ balance: number }> => {
     await assertAdmin(context.supabase, context.userId);
     const { anosimFetch } = await import("./anosim.server");
-    const data = await anosimFetch<{ accountBalanceInUSD: number }>("/Balance");
-    return { balance: Number(data?.accountBalanceInUSD ?? 0) };
+    const data = await anosimFetch<{ accountBalanceInUSD: number | string }>(
+      "/Balance",
+    );
+    return { balance: toNumber(data?.accountBalanceInUSD) ?? 0 };
   });
 
 export const listAnosimNumbers = createServerFn({ method: "GET" })
