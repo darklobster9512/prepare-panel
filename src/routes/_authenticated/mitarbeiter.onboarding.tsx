@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Download, Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import gologinLogo from "@/assets/gologin-logo.svg.asset.json";
+import gologinLogo from "@/assets/gologin-logo.svg";
 import { PanelShell } from "@/components/panel-shell";
 import { CopyButton } from "@/components/copy-button";
 import { Button } from "@/components/ui/button";
@@ -97,7 +97,7 @@ function OnboardingPage() {
       <article className="mx-auto max-w-3xl rounded-xl border border-border bg-card px-5 py-7 shadow-sm sm:px-12 sm:py-12">
         <header className="flex flex-col items-start gap-4 border-b border-border pb-6 sm:flex-row sm:items-center sm:justify-between">
           <img
-            src={gologinLogo.url}
+            src={gologinLogo}
             alt="GoLogin Logo"
             className="h-9 w-auto"
             loading="lazy"
