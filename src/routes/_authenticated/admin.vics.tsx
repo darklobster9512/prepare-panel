@@ -53,8 +53,10 @@ import {
 import type { VicAuftrag } from "@/lib/vic-auftraege.types";
 import { listProjects } from "@/lib/projects.functions";
 import {
+  assignNumberToVic,
   buyAnosimNumber,
   getAnosimFullServiceProduct,
+  listAssignableNumbers,
   unassignNumberFromVic,
 } from "@/lib/anosim.functions";
 
@@ -234,9 +236,13 @@ function AdminVics() {
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [buyOpen, setBuyOpen] = useState(false);
 
+  const [selectedFreeNumber, setSelectedFreeNumber] = useState<string>("");
+
   const unassignNumber = useServerFn(unassignNumberFromVic);
   const fetchProduct = useServerFn(getAnosimFullServiceProduct);
   const buyNumber = useServerFn(buyAnosimNumber);
+  const fetchFreeNumbers = useServerFn(listAssignableNumbers);
+  const assignNumber = useServerFn(assignNumberToVic);
 
   useEffect(() => {
     if (!loading && role && role !== "admin") {
@@ -313,6 +319,31 @@ function AdminVics() {
     staleTime: 60_000,
   });
 
+
+  const freeNumbersQuery = useQuery({
+    queryKey: ["admin", "anosim", "free-numbers"],
+    queryFn: () => fetchFreeNumbers(),
+    enabled: role === "admin" && assignVicId !== null,
+    staleTime: 30_000,
+    retry: false,
+  });
+
+  const assignNumberMutation = useMutation({
+    mutationFn: (values: { vicId: string; orderBookingId: number }) =>
+      assignNumber({ data: values }),
+    onSuccess: () => {
+      setPhoneError(null);
+      setSelectedFreeNumber("");
+      queryClient.invalidateQueries({ queryKey: ["admin", "anosim"] });
+      invalidate();
+    },
+    onError: (err: unknown) =>
+      setPhoneError(
+        err instanceof Error && err.message
+          ? err.message
+          : "Nummer konnte nicht zugewiesen werden.",
+      ),
+  });
 
   const unassignNumberMutation = useMutation({
     mutationFn: (vicId: string) => unassignNumber({ data: { vicId } }),
@@ -845,6 +876,54 @@ function AdminVics() {
                 >
                   Neue Nummer kaufen
                 </Button>
+
+                {(freeNumbersQuery.data ?? []).length > 0 ? (
+                  <div className="space-y-2 border-t border-border pt-2">
+                    <p className="text-xs font-medium text-foreground">
+                      Vorhandene freie Nummer zuweisen
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <select
+                        aria-label="Freie Nummer auswählen"
+                        value={selectedFreeNumber}
+                        onChange={(event) =>
+                          setSelectedFreeNumber(event.target.value)
+                        }
+                        className="h-9 rounded-md border border-border bg-background px-3 text-sm text-foreground"
+                      >
+                        <option value="">Nummer wählen …</option>
+                        {(freeNumbersQuery.data ?? []).map((entry) => (
+                          <option
+                            key={entry.orderBookingId}
+                            value={String(entry.orderBookingId)}
+                          >
+                            {entry.number}
+                          </option>
+                        ))}
+                      </select>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="rounded-full"
+                        disabled={
+                          !selectedFreeNumber || assignNumberMutation.isPending
+                        }
+                        onClick={() => {
+                          if (!assignVicId || !selectedFreeNumber) return;
+                          assignNumberMutation.mutate({
+                            vicId: assignVicId,
+                            orderBookingId: Number(selectedFreeNumber),
+                          });
+                        }}
+                      >
+                        {assignNumberMutation.isPending
+                          ? "Wird zugewiesen …"
+                          : "Zuweisen"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             )}
 

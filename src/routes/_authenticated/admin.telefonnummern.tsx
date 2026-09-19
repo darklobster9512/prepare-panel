@@ -87,6 +87,11 @@ function remaining(endDate: string) {
   return `noch ${hours} Std.`;
 }
 
+function formatUsd(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? `${parsed.toFixed(2)} USD` : "–";
+}
+
 function typeLabel(rentalType: string) {
   if (rentalType === "RentalFull") return "FullService";
   if (rentalType === "RentalService") return "Service-Miete";
@@ -256,7 +261,7 @@ function AdminTelefonnummern() {
                   ? "…"
                   : balanceQuery.isError
                     ? "nicht verfügbar"
-                    : `${balanceQuery.data?.balance.toFixed(2)} USD`}
+                    : formatUsd(balanceQuery.data?.balance)}
               </p>
             </div>
             <button
@@ -378,9 +383,7 @@ function AdminTelefonnummern() {
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">{entry.state}</td>
                     <td className="px-5 py-4 text-muted-foreground">
-                      {entry.priceInUSD !== null
-                        ? `${entry.priceInUSD.toFixed(2)} USD`
-                        : "–"}
+                      {formatUsd(entry.priceInUSD)}
                     </td>
                   </tr>
                 ))
@@ -414,7 +417,7 @@ function AdminTelefonnummern() {
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Preis</dt>
                   <dd className="font-medium text-foreground">
-                    {productQuery.data.price.toFixed(2)} USD
+                    {formatUsd(productQuery.data.price)}
                   </dd>
                 </div>
                 <div className="flex justify-between">
@@ -499,9 +502,7 @@ function AdminTelefonnummern() {
                 <div>
                   <dt className="text-muted-foreground">Preis</dt>
                   <dd className="font-medium text-foreground">
-                    {detailNumber.priceInUSD !== null
-                      ? `${detailNumber.priceInUSD.toFixed(2)} USD`
-                      : "–"}
+                    {formatUsd(detailNumber.priceInUSD)}
                   </dd>
                 </div>
               </dl>
