@@ -15,7 +15,7 @@ Die Anwendung läuft anschließend unter http://localhost:8080.
 
 ## Betrieb auf eigenem Server (PM2)
 
-Node.js 22 oder neuer wird vorausgesetzt.
+Node.js 20 oder neuer wird unterstützt.
 
 ```sh
 npm install
@@ -34,8 +34,9 @@ Nach einem neuen Build muss der PM2-Prozess neu gestartet werden
 
 ### Benötigte Zugangsdaten
 
-Der Produktionsstart liest `.env` und optional `.env.production` aus dem
-Projektordner; echte Umgebungsvariablen haben Vorrang.
+Die benötigten Supabase-Werte sind bereits in der mitgelieferten `.env`
+enthalten. Der Produktionsstart liest sie sowie optional `.env.production`
+automatisch aus dem Projektordner; echte Umgebungsvariablen haben Vorrang.
 
 | Wert | Zweck |
 | --- | --- |
