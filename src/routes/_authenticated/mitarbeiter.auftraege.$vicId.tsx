@@ -455,7 +455,19 @@ function PhoneCard({
 
       {item.phone_number ? (
         <div className="mt-3 space-y-1">
-          <CopyValue label="Nummer" value={item.phone_number} />
+          <CopyValue label="International" value={item.phone_number} />
+          <CopyValue
+            label="Mit 0"
+            value={
+              item.phone_number.startsWith("+49")
+                ? `0${item.phone_number.slice(3)}`
+                : `0${item.phone_number.replace(/^\+/, "")}`
+            }
+          />
+          <CopyValue
+            label="Ohne +49"
+            value={item.phone_number.replace(/^\+49/, "")}
+          />
           <p className="text-xs text-muted-foreground">
             Gültig bis {formatDate(item.phone_end_date)}
           </p>
