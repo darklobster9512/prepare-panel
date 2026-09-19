@@ -1,31 +1,38 @@
-# Produktionsbetrieb auf dem VPS korrigieren
+# Dein Startbefehl soll unverändert funktionieren
 
 ## Ursache
 
-Die Konsole zeigt, dass `prepare-panel.xyz` derzeit den **Vite-Entwicklungsserver** ausliefert: Der Browser lädt den Vite-Client und versucht Live-Reload-WebSockets zu `prepare-panel.xyz` beziehungsweise `localhost:8080` aufzubauen. Das ist kein geeigneter Produktionsstart unter PM2. Die zusätzliche Meldung zum fehlenden nativen WebSocket stammt aus dem Supabase-Client bei serverseitiger Ausführung unter einer älteren Node-Version.
+Die Konsole zeigt: Unter `prepare-panel.xyz` läuft der Vite-**Entwicklungsserver**. Daher der Live-Reload-Client, die fehlschlagenden WebSocket-Verbindungen zu `prepare-panel.xyz` und `localhost:8080` und die Supabase-Meldung zum fehlenden WebSocket. Dein Befehl startet mit `npm run dev` genau diesen Entwicklungsmodus.
 
-## Umsetzung
+## Lösung
 
-- Den Produktions-Build ausdrücklich auf Nitros `node-server`-Ziel für den eigenen VPS festlegen.
-- Einen eindeutigen Produktionsbefehl ergänzen, der den gebauten Server über `.output/server/index.mjs` startet, statt `vite dev` oder `vite preview` zu verwenden.
-- Die bestehende Host-Freigabe für `prepare-panel.xyz` und `www.prepare-panel.xyz` unverändert lassen; keine HMR-/WebSocket-Konfiguration für die Domain hinzufügen.
-- Einen kurzen VPS-/PM2-Abschnitt in die Projektdokumentation aufnehmen:
-  1. Node.js 22 oder neuer verwenden.
-  2. Abhängigkeiten installieren und den Produktions-Build erstellen.
-  3. PM2 mit dem Produktionsbefehl starten beziehungsweise neu laden.
-  4. Nginx/Proxy weiterhin auf den von der App verwendeten HTTP-Port leiten; für Vite-HMR ist keine WebSocket-Weiterleitung nötig.
-- Lokal prüfen, dass der Produktions-Build das Node-Server-Paket erzeugt und der Produktionsstart die Seite ohne Vite-Client, HMR-Verbindungsversuche und Supabase-WebSocket-Fehler ausliefert.
-
-## Deinen bisherigen Startbefehl ersetzen
-
-Der bisherige Befehl `pm2 start "npm run dev ..."` ist die bestätigte Ursache: Er veröffentlicht den Vite-Entwicklungsserver samt Live-Reload-Client. Er wird durch einen echten Produktionsstart ersetzt.
+Das Projekt wird so umgebaut, dass dein Ablauf exakt so bleibt:
 
 ```text
 npm install
 npm run build
-pm2 delete {{APP_NAME}}
-PORT={{PORT}} HOST=0.0.0.0 pm2 start .output/server/index.mjs --name {{APP_NAME}}
+pm2 start "npm run dev -- --host 0.0.0.0 --port {{PORT}}" --name {{APP_NAME}}
 pm2 save
 ```
 
-Zusätzlich muss auf dem VPS Node.js 22 oder neuer aktiv sein (`node -v`). Nach dem Ausrollen muss der alte PM2-Prozess einmal gelöscht und als Produktionsprozess neu angelegt werden; ein normales Reload würde dessen bisherigen Entwicklungsbefehl behalten.
+`npm run dev` startet künftig automatisch den fertig gebauten Produktionsserver, wenn ein Build vorhanden ist. Ist keiner vorhanden (Lovable-Vorschau, lokale Arbeit), startet wie bisher der Entwicklungsserver. Deine Zeile funktioniert damit unverändert und liefert auf dem VPS den Produktionsstand ohne Live-Reload.
+
+## Technische Umsetzung
+
+- Neues Startskript `scripts/dev.mjs`:
+  - liest `--host` und `--port` aus den übergebenen Argumenten (Fallback: Umgebungsvariablen, sonst Standardwerte),
+  - prüft, ob das Build-Ergebnis `.output/server/index.mjs` existiert,
+  - falls ja: startet dieses mit `HOST`/`PORT` als Produktionsserver,
+  - falls nein: startet `vite dev` mit denselben Argumenten wie bisher.
+- `package.json`: `dev` ruft dieses Skript auf; `build`, `build:dev`, `preview`, `lint`, `format` bleiben unverändert. Zusätzlich ein direkter `start`-Befehl für den reinen Produktionsstart.
+- `vite.config.ts`: Nitro-Ziel für eigene Builds auf `node-server` festlegen, damit `npm run build` auf dem VPS das Node-Paket `.output/server/index.mjs` erzeugt. Innerhalb von Lovable bleibt das plattformeigene Ziel aktiv. Die Host-Freigabe für `prepare-panel.xyz` bleibt bestehen.
+- Kurzer Abschnitt in der Projektdokumentation zum VPS-Betrieb, inklusive Hinweis auf Node.js 22 oder neuer.
+
+## Prüfung
+
+- Produktions-Build lokal erzeugen und über das neue Skript mit Host- und Port-Argument starten; die Seite muss ohne Vite-Client, ohne HMR-Verbindungsversuche und ohne Supabase-WebSocket-Fehler ausgeliefert werden.
+- Ohne Build-Ergebnis muss der Entwicklungsmodus weiterhin normal starten, damit die Lovable-Vorschau unverändert läuft.
+
+## Hinweis zum Ausrollen
+
+Der aktuell laufende PM2-Prozess hält weiterhin den alten Entwicklungsserver. Nach dem Aktualisieren des Codes muss er einmal neu gestartet werden (`pm2 restart {{APP_NAME}}`), damit der Produktionsstand greift. Node.js muss auf dem VPS in Version 22 oder neuer laufen.
