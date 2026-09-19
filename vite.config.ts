@@ -15,6 +15,11 @@ export default defineConfig({
   vite: {
     server: {
       allowedHosts: ["prepare-panel.xyz", "www.prepare-panel.xyz"],
+      hmr: {
+        protocol: "wss",
+        host: "prepare-panel.xyz",
+        clientPort: 443,
+      },
     },
   },
 });
