@@ -3,6 +3,7 @@ import { createMiddleware } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './types'
+import { getRealtimeTransport } from './realtime-transport'
 
 
 
@@ -82,6 +83,9 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
           headers: {
             Authorization: `Bearer ${token}`,
           },
+        },
+        realtime: {
+          transport: getRealtimeTransport(),
         },
         auth: {
           storage: undefined,

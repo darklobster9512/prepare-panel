@@ -24,10 +24,8 @@ pm2 start "npm run dev -- --host 0.0.0.0 --port 3000" --name identpanel
 pm2 save
 ```
 
-`npm run dev` erkennt automatisch, ob ein Produktions-Build vorliegt: Ist
-`.output/server/index.mjs` (bzw. `dist/server/index.mjs`) vorhanden, startet der
-Produktionsserver ohne Live-Reload. Ohne Build startet der Entwicklungsserver.
-Alternativ direkt: `npm start`.
+`npm run dev` startet wie beim Referenzprojekt direkt Vite. Die Argumente für
+Host und Port werden unverändert an Vite weitergegeben.
 
 Nach einem neuen Build muss der PM2-Prozess neu gestartet werden
 (`pm2 restart identpanel`).
@@ -35,8 +33,7 @@ Nach einem neuen Build muss der PM2-Prozess neu gestartet werden
 ### Benötigte Zugangsdaten
 
 Die benötigten Supabase-Werte sind bereits in der mitgelieferten `.env`
-enthalten. Der Produktionsstart liest sie sowie optional `.env.production`
-automatisch aus dem Projektordner; echte Umgebungsvariablen haben Vorrang.
+enthalten. Vite liest diese Datei beim Start automatisch aus dem Projektordner.
 
 | Wert | Zweck |
 | --- | --- |
