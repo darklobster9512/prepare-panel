@@ -417,7 +417,7 @@ function AdminTelefonnummern() {
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Preis</dt>
                   <dd className="font-medium text-foreground">
-                    {productQuery.data.price.toFixed(2)} USD
+                    {formatUsd(productQuery.data.price)}
                   </dd>
                 </div>
                 <div className="flex justify-between">
@@ -502,9 +502,7 @@ function AdminTelefonnummern() {
                 <div>
                   <dt className="text-muted-foreground">Preis</dt>
                   <dd className="font-medium text-foreground">
-                    {detailNumber.priceInUSD !== null
-                      ? `${detailNumber.priceInUSD.toFixed(2)} USD`
-                      : "–"}
+                    {formatUsd(detailNumber.priceInUSD)}
                   </dd>
                 </div>
               </dl>
