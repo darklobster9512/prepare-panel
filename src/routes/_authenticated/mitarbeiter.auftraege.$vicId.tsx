@@ -184,6 +184,8 @@ function WizardPage() {
   const item = itemQuery.data ?? null;
   const isMine = Boolean(item && user && item.claimed_by === user.id);
 
+  const [smsCountdown, setSmsCountdown] = useState(5);
+
   const smsQuery = useQuery({
     queryKey: ["mitarbeiter", "sms", vicId],
     queryFn: () => smsFn({ data: { vic_id: vicId } }),
@@ -191,6 +193,18 @@ function WizardPage() {
     refetchInterval: 5000,
     refetchIntervalInBackground: false,
   });
+
+  const smsActive = Boolean(item?.phone_order_booking_id);
+  const smsUpdatedAt = smsQuery.dataUpdatedAt;
+  useEffect(() => {
+    if (!smsActive) return;
+    setSmsCountdown(5);
+    const interval = window.setInterval(() => {
+      setSmsCountdown((prev) => (prev <= 1 ? 5 : prev - 1));
+    }, 1000);
+    return () => window.clearInterval(interval);
+    // Bei jedem frischen SMS-Abruf zählt der Timer wieder von vorn.
+  }, [smsActive, smsUpdatedAt]);
 
   const setItem = (next: WorkItem) =>
     queryClient.setQueryData(["mitarbeiter", "work-item", vicId], next);
