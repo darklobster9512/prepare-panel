@@ -418,10 +418,12 @@ function VicCard({ item }: { item: WorkItem }) {
 function PhoneCard({
   item,
   sms,
+  countdown,
   onRefresh,
 }: {
   item: WorkItem;
   sms: { messageDate: string; messageSender: string; messageText: string }[];
+  countdown: number;
   onRefresh: () => void;
 }) {
   return (
@@ -431,14 +433,24 @@ function PhoneCard({
           <Phone className="h-4 w-4 text-primary" aria-hidden="true" />
           Telefonnummer
         </h2>
-        <button
-          type="button"
-          onClick={onRefresh}
-          aria-label="SMS aktualisieren"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary"
-        >
-          <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
-        </button>
+        <div className="flex items-center gap-2">
+          {item.phone_order_booking_id ? (
+            <span
+              title="Neue SMS werden alle 5 Sekunden automatisch geladen"
+              className="inline-flex h-8 min-w-8 items-center justify-center rounded-full border border-border bg-secondary px-2 text-xs font-bold tabular-nums text-foreground"
+            >
+              {countdown}&nbsp;s
+            </span>
+          ) : null}
+          <button
+            type="button"
+            onClick={onRefresh}
+            aria-label="SMS aktualisieren"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary"
+          >
+            <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+        </div>
       </div>
 
       {item.phone_number ? (
