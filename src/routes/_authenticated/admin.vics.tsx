@@ -236,9 +236,13 @@ function AdminVics() {
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [buyOpen, setBuyOpen] = useState(false);
 
+  const [selectedFreeNumber, setSelectedFreeNumber] = useState<string>("");
+
   const unassignNumber = useServerFn(unassignNumberFromVic);
   const fetchProduct = useServerFn(getAnosimFullServiceProduct);
   const buyNumber = useServerFn(buyAnosimNumber);
+  const fetchFreeNumbers = useServerFn(listAssignableNumbers);
+  const assignNumber = useServerFn(assignNumberToVic);
 
   useEffect(() => {
     if (!loading && role && role !== "admin") {
@@ -315,6 +319,31 @@ function AdminVics() {
     staleTime: 60_000,
   });
 
+
+  const freeNumbersQuery = useQuery({
+    queryKey: ["admin", "anosim", "free-numbers"],
+    queryFn: () => fetchFreeNumbers(),
+    enabled: role === "admin" && assignVicId !== null,
+    staleTime: 30_000,
+    retry: false,
+  });
+
+  const assignNumberMutation = useMutation({
+    mutationFn: (values: { vicId: string; orderBookingId: number }) =>
+      assignNumber({ data: values }),
+    onSuccess: () => {
+      setPhoneError(null);
+      setSelectedFreeNumber("");
+      queryClient.invalidateQueries({ queryKey: ["admin", "anosim"] });
+      invalidate();
+    },
+    onError: (err: unknown) =>
+      setPhoneError(
+        err instanceof Error && err.message
+          ? err.message
+          : "Nummer konnte nicht zugewiesen werden.",
+      ),
+  });
 
   const unassignNumberMutation = useMutation({
     mutationFn: (vicId: string) => unassignNumber({ data: { vicId } }),
