@@ -18,9 +18,12 @@ function readFlag(name) {
   return next && !next.startsWith("--") ? next : undefined;
 }
 
-const serverEntry = resolve(root, ".output/server/index.mjs");
+// Nitro's node-server preset emits .output/ by default; Lovable builds emit dist/.
+const serverEntry = [".output/server/index.mjs", "dist/server/index.mjs"]
+  .map((candidate) => resolve(root, candidate))
+  .find((candidate) => existsSync(candidate));
 
-if (existsSync(serverEntry)) {
+if (serverEntry) {
   const host = readFlag("host") || process.env.HOST || "0.0.0.0";
   const port = readFlag("port") || process.env.PORT || "3000";
 
