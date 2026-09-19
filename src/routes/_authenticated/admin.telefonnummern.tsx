@@ -87,6 +87,11 @@ function remaining(endDate: string) {
   return `noch ${hours} Std.`;
 }
 
+function formatUsd(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? `${parsed.toFixed(2)} USD` : "–";
+}
+
 function typeLabel(rentalType: string) {
   if (rentalType === "RentalFull") return "FullService";
   if (rentalType === "RentalService") return "Service-Miete";
