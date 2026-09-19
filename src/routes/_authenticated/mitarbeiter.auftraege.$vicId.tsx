@@ -869,6 +869,17 @@ function StepCard({
             />
           </div>
 
+          {step.login_name || step.password ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {step.login_name ? (
+                <CopyValue label="Generierter Anmeldename" value={step.login_name} />
+              ) : null}
+              {step.password ? (
+                <CopyValue label="Generiertes Passwort" value={step.password} />
+              ) : null}
+            </div>
+          ) : null}
+
           <div>
             <label className={labelClass} htmlFor="email-address">
               Verwendete E-Mail-Adresse
