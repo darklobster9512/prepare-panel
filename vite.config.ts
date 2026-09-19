@@ -7,14 +7,6 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
-  // Self-hosted builds (VPS + PM2) target Node and emit .output/server/index.mjs.
-  // Inside Lovable, LOVABLE_NITRO_PRESET pins the platform target and wins over this.
-  nitro: { preset: "node-server" },
-  tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
-    server: { entry: "server" },
-  },
   vite: {
     server: {
       allowedHosts: ["prepare-panel.xyz", "www.prepare-panel.xyz"],

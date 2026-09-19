@@ -1,4 +1,3 @@
-import "./lib/server-websocket-polyfill";
 import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
