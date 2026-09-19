@@ -15,7 +15,8 @@ Das Projekt soll mit dem exakt angegebenen Ablauf unter Node.js 20 starten – o
 
 3. **Bestehenden VPS-Start beibehalten**
    - `npm run dev -- --host 0.0.0.0 --port {{PORT}}` startet nach dem Build weiterhin automatisch den Produktionsserver.
-   - `.env` und `.env.production` werden weiterhin beim Start geladen.
+   - Die bereits vorhandene und mit dem Projekt versionierte `.env` bleibt vollständig enthalten; sie enthält die benötigten Supabase-Projekt-, URL- und Publishable-Key-Werte für Server und Browser.
+   - Der Produktionsstart lädt diese `.env` automatisch. Ein frischer `git clone`, `npm install` und `npm run build` benötigt daher kein manuelles Setzen dieser Variablen.
    - Keine Änderung an deinem Installations- oder PM2-Befehl.
 
 4. **Node-22-Hinweis korrigieren**
@@ -23,6 +24,7 @@ Das Projekt soll mit dem exakt angegebenen Ablauf unter Node.js 20 starten – o
 
 ## Prüfung
 - Produktions-Build erstellen.
+- Mit einem frischen Projekt-Checkout prüfen, dass `.env` enthalten ist und beim Build sowie Serverstart automatisch verwendet wird.
 - Den gebauten Server gezielt mit Node.js 20 und deinem unveränderten `npm run dev -- --host ... --port ...` starten.
 - Startseite und `/auth` aufrufen.
 - Prüfen, dass weder der Supabase-WebSocket-Fehler noch Vite-HMR-Verbindungen auftreten und der Prozess unter PM2-tauglichen Signalen sauber läuft.
