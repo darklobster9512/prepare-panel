@@ -16,12 +16,16 @@ Die Konsole zeigt, dass `prepare-panel.xyz` derzeit den **Vite-Entwicklungsserve
   4. Nginx/Proxy weiterhin auf den von der App verwendeten HTTP-Port leiten; für Vite-HMR ist keine WebSocket-Weiterleitung nötig.
 - Lokal prüfen, dass der Produktions-Build das Node-Server-Paket erzeugt und der Produktionsstart die Seite ohne Vite-Client, HMR-Verbindungsversuche und Supabase-WebSocket-Fehler ausliefert.
 
-## Erwarteter PM2-Betrieb
+## Deinen bisherigen Startbefehl ersetzen
+
+Der bisherige Befehl `pm2 start "npm run dev ..."` ist die bestätigte Ursache: Er veröffentlicht den Vite-Entwicklungsserver samt Live-Reload-Client. Er wird durch einen echten Produktionsstart ersetzt.
 
 ```text
-Build:  npm run build
-Start:  npm run start
-Node:   22+
+npm install
+npm run build
+pm2 delete {{APP_NAME}}
+PORT={{PORT}} HOST=0.0.0.0 pm2 start .output/server/index.mjs --name {{APP_NAME}}
+pm2 save
 ```
 
-Nach dem Ausrollen muss der bisherige PM2-Prozess, der den Entwicklungsserver startet, durch diesen Produktionsprozess ersetzt werden. Eine reine Code-Aktualisierung ohne PM2-Neustart würde den alten Vite-Prozess weiterlaufen lassen.
+Zusätzlich muss auf dem VPS Node.js 22 oder neuer aktiv sein (`node -v`). Nach dem Ausrollen muss der alte PM2-Prozess einmal gelöscht und als Produktionsprozess neu angelegt werden; ein normales Reload würde dessen bisherigen Entwicklungsbefehl behalten.
