@@ -32,6 +32,23 @@ Alternativ direkt: `npm start`.
 Nach einem neuen Build muss der PM2-Prozess neu gestartet werden
 (`pm2 restart identpanel`).
 
+### Benötigte Zugangsdaten
+
+Der Produktionsstart liest `.env` und optional `.env.production` aus dem
+Projektordner; echte Umgebungsvariablen haben Vorrang.
+
+| Wert | Zweck |
+| --- | --- |
+| `SUPABASE_URL` | Pflicht |
+| `SUPABASE_PUBLISHABLE_KEY` | Pflicht |
+| `SUPABASE_SERVICE_ROLE_KEY` | Mitarbeiterverwaltung, Dateizugriff |
+| `ANOSIM_API_KEY` | Telefonnummern |
+| `TELEGRAM_BOT_TOKEN` | Benachrichtigungen |
+
+Die beiden Pflichtwerte stehen bereits in `.env`. Die übrigen Schlüssel sind
+dort aus Sicherheitsgründen nicht enthalten und müssen auf dem Server ergänzt
+werden.
+
 ## Technik
 
 React, TypeScript, TanStack Start, Tailwind CSS, shadcn/ui und Supabase.
