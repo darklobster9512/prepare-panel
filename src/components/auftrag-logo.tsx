@@ -1,11 +1,25 @@
 import { useEffect, useState, type ReactNode } from "react";
 
-import { getAuftragFileUrls } from "@/lib/storage.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const AUFTRAG_LOGO_BUCKET = "auftrag-logos";
 
 const signedUrlCache = new Map<string, string>();
 const pending = new Map<string, Promise<string | null>>();
+
+async function createSignedUrls(paths: string[]): Promise<Record<string, string>> {
+  const { data, error } = await supabase.storage
+    .from(AUFTRAG_LOGO_BUCKET)
+    .createSignedUrls(paths, 60 * 60);
+
+  if (error) throw error;
+
+  const urls: Record<string, string> = {};
+  for (const entry of data ?? []) {
+    if (entry.path && entry.signedUrl) urls[entry.path] = entry.signedUrl;
+  }
+  return urls;
+}
 
 function isDirectImageSource(path: string) {
   return path.startsWith("blob:") || path.startsWith("data:") || path.startsWith("http");
@@ -34,7 +48,7 @@ export async function resolveAuftragLogo(path: string | null): Promise<string | 
 
   let request = pending.get(path);
   if (!request) {
-    request = getAuftragFileUrls({ data: { paths: [path] } })
+    request = createSignedUrls([path])
       .then((urls) => {
         const url = urls[path] ?? null;
         if (url) signedUrlCache.set(path, url);
@@ -91,7 +105,7 @@ export async function preloadAuftragFiles(paths: Array<string | null | undefined
   for (let index = 0; index < pathsToSign.length; index += 50) {
     const chunk = pathsToSign.slice(index, index + 50);
     try {
-      const urls = await getAuftragFileUrls({ data: { paths: chunk } });
+      const urls = await createSignedUrls(chunk);
       for (const path of chunk) {
         const url = urls[path];
         if (!url) continue;
