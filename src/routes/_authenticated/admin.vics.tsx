@@ -876,6 +876,54 @@ function AdminVics() {
                 >
                   Neue Nummer kaufen
                 </Button>
+
+                {(freeNumbersQuery.data ?? []).length > 0 ? (
+                  <div className="space-y-2 border-t border-border pt-2">
+                    <p className="text-xs font-medium text-foreground">
+                      Vorhandene freie Nummer zuweisen
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <select
+                        aria-label="Freie Nummer auswählen"
+                        value={selectedFreeNumber}
+                        onChange={(event) =>
+                          setSelectedFreeNumber(event.target.value)
+                        }
+                        className="h-9 rounded-md border border-border bg-background px-3 text-sm text-foreground"
+                      >
+                        <option value="">Nummer wählen …</option>
+                        {(freeNumbersQuery.data ?? []).map((entry) => (
+                          <option
+                            key={entry.orderBookingId}
+                            value={String(entry.orderBookingId)}
+                          >
+                            {entry.number}
+                          </option>
+                        ))}
+                      </select>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="rounded-full"
+                        disabled={
+                          !selectedFreeNumber || assignNumberMutation.isPending
+                        }
+                        onClick={() => {
+                          if (!assignVicId || !selectedFreeNumber) return;
+                          assignNumberMutation.mutate({
+                            vicId: assignVicId,
+                            orderBookingId: Number(selectedFreeNumber),
+                          });
+                        }}
+                      >
+                        {assignNumberMutation.isPending
+                          ? "Wird zugewiesen …"
+                          : "Zuweisen"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             )}
 
