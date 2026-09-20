@@ -30,6 +30,8 @@ export type VicRow = {
   auftraege: VicAuftrag[];
   phone_number: string | null;
   phone_end_date: string | null;
+  phone_order_booking_id: number | null;
+  phone_share_link: string | null;
   created_at: string;
 };
 
@@ -88,14 +90,26 @@ const assignmentSchema = z.object({
 });
 
 const SELECT_COLUMNS =
-  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, claimed_by, completed_at, email_address, email_street, email_postal_code, email_city, email_birth_date, created_at, projects(name), anosim_numbers(number, end_date), vic_auftraege(id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, completed_at, auftraege(name, logo_path, admin_only))";
+  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, claimed_by, completed_at, email_address, email_street, email_postal_code, email_city, email_birth_date, created_at, projects(name), anosim_numbers(order_booking_id, number, end_date, share_link), vic_auftraege(id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, completed_at, auftraege(name, logo_path, admin_only, ident_type))";
 
 type RawVicRow = Omit<
   VicRow,
-  "project_name" | "auftraege" | "phone_number" | "phone_end_date"
+  | "project_name"
+  | "auftraege"
+  | "phone_number"
+  | "phone_end_date"
+  | "phone_order_booking_id"
+  | "phone_share_link"
 > & {
   projects: { name: string } | null;
-  anosim_numbers: { number: string | null; end_date: string | null }[] | null;
+  anosim_numbers:
+    | {
+        order_booking_id: number | null;
+        number: string | null;
+        end_date: string | null;
+        share_link: string | null;
+      }[]
+    | null;
   vic_auftraege: any[] | null;
 };
 
@@ -107,12 +121,18 @@ function mapVic(row: RawVicRow): VicRow {
     project_name: projects?.name ?? null,
     phone_number: phone?.number ?? null,
     phone_end_date: phone?.end_date ?? null,
+    phone_order_booking_id:
+      phone?.order_booking_id !== null && phone?.order_booking_id !== undefined
+        ? Number(phone.order_booking_id)
+        : null,
+    phone_share_link: phone?.share_link ?? null,
     auftraege: (vic_auftraege ?? []).map((item) => ({
       id: item.id,
       auftrag_id: item.auftrag_id,
       auftrag_name: item.auftraege?.name ?? "",
       logo_path: item.auftraege?.logo_path ?? null,
       admin_only: Boolean(item.auftraege?.admin_only),
+      ident_type: item.auftraege?.ident_type ?? null,
       login_name: item.login_name ?? null,
       password: item.password ?? null,
       status: (item.status ?? "offen") as VicAuftrag["status"],

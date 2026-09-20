@@ -6,6 +6,7 @@ import {
   Check,
   ClipboardPaste,
   Copy,
+  Download,
   FolderKanban,
   IdCard,
   LayoutDashboard,
@@ -56,9 +57,11 @@ import {
   assignNumberToVic,
   buyAnosimNumber,
   getAnosimFullServiceProduct,
+  getVicShareLink,
   listAssignableNumbers,
   unassignNumberFromVic,
 } from "@/lib/anosim.functions";
+import { buildExportText } from "@/lib/vic-export";
 
 export const Route = createFileRoute("/_authenticated/admin/vics")({
   head: () => ({
@@ -243,6 +246,16 @@ function AdminVics() {
   const buyNumber = useServerFn(buyAnosimNumber);
   const fetchFreeNumbers = useServerFn(listAssignableNumbers);
   const assignNumber = useServerFn(assignNumberToVic);
+  const fetchShareLink = useServerFn(getVicShareLink);
+
+  const [exportTarget, setExportTarget] = useState<{
+    vic: VicRow;
+    item: VicAuftrag;
+  } | null>(null);
+  const [exportText, setExportText] = useState("");
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [exportCopied, setExportCopied] = useState(false);
 
   useEffect(() => {
     if (!loading && role && role !== "admin") {
@@ -545,6 +558,27 @@ function AdminVics() {
     setAssignError(null);
     setPendingIds((vic.auftraege ?? []).map((item) => item.auftrag_id));
     setAssignVicId(vic.id);
+  };
+
+  const openExport = async (vic: VicRow, item: VicAuftrag) => {
+    setExportTarget({ vic, item });
+    setExportText("");
+    setExportError(null);
+    setExportCopied(false);
+    setExportLoading(true);
+    try {
+      const { shareLink } = await fetchShareLink({ data: { vicId: vic.id } });
+      setExportText(buildExportText(vic, item, shareLink));
+    } catch (err) {
+      setExportError(
+        err instanceof Error
+          ? err.message
+          : "Export konnte nicht erstellt werden.",
+      );
+      setExportText(buildExportText(vic, item, vic.phone_share_link));
+    } finally {
+      setExportLoading(false);
+    }
   };
 
   const handleDelete = (vic: VicRow) => {
@@ -1300,8 +1334,20 @@ function AdminVics() {
                           <span className="text-sm font-medium text-foreground">
                             {item.auftrag_name}
                           </span>
+                          {item.completed_at ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (detailVic) openExport(detailVic, item);
+                              }}
+                              className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                            >
+                              <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                              Export
+                            </button>
+                          ) : null}
                           <span
-                            className={`ml-auto rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+                            className={`${item.completed_at ? "" : "ml-auto "}rounded-full border px-2.5 py-0.5 text-xs font-medium ${
                                item.admin_only
                                  ? "border-purple-500/40 bg-purple-500/10 text-purple-600"
                                  : item.status === "erfolgreich"
@@ -1396,6 +1442,65 @@ function AdminVics() {
               </div>
             </div>
           ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={exportTarget !== null}
+        onOpenChange={(next) => {
+          if (!next) setExportTarget(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>
+              Export – {exportTarget?.item.auftrag_name ?? ""}
+            </DialogTitle>
+            <DialogDescription>
+              Text bei Bedarf anpassen und kopieren. Der AnoSIM-Share-Link wird
+              pro Nummer einmal erzeugt und danach wiederverwendet.
+            </DialogDescription>
+          </DialogHeader>
+          {exportError ? (
+            <p className="flex items-center gap-1.5 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4" aria-hidden="true" />
+              {exportError}
+            </p>
+          ) : null}
+          <Textarea
+            value={exportLoading ? "Share-Link wird geladen …" : exportText}
+            onChange={(event) => setExportText(event.target.value)}
+            readOnly={exportLoading}
+            rows={22}
+            className="font-mono text-xs"
+            aria-label="Export-Text"
+          />
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-full"
+              onClick={() => setExportTarget(null)}
+            >
+              Schließen
+            </Button>
+            <Button
+              type="button"
+              className="rounded-full"
+              disabled={exportLoading || !exportText}
+              onClick={async () => {
+                await navigator.clipboard?.writeText(exportText);
+                setExportCopied(true);
+              }}
+            >
+              {exportCopied ? (
+                <Check className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Copy className="h-4 w-4" aria-hidden="true" />
+              )}
+              {exportCopied ? "Kopiert" : "Kopieren"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
