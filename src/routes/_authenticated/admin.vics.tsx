@@ -246,6 +246,16 @@ function AdminVics() {
   const buyNumber = useServerFn(buyAnosimNumber);
   const fetchFreeNumbers = useServerFn(listAssignableNumbers);
   const assignNumber = useServerFn(assignNumberToVic);
+  const fetchShareLink = useServerFn(getVicShareLink);
+
+  const [exportTarget, setExportTarget] = useState<{
+    vic: VicRow;
+    item: VicAuftrag;
+  } | null>(null);
+  const [exportText, setExportText] = useState("");
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [exportCopied, setExportCopied] = useState(false);
 
   useEffect(() => {
     if (!loading && role && role !== "admin") {
@@ -548,6 +558,27 @@ function AdminVics() {
     setAssignError(null);
     setPendingIds((vic.auftraege ?? []).map((item) => item.auftrag_id));
     setAssignVicId(vic.id);
+  };
+
+  const openExport = async (vic: VicRow, item: VicAuftrag) => {
+    setExportTarget({ vic, item });
+    setExportText("");
+    setExportError(null);
+    setExportCopied(false);
+    setExportLoading(true);
+    try {
+      const { shareLink } = await fetchShareLink({ data: { vicId: vic.id } });
+      setExportText(buildExportText(vic, item, shareLink));
+    } catch (err) {
+      setExportError(
+        err instanceof Error
+          ? err.message
+          : "Export konnte nicht erstellt werden.",
+      );
+      setExportText(buildExportText(vic, item, vic.phone_share_link));
+    } finally {
+      setExportLoading(false);
+    }
   };
 
   const handleDelete = (vic: VicRow) => {
