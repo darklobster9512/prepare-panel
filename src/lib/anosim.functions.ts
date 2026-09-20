@@ -426,3 +426,52 @@ export const setAnosimNote = createServerFn({ method: "POST" })
     if (error) throw new Error("Notiz konnte nicht gespeichert werden.");
     return { ok: true };
   });
+
+/**
+ * Liefert den gespeicherten AnoSIM-Share-Link der dem Datensatz zugewiesenen
+ * Nummer. Existiert noch keiner, wird er einmalig über die AnoSIM-API erzeugt
+ * und gespeichert – jeder erneute Aufruf würde den vorherigen Token
+ * invalidieren, deshalb wird der gespeicherte Link immer wiederverwendet.
+ */
+export const getVicShareLink = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({ vicId: z.string().uuid() }).parse(data),
+  )
+  .handler(async ({ data, context }): Promise<{ shareLink: string | null }> => {
+    await assertAdmin(context.supabase, context.userId);
+
+    const { data: row } = await context.supabase
+      .from("anosim_numbers")
+      .select("id, order_booking_id, share_link")
+      .eq("vic_id", data.vicId)
+      .maybeSingle();
+
+    if (!row) return { shareLink: null };
+    if (row.share_link) return { shareLink: row.share_link as string };
+
+    const orderBookingId = Number(row.order_booking_id);
+    if (!Number.isFinite(orderBookingId) || orderBookingId <= 0) {
+      return { shareLink: null };
+    }
+
+    const { anosimFetch } = await import("./anosim.server");
+    const result = await anosimFetch<{ weblink?: string; apilink?: string }>(
+      `/OrderBookingShare/${orderBookingId}`,
+      {},
+      { method: "POST" },
+    );
+
+    const weblink = result?.weblink;
+    if (!weblink) {
+      throw new Error("AnoSIM hat keinen Share-Link geliefert.");
+    }
+
+    const { error } = await context.supabase
+      .from("anosim_numbers")
+      .update({ share_link: weblink })
+      .eq("id", row.id);
+
+    if (error) throw new Error("Share-Link konnte nicht gespeichert werden.");
+    return { shareLink: weblink };
+  });
