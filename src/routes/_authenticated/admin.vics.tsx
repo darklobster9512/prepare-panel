@@ -1352,7 +1352,11 @@ function AdminVics() {
                     {(detailVic.auftraege ?? []).map((item) => (
                       <div
                         key={item.id}
-                        className="rounded-xl border border-border bg-card px-4 py-3"
+                        className={`rounded-xl border bg-card px-4 py-3 ${
+                          item.internal_mark
+                            ? `border-transparent ${internalMarkRingClass(item.internal_mark)}`
+                            : "border-border"
+                        }`}
                       >
                         <div className="flex items-center gap-3">
                           <span className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg border border-border bg-background">
