@@ -1,0 +1,1 @@
+ALTER TABLE public.anosim_numbers ADD COLUMN IF NOT EXISTS share_link text;

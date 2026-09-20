@@ -23,6 +23,7 @@ export type Database = {
           note: string | null
           number: string | null
           order_booking_id: number
+          share_link: string | null
           updated_at: string
           vic_id: string | null
         }
@@ -34,6 +35,7 @@ export type Database = {
           note?: string | null
           number?: string | null
           order_booking_id: number
+          share_link?: string | null
           updated_at?: string
           vic_id?: string | null
         }
@@ -45,6 +47,7 @@ export type Database = {
           note?: string | null
           number?: string | null
           order_booking_id?: number
+          share_link?: string | null
           updated_at?: string
           vic_id?: string | null
         }
