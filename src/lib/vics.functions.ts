@@ -121,12 +121,18 @@ function mapVic(row: RawVicRow): VicRow {
     project_name: projects?.name ?? null,
     phone_number: phone?.number ?? null,
     phone_end_date: phone?.end_date ?? null,
+    phone_order_booking_id:
+      phone?.order_booking_id !== null && phone?.order_booking_id !== undefined
+        ? Number(phone.order_booking_id)
+        : null,
+    phone_share_link: phone?.share_link ?? null,
     auftraege: (vic_auftraege ?? []).map((item) => ({
       id: item.id,
       auftrag_id: item.auftrag_id,
       auftrag_name: item.auftraege?.name ?? "",
       logo_path: item.auftraege?.logo_path ?? null,
       admin_only: Boolean(item.auftraege?.admin_only),
+      ident_type: item.auftraege?.ident_type ?? null,
       login_name: item.login_name ?? null,
       password: item.password ?? null,
       status: (item.status ?? "offen") as VicAuftrag["status"],
