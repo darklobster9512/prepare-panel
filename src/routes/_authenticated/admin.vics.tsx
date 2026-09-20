@@ -1334,8 +1334,20 @@ function AdminVics() {
                           <span className="text-sm font-medium text-foreground">
                             {item.auftrag_name}
                           </span>
+                          {item.completed_at ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (detailVic) openExport(detailVic, item);
+                              }}
+                              className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                            >
+                              <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                              Export
+                            </button>
+                          ) : null}
                           <span
-                            className={`ml-auto rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+                            className={`${item.completed_at ? "" : "ml-auto "}rounded-full border px-2.5 py-0.5 text-xs font-medium ${
                                item.admin_only
                                  ? "border-purple-500/40 bg-purple-500/10 text-purple-600"
                                  : item.status === "erfolgreich"
