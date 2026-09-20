@@ -149,3 +149,83 @@
     font-family: var(--font-sans);
   }
 }
+
+/* Interne Kennzeichnung: Ringe um Logos und Auftrags-Cards (nur Adminbereich). */
+@keyframes mark-ring-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.mark-ring-purple {
+  position: relative;
+  box-shadow: 0 0 0 2px oklch(0.627 0.265 303.9);
+}
+
+.mark-ring-rainbow,
+.mark-ring-stripes {
+  position: relative;
+}
+
+.mark-ring-rainbow::after,
+.mark-ring-stripes::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: mark-ring-spin 6s linear infinite;
+}
+
+.mark-ring-rainbow::after {
+  background: conic-gradient(
+    #ef4444,
+    #f59e0b,
+    #facc15,
+    #22c55e,
+    #06b6d4,
+    #3b82f6,
+    #8b5cf6,
+    #ec4899,
+    #ef4444
+  );
+}
+
+.mark-ring-stripes::after {
+  background: repeating-conic-gradient(
+    #000 0deg 22.5deg,
+    #fff 22.5deg 45deg
+  );
+  animation-duration: 10s;
+}
+
+/* Auswahl-Buttons mit denselben Mustern als Füllung. */
+.mark-chip-rainbow {
+  background: linear-gradient(
+    90deg,
+    rgb(239 68 68 / 0.25),
+    rgb(245 158 11 / 0.25),
+    rgb(34 197 94 / 0.25),
+    rgb(59 130 246 / 0.25),
+    rgb(139 92 246 / 0.25)
+  );
+}
+
+.mark-chip-stripes {
+  background: repeating-linear-gradient(
+    135deg,
+    rgb(0 0 0 / 0.65) 0 6px,
+    rgb(255 255 255 / 0.65) 6px 12px
+  );
+  color: #fff;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.8);
+}
