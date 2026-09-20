@@ -32,6 +32,23 @@ function findEmailPassword(vic: VicRow): string | null {
   return withPassword?.password ?? null;
 }
 
+/** Schreibt den WebID-Link auf die Branding-Domain um (inkl. Entfernen von /service). */
+export function applyWebidDomain(
+  link: string | null | undefined,
+  domain: string | null | undefined,
+): string | null {
+  const original = link?.trim() || null;
+  const host = domain?.trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+  if (!original || !host) return original;
+  try {
+    const url = new URL(original);
+    const path = url.pathname.replace(/^\/service(?=\/|$)/i, "");
+    return `https://${host}${path}${url.search}${url.hash}`;
+  } catch {
+    return original;
+  }
+}
+
 export function buildExportText(
   vic: VicRow,
   item: VicAuftrag,
@@ -63,7 +80,11 @@ export function buildExportText(
     "",
     item.auftrag_name || "–",
     `Nummer: ${orDash(vic.phone_number)}`,
-    orDash(item.webid_link ?? item.postident_link),
+    orDash(
+      item.webid_link
+        ? applyWebidDomain(item.webid_link, vic.project_webid_domain)
+        : item.postident_link,
+    ),
     orDash(shareLink),
   );
 

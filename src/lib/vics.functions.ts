@@ -27,6 +27,7 @@ export type VicRow = {
   email_city: string | null;
   email_birth_date: string | null;
   project_name: string | null;
+  project_webid_domain: string | null;
   auftraege: VicAuftrag[];
   phone_number: string | null;
   phone_end_date: string | null;
@@ -90,18 +91,19 @@ const assignmentSchema = z.object({
 });
 
 const SELECT_COLUMNS =
-  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, claimed_by, completed_at, email_address, email_street, email_postal_code, email_city, email_birth_date, created_at, projects(name), anosim_numbers(order_booking_id, number, end_date, share_link), vic_auftraege(id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, completed_at, auftraege(name, logo_path, admin_only, ident_type))";
+  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, claimed_by, completed_at, email_address, email_street, email_postal_code, email_city, email_birth_date, created_at, projects(name, webid_domain), anosim_numbers(order_booking_id, number, end_date, share_link), vic_auftraege(id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, completed_at, auftraege(name, logo_path, admin_only, ident_type))";
 
 type RawVicRow = Omit<
   VicRow,
   | "project_name"
+  | "project_webid_domain"
   | "auftraege"
   | "phone_number"
   | "phone_end_date"
   | "phone_order_booking_id"
   | "phone_share_link"
 > & {
-  projects: { name: string } | null;
+  projects: { name: string; webid_domain: string | null } | null;
   anosim_numbers:
     | {
         order_booking_id: number | null;
@@ -119,6 +121,7 @@ function mapVic(row: RawVicRow): VicRow {
   return {
     ...rest,
     project_name: projects?.name ?? null,
+    project_webid_domain: projects?.webid_domain ?? null,
     phone_number: phone?.number ?? null,
     phone_end_date: phone?.end_date ?? null,
     phone_order_booking_id:
