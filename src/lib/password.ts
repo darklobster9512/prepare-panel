@@ -18,19 +18,25 @@ export function generateYearPassword(firstName: string): string {
   return `${base}${new Date().getFullYear()}`;
 }
 
-/** Erzeugt ein Passwort nach dem Muster Vorname + 6 zufällige Ziffern. */
-export function generateVicPassword(firstName: string): string {
+/**
+ * Erzeugt ein Passwort nach dem Muster Vorname + Ziffern.
+ * Mindestens 6 Ziffern; bei kurzen Vornamen werden weitere Ziffern
+ * angehängt, bis das Passwort mindestens 12 Zeichen lang ist.
+ */
+export function generateVicPassword(firstName: string, minLength = 12): string {
   const base = (firstName ?? "")
     .trim()
     .split(/\s+/)[0]
     ?.replace(/[^\p{L}]/gu, "") ?? "";
 
-  const array = new Uint32Array(6);
+  const digitCount = Math.max(6, minLength - base.length);
+  const array = new Uint32Array(digitCount);
   crypto.getRandomValues(array);
   const digits = Array.from(array, (value) => value % 10).join("");
 
   return `${base}${digits}`;
 }
+
 
 /**
  * Erzeugt einen Anmeldenamen nach dem Muster Nachname + Geburtsjahr.
