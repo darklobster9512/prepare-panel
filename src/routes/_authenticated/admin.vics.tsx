@@ -1445,6 +1445,65 @@ function AdminVics() {
         </DialogContent>
       </Dialog>
 
+      <Dialog
+        open={exportTarget !== null}
+        onOpenChange={(next) => {
+          if (!next) setExportTarget(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>
+              Export – {exportTarget?.item.auftrag_name ?? ""}
+            </DialogTitle>
+            <DialogDescription>
+              Text bei Bedarf anpassen und kopieren. Der AnoSIM-Share-Link wird
+              pro Nummer einmal erzeugt und danach wiederverwendet.
+            </DialogDescription>
+          </DialogHeader>
+          {exportError ? (
+            <p className="flex items-center gap-1.5 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4" aria-hidden="true" />
+              {exportError}
+            </p>
+          ) : null}
+          <Textarea
+            value={exportLoading ? "Share-Link wird geladen …" : exportText}
+            onChange={(event) => setExportText(event.target.value)}
+            readOnly={exportLoading}
+            rows={22}
+            className="font-mono text-xs"
+            aria-label="Export-Text"
+          />
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-full"
+              onClick={() => setExportTarget(null)}
+            >
+              Schließen
+            </Button>
+            <Button
+              type="button"
+              className="rounded-full"
+              disabled={exportLoading || !exportText}
+              onClick={async () => {
+                await navigator.clipboard?.writeText(exportText);
+                setExportCopied(true);
+              }}
+            >
+              {exportCopied ? (
+                <Check className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Copy className="h-4 w-4" aria-hidden="true" />
+              )}
+              {exportCopied ? "Kopiert" : "Kopieren"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
