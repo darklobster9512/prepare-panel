@@ -1358,7 +1358,7 @@ function AdminVics() {
                             : "border-border"
                         }`}
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
                           <span className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg border border-border bg-background">
                             <AuftragLogo
                               value={item.logo_path}
