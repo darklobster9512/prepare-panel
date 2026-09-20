@@ -1399,6 +1399,31 @@ function AdminVics() {
                           >
                             {statusLabel(item.status, detailVic.claimed_by !== null, item.admin_only)}
                           </span>
+                          <div className="flex w-full flex-wrap items-center gap-1.5">
+                            <span className="text-xs text-muted-foreground">
+                              Intern:
+                            </span>
+                            {INTERNAL_MARKS.map((mark) => {
+                              const active = item.internal_mark === mark;
+                              return (
+                                <button
+                                  key={mark}
+                                  type="button"
+                                  aria-pressed={active}
+                                  onClick={() =>
+                                    internalMarkMutation.mutate({
+                                      vic_id: detailVic.id,
+                                      id: item.id,
+                                      mark: active ? null : mark,
+                                    })
+                                  }
+                                  className={`rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors ${internalMarkButtonClass(mark, active)}`}
+                                >
+                                  {INTERNAL_MARK_LABELS[mark]}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
                           <div className="mt-3 space-y-1 border-t border-border/60 pt-3 text-sm">
                           {item.admin_only && item.password ? (
