@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/use-auth";
 import {
   createProject,
@@ -83,6 +84,8 @@ function AdminProjekte() {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState("");
+  const [customWebid, setCustomWebid] = useState(false);
+  const [webidDomain, setWebidDomain] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -103,13 +106,17 @@ function AdminProjekte() {
     queryClient.invalidateQueries({ queryKey: ["admin", "projects"] });
 
   const saveMutation = useMutation({
-    mutationFn: (values: { name: string; id?: string }) =>
+    mutationFn: (values: { name: string; webid_domain: string | null; id?: string }) =>
       values.id
-        ? editProject({ data: { name: values.name, id: values.id } })
-        : addProject({ data: { name: values.name } }),
+        ? editProject({
+            data: { name: values.name, webid_domain: values.webid_domain, id: values.id },
+          })
+        : addProject({ data: { name: values.name, webid_domain: values.webid_domain } }),
     onSuccess: () => {
       setOpen(false);
       setName("");
+      setCustomWebid(false);
+      setWebidDomain("");
       setError(null);
       setSuccess(editingId ? "Projekt aktualisiert." : "Projekt angelegt.");
       setEditingId(null);
@@ -136,6 +143,8 @@ function AdminProjekte() {
   const openCreate = () => {
     setEditingId(null);
     setName("");
+    setCustomWebid(false);
+    setWebidDomain("");
     setError(null);
     setSuccess(null);
     setOpen(true);
@@ -144,6 +153,8 @@ function AdminProjekte() {
   const openEdit = (project: ProjectRow) => {
     setEditingId(project.id);
     setName(project.name);
+    setCustomWebid(Boolean(project.webid_domain));
+    setWebidDomain(project.webid_domain ?? "");
     setError(null);
     setSuccess(null);
     setOpen(true);
@@ -159,7 +170,17 @@ function AdminProjekte() {
       return;
     }
 
-    saveMutation.mutate(editingId ? { name, id: editingId } : { name });
+    const domain = customWebid ? webidDomain.trim() : "";
+    if (customWebid && !domain) {
+      setError("Bitte eine WebID-Domain eingeben, z. B. webid.codebricks-gmbh.com.");
+      return;
+    }
+
+    saveMutation.mutate(
+      editingId
+        ? { name, webid_domain: domain || null, id: editingId }
+        : { name, webid_domain: domain || null },
+    );
   };
 
   const handleDelete = (project: ProjectRow) => {
@@ -251,6 +272,11 @@ function AdminProjekte() {
                   <tr key={project.id} className="border-b border-border/60 last:border-0">
                     <td className="px-5 py-4 font-medium text-foreground">
                       {project.name}
+                      {project.webid_domain ? (
+                        <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+                          WebID: {project.webid_domain}
+                        </span>
+                      ) : null}
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">
                       {formatDate(project.created_at)}
@@ -305,6 +331,35 @@ function AdminProjekte() {
                 required
                 autoFocus
               />
+            </div>
+
+            <div className="space-y-3 rounded-xl border border-border p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <Label htmlFor="custom_webid" className="cursor-pointer">
+                    Eigener WebID-Link
+                  </Label>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Beim Export wird der WebID-Link auf diese Domain umgeschrieben.
+                  </p>
+                </div>
+                <Switch
+                  id="custom_webid"
+                  checked={customWebid}
+                  onCheckedChange={(checked) => {
+                    setCustomWebid(checked);
+                    if (!checked) setWebidDomain("");
+                  }}
+                />
+              </div>
+              {customWebid ? (
+                <Input
+                  value={webidDomain}
+                  onChange={(event) => setWebidDomain(event.target.value)}
+                  placeholder="webid.codebricks-gmbh.com"
+                  aria-label="WebID-Domain"
+                />
+              ) : null}
             </div>
 
             {error ? (
