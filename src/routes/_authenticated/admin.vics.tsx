@@ -1205,7 +1205,7 @@ function AdminVics() {
           if (!value) setDetailVicId(null);
         }}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl lg:max-w-5xl">
           <DialogHeader>
             <DialogTitle>
               {detailVic
@@ -1225,7 +1225,7 @@ function AdminVics() {
                 <h3 className="text-sm font-semibold text-foreground">
                   Persönliche Daten
                 </h3>
-                <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+                <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
                   {[
                     ["Geburtsname", detailVic.birth_name],
                     ["Geburtsdatum", formatDate(detailVic.birth_date)],
@@ -1246,6 +1246,7 @@ function AdminVics() {
                 </dl>
               </div>
 
+              <div className="grid gap-6 lg:grid-cols-2">
               <div>
                 <h3 className="text-sm font-semibold text-foreground">E-Mail-Konto</h3>
                 {detailVic.email_address ? (
