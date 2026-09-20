@@ -50,7 +50,15 @@ import { listAuftraege } from "@/lib/auftraege.functions";
 import {
   assignAuftraegeBulk,
   regenerateCredentials,
+  setVicAuftragInternalMark,
 } from "@/lib/vic-auftraege.functions";
+import {
+  INTERNAL_MARKS,
+  INTERNAL_MARK_LABELS,
+  internalMarkButtonClass,
+  internalMarkRingClass,
+  type InternalMark,
+} from "@/lib/internal-mark";
 import type { VicAuftrag } from "@/lib/vic-auftraege.types";
 import { listProjects } from "@/lib/projects.functions";
 import {
