@@ -255,6 +255,8 @@ function AdminVics() {
   const fetchFreeNumbers = useServerFn(listAssignableNumbers);
   const assignNumber = useServerFn(assignNumberToVic);
   const fetchShareLink = useServerFn(getVicShareLink);
+  const saveInternalMark = useServerFn(setVicAuftragInternalMark);
+  const [markError, setMarkError] = useState<string | null>(null);
 
   const [exportTarget, setExportTarget] = useState<{
     vic: VicRow;
