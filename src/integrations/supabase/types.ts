@@ -155,6 +155,7 @@ export type Database = {
           id: string
           name: string
           updated_at: string
+          webid_domain: string | null
         }
         Insert: {
           created_at?: string
@@ -162,6 +163,7 @@ export type Database = {
           id?: string
           name: string
           updated_at?: string
+          webid_domain?: string | null
         }
         Update: {
           created_at?: string
@@ -169,6 +171,7 @@ export type Database = {
           id?: string
           name?: string
           updated_at?: string
+          webid_domain?: string | null
         }
         Relationships: []
       }
