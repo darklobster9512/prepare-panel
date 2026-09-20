@@ -1,3 +1,4 @@
+import type { InternalMark } from "@/lib/internal-mark";
 import type { AuftragStatus } from "@/lib/mitarbeiter.types";
 
 export type VicAuftrag = {
@@ -15,4 +16,5 @@ export type VicAuftrag = {
   webid_link: string | null;
   postident_link: string | null;
   completed_at: string | null;
+  internal_mark?: InternalMark | null | undefined;
 };

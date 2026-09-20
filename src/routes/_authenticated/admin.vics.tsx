@@ -50,7 +50,15 @@ import { listAuftraege } from "@/lib/auftraege.functions";
 import {
   assignAuftraegeBulk,
   regenerateCredentials,
+  setVicAuftragInternalMark,
 } from "@/lib/vic-auftraege.functions";
+import {
+  INTERNAL_MARKS,
+  INTERNAL_MARK_LABELS,
+  internalMarkButtonClass,
+  internalMarkRingClass,
+  type InternalMark,
+} from "@/lib/internal-mark";
 import type { VicAuftrag } from "@/lib/vic-auftraege.types";
 import { listProjects } from "@/lib/projects.functions";
 import {
@@ -247,6 +255,8 @@ function AdminVics() {
   const fetchFreeNumbers = useServerFn(listAssignableNumbers);
   const assignNumber = useServerFn(assignNumberToVic);
   const fetchShareLink = useServerFn(getVicShareLink);
+  const saveInternalMark = useServerFn(setVicAuftragInternalMark);
+  const [markError, setMarkError] = useState<string | null>(null);
 
   const [exportTarget, setExportTarget] = useState<{
     vic: VicRow;
@@ -323,6 +333,26 @@ function AdminVics() {
       setAssignError(null);
     },
     onError: () => setAssignError("Zugangsdaten konnten nicht neu erzeugt werden."),
+  });
+
+  const internalMarkMutation = useMutation({
+    mutationFn: (values: {
+      vic_id: string;
+      id: string;
+      mark: InternalMark | null;
+    }) => saveInternalMark({ data: { id: values.id, mark: values.mark } }),
+    onMutate: (values) => {
+      patchVicAuftraege(values.vic_id, (current) =>
+        current.map((item) =>
+          item.id === values.id ? { ...item, internal_mark: values.mark } : item,
+        ),
+      );
+    },
+    onSuccess: () => setMarkError(null),
+    onError: () => {
+      setMarkError("Kennzeichnung konnte nicht gespeichert werden.");
+      invalidate();
+    },
   });
 
   const productQuery = useQuery({
@@ -767,7 +797,11 @@ function AdminVics() {
                             <span
                               key={item.id}
                               title={`${item.auftrag_name} · ${statusLabel(item.status, Boolean(vic.claimed_by), item.admin_only)}`}
-                              className={`inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-md bg-background ${statusRingClass(item.status, Boolean(vic.claimed_by), item.admin_only)}`}
+                              className={`inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-md bg-background ${
+                                item.internal_mark
+                                  ? internalMarkRingClass(item.internal_mark)
+                                  : statusRingClass(item.status, Boolean(vic.claimed_by), item.admin_only)
+                              }`}
                             >
                               <AuftragLogo
                                 value={item.logo_path}
@@ -1309,6 +1343,9 @@ function AdminVics() {
                 <h3 className="text-sm font-semibold text-foreground">
                   Zugewiesene Aufträge
                 </h3>
+                {markError ? (
+                  <p className="mt-2 text-sm text-destructive">{markError}</p>
+                ) : null}
                 {(detailVic.auftraege ?? []).length === 0 ? (
                   <p className="mt-2 text-sm text-muted-foreground">
                     Noch keine Aufträge zugewiesen.
@@ -1318,9 +1355,13 @@ function AdminVics() {
                     {(detailVic.auftraege ?? []).map((item) => (
                       <div
                         key={item.id}
-                        className="rounded-xl border border-border bg-card px-4 py-3"
+                        className={`rounded-xl border bg-card px-4 py-3 ${
+                          item.internal_mark
+                            ? `border-transparent ${internalMarkRingClass(item.internal_mark)}`
+                            : "border-border"
+                        }`}
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
                           <span className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg border border-border bg-background">
                             <AuftragLogo
                               value={item.logo_path}
@@ -1361,6 +1402,31 @@ function AdminVics() {
                           >
                             {statusLabel(item.status, detailVic.claimed_by !== null, item.admin_only)}
                           </span>
+                          <div className="flex w-full flex-wrap items-center gap-1.5">
+                            <span className="text-xs text-muted-foreground">
+                              Intern:
+                            </span>
+                            {INTERNAL_MARKS.map((mark) => {
+                              const active = item.internal_mark === mark;
+                              return (
+                                <button
+                                  key={mark}
+                                  type="button"
+                                  aria-pressed={active}
+                                  onClick={() =>
+                                    internalMarkMutation.mutate({
+                                      vic_id: detailVic.id,
+                                      id: item.id,
+                                      mark: active ? null : mark,
+                                    })
+                                  }
+                                  className={`rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors ${internalMarkButtonClass(mark, active)}`}
+                                >
+                                  {INTERNAL_MARK_LABELS[mark]}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
                           <div className="mt-3 space-y-1 border-t border-border/60 pt-3 text-sm">
                           {item.admin_only && item.password ? (

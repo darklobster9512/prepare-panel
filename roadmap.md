@@ -15,3 +15,8 @@
 - [x] Export-Button pro abgeschlossenem Auftrag im Detail-Popup unter /admin/vics
 - [x] Export-Popup mit editierbarem, vorausgefülltem Text (Identität, Notizen-Zeile, Web.de-Mail + generiertes Passwort, Auftragsname, Nummer, WebID-Link, AnoSIM-Share-Link)
 - [x] Spalte `share_link` an `anosim_numbers`; Share-Link einmalig über AnoSIM-API erzeugt und gespeichert, danach wiederverwendet
+
+## Interne Kennzeichnung im Vic-Detail-Popup (2026-09-20)
+- Neue Spalte `vic_auftraege.internal_mark` (gestartet/erledigt/abgesprungen, NULL = keine).
+- Buttons je Auftrags-Card in /admin/vics; Outline lila / Rainbow / Schwarz-Weiß-Streifen.
+- Nur Adminbereich, unabhängig vom Auftragsstatus.

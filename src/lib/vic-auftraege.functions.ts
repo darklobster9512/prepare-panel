@@ -85,7 +85,7 @@ async function buildCredentials(supabase: any, vicId: string, auftragId: string)
 }
 
 const SELECT_COLUMNS =
-  "id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, completed_at, auftraege(name, logo_path, admin_only)";
+  "id, auftrag_id, login_name, password, status, internal_mark, used_login_name, used_password, webid_link, postident_link, completed_at, auftraege(name, logo_path, admin_only)";
 
 function mapRow(row: any): VicAuftrag {
   return {
@@ -102,8 +102,30 @@ function mapRow(row: any): VicAuftrag {
     webid_link: row.webid_link ?? null,
     postident_link: row.postident_link ?? null,
     completed_at: row.completed_at ?? null,
+    internal_mark: (row.internal_mark ?? null) as VicAuftrag["internal_mark"],
   };
 }
+
+const internalMarkSchema = z.object({
+  id: z.string().uuid(),
+  mark: z.enum(["gestartet", "erledigt", "abgesprungen"]).nullable(),
+});
+
+/** Setzt die rein interne Kennzeichnung eines Auftrags (Adminbereich). */
+export const setVicAuftragInternalMark = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => internalMarkSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+
+    const { error } = await context.supabase
+      .from("vic_auftraege")
+      .update({ internal_mark: data.mark })
+      .eq("id", data.id);
+
+    if (error) throw new Error("Kennzeichnung konnte nicht gespeichert werden.");
+    return { ok: true, mark: data.mark };
+  });
 
 const pairSchema = z.object({
   vic_id: z.string().uuid(),
