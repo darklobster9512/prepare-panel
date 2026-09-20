@@ -1228,6 +1228,38 @@ function AdminVics() {
                 )}
               </div>
 
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  Telefonnummer
+                </h3>
+                {detailVic.phone_number ? (
+                  <div className="mt-2 space-y-1 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-foreground">
+                        {detailVic.phone_number}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigator.clipboard?.writeText(detailVic.phone_number ?? "")
+                        }
+                        aria-label="Telefonnummer kopieren"
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                      >
+                        <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                      </button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {describeValidity(detailVic.phone_end_date)}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Diesem Datensatz ist noch keine Telefonnummer zugewiesen.
+                  </p>
+                )}
+              </div>
+
               {detailVic.notes ? (
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">Notizen</h3>
