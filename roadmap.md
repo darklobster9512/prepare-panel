@@ -10,3 +10,8 @@
 - [x] GoLogin-Logo als lokale Datei eingebettet (CDN-Zeiger entfernt)
 - [x] Bildsignierung direkt über Supabase im angemeldeten Browser statt über den VPS
 - [x] GoLogin-Logo als feste öffentliche Datei ausliefern
+
+## Export im Vic-Detail-Popup (2026-09-20)
+- [x] Export-Button pro abgeschlossenem Auftrag im Detail-Popup unter /admin/vics
+- [x] Export-Popup mit editierbarem, vorausgefülltem Text (Identität, Notizen-Zeile, Web.de-Mail + generiertes Passwort, Auftragsname, Nummer, WebID-Link, AnoSIM-Share-Link)
+- [x] Spalte `share_link` an `anosim_numbers`; Share-Link einmalig über AnoSIM-API erzeugt und gespeichert, danach wiederverwendet
