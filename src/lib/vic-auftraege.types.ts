@@ -1,3 +1,4 @@
+import type { InternalMark } from "@/lib/internal-mark";
 import type { AuftragStatus } from "@/lib/mitarbeiter.types";
 
 export type VicAuftrag = {
