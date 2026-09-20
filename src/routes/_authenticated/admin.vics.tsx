@@ -333,6 +333,26 @@ function AdminVics() {
     onError: () => setAssignError("Zugangsdaten konnten nicht neu erzeugt werden."),
   });
 
+  const internalMarkMutation = useMutation({
+    mutationFn: (values: {
+      vic_id: string;
+      id: string;
+      mark: InternalMark | null;
+    }) => saveInternalMark({ data: { id: values.id, mark: values.mark } }),
+    onMutate: (values) => {
+      patchVicAuftraege(values.vic_id, (current) =>
+        current.map((item) =>
+          item.id === values.id ? { ...item, internal_mark: values.mark } : item,
+        ),
+      );
+    },
+    onSuccess: () => setMarkError(null),
+    onError: () => {
+      setMarkError("Kennzeichnung konnte nicht gespeichert werden.");
+      invalidate();
+    },
+  });
+
   const productQuery = useQuery({
     queryKey: ["admin", "anosim", "product"],
     queryFn: () => fetchProduct(),
