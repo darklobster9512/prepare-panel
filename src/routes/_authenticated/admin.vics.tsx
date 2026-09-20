@@ -6,6 +6,7 @@ import {
   Check,
   ClipboardPaste,
   Copy,
+  Download,
   FolderKanban,
   IdCard,
   LayoutDashboard,
@@ -56,9 +57,11 @@ import {
   assignNumberToVic,
   buyAnosimNumber,
   getAnosimFullServiceProduct,
+  getVicShareLink,
   listAssignableNumbers,
   unassignNumberFromVic,
 } from "@/lib/anosim.functions";
+import { buildExportText } from "@/lib/vic-export";
 
 export const Route = createFileRoute("/_authenticated/admin/vics")({
   head: () => ({
