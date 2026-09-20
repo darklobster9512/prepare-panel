@@ -1343,6 +1343,9 @@ function AdminVics() {
                 <h3 className="text-sm font-semibold text-foreground">
                   Zugewiesene Aufträge
                 </h3>
+                {markError ? (
+                  <p className="mt-2 text-sm text-destructive">{markError}</p>
+                ) : null}
                 {(detailVic.auftraege ?? []).length === 0 ? (
                   <p className="mt-2 text-sm text-muted-foreground">
                     Noch keine Aufträge zugewiesen.
