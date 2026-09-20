@@ -32,7 +32,7 @@ function findEmailPassword(vic: VicRow): string | null {
   return withPassword?.password ?? null;
 }
 
-/** Schreibt den WebID-Link auf die Branding-Domain um (inkl. Entfernen von /service). */
+/** Schreibt den WebID-Link auf die Branding-Domain um (Pfad bleibt unverändert). */
 export function applyWebidDomain(
   link: string | null | undefined,
   domain: string | null | undefined,
@@ -42,8 +42,7 @@ export function applyWebidDomain(
   if (!original || !host) return original;
   try {
     const url = new URL(original);
-    const path = url.pathname.replace(/^\/service(?=\/|$)/i, "");
-    return `https://${host}${path}${url.search}${url.hash}`;
+    return `https://${host}${url.pathname}${url.search}${url.hash}`;
   } catch {
     return original;
   }
