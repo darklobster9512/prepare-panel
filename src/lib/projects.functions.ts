@@ -6,6 +6,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export type ProjectRow = {
   id: string;
   name: string;
+  webid_domain: string | null;
   created_at: string;
 };
 
@@ -23,6 +24,19 @@ async function assertAdmin(supabase: any, userId: string) {
 
 const projectSchema = z.object({
   name: z.string().trim().min(1, "Bitte einen Projektnamen eingeben.").max(200),
+  webid_domain: z
+    .string()
+    .trim()
+    .max(200)
+    .nullish()
+    .transform((value) => {
+      const cleaned = (value ?? "")
+        .trim()
+        .replace(/^https?:\/\//i, "")
+        .replace(/\/+$/, "")
+        .trim();
+      return cleaned ? cleaned : null;
+    }),
 });
 
 export const listProjects = createServerFn({ method: "GET" })
@@ -32,7 +46,7 @@ export const listProjects = createServerFn({ method: "GET" })
 
     const { data, error } = await context.supabase
       .from("projects")
-      .select("id, name, created_at")
+      .select("id, name, webid_domain, created_at")
       .order("created_at", { ascending: false });
 
     if (error) throw new Error("Projekte konnten nicht geladen werden.");
@@ -47,7 +61,7 @@ export const createProject = createServerFn({ method: "POST" })
 
     const { error } = await context.supabase
       .from("projects")
-      .insert({ name: data.name, created_by: context.userId });
+      .insert({ name: data.name, webid_domain: data.webid_domain, created_by: context.userId });
 
     if (error) throw new Error("Projekt konnte nicht gespeichert werden.");
     return { ok: true };
@@ -63,7 +77,7 @@ export const updateProject = createServerFn({ method: "POST" })
 
     const { error } = await context.supabase
       .from("projects")
-      .update({ name: data.name })
+      .update({ name: data.name, webid_domain: data.webid_domain })
       .eq("id", data.id);
 
     if (error) throw new Error("Projekt konnte nicht aktualisiert werden.");
