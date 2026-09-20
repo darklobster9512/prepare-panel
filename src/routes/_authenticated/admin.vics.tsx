@@ -1294,6 +1294,7 @@ function AdminVics() {
                   </p>
                 )}
               </div>
+              </div>
 
               {detailVic.notes ? (
                 <div>
