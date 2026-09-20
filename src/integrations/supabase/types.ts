@@ -234,6 +234,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          internal_mark: string | null
           login_name: string | null
           password: string | null
           postident_link: string | null
@@ -251,6 +252,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          internal_mark?: string | null
           login_name?: string | null
           password?: string | null
           postident_link?: string | null
@@ -268,6 +270,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          internal_mark?: string | null
           login_name?: string | null
           password?: string | null
           postident_link?: string | null
