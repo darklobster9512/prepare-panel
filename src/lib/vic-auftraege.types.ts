@@ -16,5 +16,5 @@ export type VicAuftrag = {
   webid_link: string | null;
   postident_link: string | null;
   completed_at: string | null;
-  internal_mark?: InternalMark | null;
+  internal_mark?: InternalMark | null | undefined;
 };
