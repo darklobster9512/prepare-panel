@@ -91,7 +91,7 @@ const assignmentSchema = z.object({
 });
 
 const SELECT_COLUMNS =
-  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, claimed_by, completed_at, email_address, email_street, email_postal_code, email_city, email_birth_date, created_at, projects(name, webid_domain), anosim_numbers(order_booking_id, number, end_date, share_link), vic_auftraege(id, auftrag_id, login_name, password, status, used_login_name, used_password, webid_link, postident_link, completed_at, auftraege(name, logo_path, admin_only, ident_type))";
+  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, claimed_by, completed_at, email_address, email_street, email_postal_code, email_city, email_birth_date, created_at, projects(name, webid_domain), anosim_numbers(order_booking_id, number, end_date, share_link), vic_auftraege(id, auftrag_id, login_name, password, status, internal_mark, used_login_name, used_password, webid_link, postident_link, completed_at, auftraege(name, logo_path, admin_only, ident_type))";
 
 type RawVicRow = Omit<
   VicRow,
