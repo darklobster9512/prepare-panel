@@ -144,6 +144,7 @@ function mapVic(row: RawVicRow): VicRow {
       webid_link: item.webid_link ?? null,
       postident_link: item.postident_link ?? null,
       completed_at: item.completed_at ?? null,
+      internal_mark: (item.internal_mark ?? null) as VicAuftrag["internal_mark"],
     })),
   };
 }
