@@ -151,9 +151,15 @@
 }
 
 /* Interne Kennzeichnung: Ringe um Logos und Auftrags-Cards (nur Adminbereich). */
-@keyframes mark-ring-spin {
+@property --mark-ring-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes mark-ring-colors {
   to {
-    transform: rotate(1turn);
+    --mark-ring-angle: 360deg;
   }
 }
 
@@ -183,11 +189,12 @@
     linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  animation: mark-ring-spin 6s linear infinite;
+  animation: mark-ring-colors 8s linear infinite;
 }
 
 .mark-ring-rainbow::after {
   background: conic-gradient(
+    from var(--mark-ring-angle),
     #ef4444,
     #f59e0b,
     #facc15,
@@ -202,10 +209,18 @@
 
 .mark-ring-stripes::after {
   background: repeating-conic-gradient(
+    from var(--mark-ring-angle),
     #000 0deg 22.5deg,
     #fff 22.5deg 45deg
   );
   animation-duration: 10s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark-ring-rainbow::after,
+  .mark-ring-stripes::after {
+    animation: none;
+  }
 }
 
 /* Auswahl-Buttons mit denselben Mustern als Füllung. */
