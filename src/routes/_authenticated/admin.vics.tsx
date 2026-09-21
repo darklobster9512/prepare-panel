@@ -797,7 +797,7 @@ function AdminVics() {
                             <span
                               key={item.id}
                               title={`${item.auftrag_name} · ${statusLabel(item.status, Boolean(vic.claimed_by), item.admin_only)}`}
-                              className={`inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-md bg-background ${
+                              className={`inline-flex h-7 w-7 items-center justify-center rounded-md bg-background ${
                                 item.internal_mark
                                   ? internalMarkRingClass(item.internal_mark)
                                   : statusRingClass(item.status, Boolean(vic.claimed_by), item.admin_only)
@@ -806,7 +806,7 @@ function AdminVics() {
                               <AuftragLogo
                                 value={item.logo_path}
                                 alt={item.auftrag_name}
-                                className="h-full w-full object-contain p-0.5"
+                                className="h-full w-full rounded-md object-contain p-0.5"
                                 fallback={
                                   <span className="text-[0.6rem] font-semibold text-muted-foreground">
                                     {item.auftrag_name.slice(0, 2).toUpperCase()}
