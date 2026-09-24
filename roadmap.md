@@ -22,5 +22,5 @@
 - Nur Adminbereich, unabhängig vom Auftragsstatus.
 
 ## PLZ und Ort getrennt kopierbar (2026-09-24)
-- [ ] E-Mail-Schritt: „PLZ / Ort (generiert)" aufgeteilt in „PLZ (generiert)" und „Ort (generiert)", beide einzeln kopierbar
-- [ ] Typprüfung und Build prüfen
+- [x] E-Mail-Schritt: „PLZ / Ort (generiert)" aufgeteilt in „PLZ (generiert)" und „Ort (generiert)", beide einzeln kopierbar
+- [x] Typprüfung und Build prüfen
