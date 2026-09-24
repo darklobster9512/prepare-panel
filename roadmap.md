@@ -20,3 +20,7 @@
 - Neue Spalte `vic_auftraege.internal_mark` (gestartet/erledigt/abgesprungen, NULL = keine).
 - Buttons je Auftrags-Card in /admin/vics; Outline lila / Rainbow / Schwarz-Weiß-Streifen.
 - Nur Adminbereich, unabhängig vom Auftragsstatus.
+
+## PLZ und Ort getrennt kopierbar (2026-09-24)
+- [x] E-Mail-Schritt: „PLZ / Ort (generiert)" aufgeteilt in „PLZ (generiert)" und „Ort (generiert)", beide einzeln kopierbar
+- [x] Typprüfung und Build prüfen

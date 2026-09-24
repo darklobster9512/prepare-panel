@@ -867,14 +867,8 @@ function StepCard({
             <Readonly label="Vorname(n)" value={item.first_name} />
             <Readonly label="Nachname" value={item.last_name} />
             <Readonly label="Straße (generiert)" value={item.email_street ?? "…"} />
-            <Readonly
-              label="PLZ / Ort (generiert)"
-              value={
-                item.email_postal_code
-                  ? `${item.email_postal_code} ${item.email_city ?? ""}`.trim()
-                  : "…"
-              }
-            />
+            <Readonly label="PLZ (generiert)" value={item.email_postal_code ?? "…"} />
+            <Readonly label="Ort (generiert)" value={item.email_city ?? "…"} />
             <Readonly
               label="Geburtsdatum (generiert)"
               value={formatDate(item.email_birth_date)}
