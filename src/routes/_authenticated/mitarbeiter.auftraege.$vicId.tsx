@@ -804,7 +804,8 @@ function StepCard({
       complete({
         status,
         used_login_name: config.credentials ? loginName.trim() : null,
-        used_password: config.credentials ? password.trim() : null,
+        used_password:
+          config.credentials || (isEmail && step.password) ? password.trim() : null,
         webid_link: config.webid ? webid.trim() : null,
         postident_link: config.postident ? postident.trim() : null,
       }),
@@ -883,6 +884,17 @@ function StepCard({
               {step.password ? (
                 <CopyValue label="Generiertes Passwort" value={step.password} />
               ) : null}
+            </div>
+          ) : null}
+
+          {step.password ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                label="Verwendetes Passwort"
+                value={password}
+                onChange={setPassword}
+                disabled={!editable}
+              />
             </div>
           ) : null}
 

@@ -25,9 +25,9 @@ function formatBirthDate(value: string | null): string {
 /** Passwort des Web.de-/E-Mail-Auftrags (generiertes Web-Account-Passwort). */
 function findEmailPassword(vic: VicRow): string | null {
   const emailAuftrag = (vic.auftraege ?? []).find(
-    (item) => item.ident_type === "email" && item.password,
+    (item) => item.ident_type === "email" && (item.used_password || item.password),
   );
-  if (emailAuftrag?.password) return emailAuftrag.password;
+  if (emailAuftrag) return emailAuftrag.used_password || emailAuftrag.password;
   const withPassword = (vic.auftraege ?? []).find((item) => item.password);
   return withPassword?.password ?? null;
 }
