@@ -47,7 +47,7 @@ export const getAdminAbrechnung = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!roleRow) throw new Error("Kein Zugriff.");
 
-    const [auftraegeRes, rolesRes, profilesRes] = await Promise.all([
+    const [auftraegeRes, rolesRes, profilesRes, payoutsRes] = await Promise.all([
       context.supabase
         .from("vic_auftraege")
         .select(
@@ -56,9 +56,10 @@ export const getAdminAbrechnung = createServerFn({ method: "GET" })
         .not("vics.claimed_by", "is", null),
       context.supabase.from("user_roles").select("user_id").eq("role", "mitarbeiter"),
       context.supabase.from("profiles").select("user_id, first_name, last_name, email"),
+      context.supabase.from("payouts").select("id, user_id, amount_cents, created_at"),
     ]);
 
-    if (auftraegeRes.error || rolesRes.error || profilesRes.error) {
+    if (auftraegeRes.error || rolesRes.error || profilesRes.error || payoutsRes.error) {
       throw new Error("Abrechnung konnte nicht geladen werden.");
     }
 
@@ -126,11 +127,29 @@ export const getAdminAbrechnung = createServerFn({ method: "GET" })
       bucket.entries.push({
         id: row.id,
         date: row.completed_at ?? row.updated_at,
+        kind: "auftrag",
         auftrag_name: row.auftraege?.name ?? "",
         logo_path: row.auftraege?.logo_path ?? null,
         vic_name: `${row.vics?.first_name ?? ""} ${row.vics?.last_name ?? ""}`.trim(),
         result,
         amount_cents: amount,
+      });
+    }
+
+    for (const payout of (payoutsRes.data ?? []) as any[]) {
+      const bucket = byUser.get(payout.user_id);
+      if (!bucket) continue;
+      bucket.balance_cents -= payout.amount_cents;
+      total -= payout.amount_cents;
+      bucket.entries.push({
+        id: payout.id,
+        date: payout.created_at,
+        kind: "auszahlung",
+        auftrag_name: "Auszahlung",
+        logo_path: null,
+        vic_name: "",
+        result: "auszahlung",
+        amount_cents: -payout.amount_cents,
       });
     }
 
