@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminAbrechnungRouteImport } from './routes/_authenticated/admin.abrechnung'
 import { Route as AuthenticatedAdminMitarbeiterRouteImport } from './routes/_authenticated/admin.mitarbeiter'
 import { Route as AuthenticatedAdminProjekteRouteImport } from './routes/_authenticated/admin.projekte'
 import { Route as AuthenticatedAdminTelefonnummernRouteImport } from './routes/_authenticated/admin.telefonnummern'
@@ -44,6 +45,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminAbrechnungRoute =
+  AuthenticatedAdminAbrechnungRouteImport.update({
+    id: '/admin/abrechnung',
+    path: '/admin/abrechnung',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminMitarbeiterRoute =
   AuthenticatedAdminMitarbeiterRouteImport.update({
     id: '/admin/mitarbeiter',
@@ -113,6 +120,7 @@ const AuthenticatedMitarbeiterAuftraegeVicIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/admin/abrechnung': typeof AuthenticatedAdminAbrechnungRoute
   '/admin/mitarbeiter': typeof AuthenticatedAdminMitarbeiterRoute
   '/admin/projekte': typeof AuthenticatedAdminProjekteRoute
   '/admin/telefonnummern': typeof AuthenticatedAdminTelefonnummernRoute
@@ -129,6 +137,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/admin/abrechnung': typeof AuthenticatedAdminAbrechnungRoute
   '/admin/mitarbeiter': typeof AuthenticatedAdminMitarbeiterRoute
   '/admin/projekte': typeof AuthenticatedAdminProjekteRoute
   '/admin/telefonnummern': typeof AuthenticatedAdminTelefonnummernRoute
@@ -147,6 +156,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/admin/abrechnung': typeof AuthenticatedAdminAbrechnungRoute
   '/_authenticated/admin/mitarbeiter': typeof AuthenticatedAdminMitarbeiterRoute
   '/_authenticated/admin/projekte': typeof AuthenticatedAdminProjekteRoute
   '/_authenticated/admin/telefonnummern': typeof AuthenticatedAdminTelefonnummernRoute
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/admin/abrechnung'
     | '/admin/mitarbeiter'
     | '/admin/projekte'
     | '/admin/telefonnummern'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/admin/abrechnung'
     | '/admin/mitarbeiter'
     | '/admin/projekte'
     | '/admin/telefonnummern'
@@ -198,6 +210,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/admin/abrechnung'
     | '/_authenticated/admin/mitarbeiter'
     | '/_authenticated/admin/projekte'
     | '/_authenticated/admin/telefonnummern'
@@ -246,6 +259,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/abrechnung': {
+      id: '/_authenticated/admin/abrechnung'
+      path: '/admin/abrechnung'
+      fullPath: '/admin/abrechnung'
+      preLoaderRoute: typeof AuthenticatedAdminAbrechnungRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/mitarbeiter': {
@@ -329,6 +349,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminAbrechnungRoute: typeof AuthenticatedAdminAbrechnungRoute
   AuthenticatedAdminMitarbeiterRoute: typeof AuthenticatedAdminMitarbeiterRoute
   AuthenticatedAdminProjekteRoute: typeof AuthenticatedAdminProjekteRoute
   AuthenticatedAdminTelefonnummernRoute: typeof AuthenticatedAdminTelefonnummernRoute
@@ -344,6 +365,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminAbrechnungRoute: AuthenticatedAdminAbrechnungRoute,
   AuthenticatedAdminMitarbeiterRoute: AuthenticatedAdminMitarbeiterRoute,
   AuthenticatedAdminProjekteRoute: AuthenticatedAdminProjekteRoute,
   AuthenticatedAdminTelefonnummernRoute: AuthenticatedAdminTelefonnummernRoute,
