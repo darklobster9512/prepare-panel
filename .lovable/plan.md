@@ -4,13 +4,14 @@
 - Jeder Mitarbeiter hat ein eigenes Guthaben.
 - Auftrag als **Erfolgreich** markiert: **+5,00 €**
 - Auftrag als **Fehlgeschlagen** markiert: **+2,50 €**
-- Aufträge, die du als Admin intern als **Gestartet, Erledigt oder Abgesprungen** gekennzeichnet hast, zählen immer als **Erfolgreich (5,00 €)** – egal welcher Status gesetzt ist.
+- Der Mitarbeiter wählt nur Erfolgreich oder Fehlgeschlagen; danach ist der Status endgültig und ändert sich nicht mehr.
+- Aufträge, die du als Admin intern als **Gestartet, Erledigt oder Abgesprungen** gekennzeichnet hast, zählen immer als **Erfolgreich (5,00 €)**. Diese Kennzeichnung ist rein intern und für den Mitarbeiter unsichtbar.
 - Unbearbeitete Aufträge zählen nicht.
 - **21bitcoin** (und alle anderen internen Aufträge) zählt nie.
 - Gutgeschrieben wird dem Mitarbeiter, der den Datensatz bearbeitet hat.
 
 ## Nachträgliche Berechnung
-Das Guthaben wird immer direkt aus den vorhandenen Aufträgen berechnet. Dadurch sind alle bisherigen Aufträge automatisch enthalten, und es ist nichts separat zu übertragen. Wird ein Status später geändert, passt sich das Guthaben automatisch an.
+Das Guthaben wird direkt aus den vorhandenen Aufträgen berechnet. Dadurch sind alle bisherigen Aufträge automatisch enthalten, und es ist nichts separat zu übertragen.
 
 ## Neuer Reiter „Abrechnung“ im Mitarbeiter-Panel
 - Oben eine große Anzeige mit dem **aktuellen Guthaben** und darunter die Anzahl erfolgreicher und fehlgeschlagener Aufträge.
