@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Banknote, CheckCircle2, Wallet, XCircle } from "lucide-react";
-import { useEffect } from "react";
+import { Banknote, CheckCircle2, ChevronLeft, ChevronRight, Wallet, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { AuftragLogo } from "@/components/auftrag-logo";
 import { PanelShell } from "@/components/panel-shell";
@@ -43,10 +43,13 @@ function formatDate(value: string): string {
   });
 }
 
+const ENTRIES_PER_PAGE = 20;
+
 function AbrechnungPage() {
   const navigate = useNavigate();
   const { profile, role, loading } = useAuth();
   const fetchAbrechnung = useServerFn(getMyAbrechnung);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     if (!loading && role === "admin") {
@@ -59,7 +62,16 @@ function AbrechnungPage() {
     queryFn: () => fetchAbrechnung(),
   });
 
+  // Bei jedem frisch geladenen Verlauf wieder auf Seite 1 starten.
+  useEffect(() => {
+    setPage(1);
+  }, [abrechnungQuery.dataUpdatedAt]);
+
   const data = abrechnungQuery.data;
+  const totalEntries = data?.entries.length ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalEntries / ENTRIES_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedEntries = data ? data.entries.slice((currentPage - 1) * ENTRIES_PER_PAGE, currentPage * ENTRIES_PER_PAGE) : [];
 
   return (
     <PanelShell
@@ -118,9 +130,9 @@ function AbrechnungPage() {
             </p>
           )}
 
-          {data && data.entries.length > 0 && (
+          {data && pagedEntries.length > 0 && (
             <ul className="mt-4 divide-y divide-border">
-              {data.entries.map((entry) => (
+              {pagedEntries.map((entry) => (
                 <li key={entry.id} className="flex items-center gap-3 py-3">
                   {entry.kind === "auszahlung" ? (
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-primary/10 text-primary">
@@ -172,6 +184,32 @@ function AbrechnungPage() {
                 </li>
               ))}
             </ul>
+          )}
+
+          {totalEntries > ENTRIES_PER_PAGE && (
+            <div className="mt-5 flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage <= 1}
+                className="inline-flex h-8 items-center gap-1 rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-40"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                Zurück
+              </button>
+              <span className="text-xs text-muted-foreground tabular-nums">
+                Seite {currentPage} von {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage >= totalPages}
+                className="inline-flex h-8 items-center gap-1 rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-40"
+              >
+                Weiter
+                <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+            </div>
           )}
         </section>
       </div>
