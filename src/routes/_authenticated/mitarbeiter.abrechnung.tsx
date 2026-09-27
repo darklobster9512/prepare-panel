@@ -130,9 +130,9 @@ function AbrechnungPage() {
             </p>
           )}
 
-          {data && data.entries.length > 0 && (
+          {data && pagedEntries.length > 0 && (
             <ul className="mt-4 divide-y divide-border">
-              {data.entries.map((entry) => (
+              {pagedEntries.map((entry) => (
                 <li key={entry.id} className="flex items-center gap-3 py-3">
                   {entry.kind === "auszahlung" ? (
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-primary/10 text-primary">
