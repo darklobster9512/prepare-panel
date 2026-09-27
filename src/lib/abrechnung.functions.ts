@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -8,10 +9,11 @@ const RATE_FAILED_CENTS = 250;
 export type AbrechnungEntry = {
   id: string;
   date: string;
+  kind: "auftrag" | "auszahlung";
   auftrag_name: string;
   logo_path: string | null;
   vic_name: string;
-  result: "erfolgreich" | "fehlgeschlagen";
+  result: "erfolgreich" | "fehlgeschlagen" | "auszahlung";
   amount_cents: number;
 };
 
@@ -46,7 +48,7 @@ export const getAdminAbrechnung = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!roleRow) throw new Error("Kein Zugriff.");
 
-    const [auftraegeRes, rolesRes, profilesRes] = await Promise.all([
+    const [auftraegeRes, rolesRes, profilesRes, payoutsRes] = await Promise.all([
       context.supabase
         .from("vic_auftraege")
         .select(
@@ -55,9 +57,10 @@ export const getAdminAbrechnung = createServerFn({ method: "GET" })
         .not("vics.claimed_by", "is", null),
       context.supabase.from("user_roles").select("user_id").eq("role", "mitarbeiter"),
       context.supabase.from("profiles").select("user_id, first_name, last_name, email"),
+      context.supabase.from("payouts").select("id, user_id, amount_cents, created_at"),
     ]);
 
-    if (auftraegeRes.error || rolesRes.error || profilesRes.error) {
+    if (auftraegeRes.error || rolesRes.error || profilesRes.error || payoutsRes.error) {
       throw new Error("Abrechnung konnte nicht geladen werden.");
     }
 
@@ -125,11 +128,29 @@ export const getAdminAbrechnung = createServerFn({ method: "GET" })
       bucket.entries.push({
         id: row.id,
         date: row.completed_at ?? row.updated_at,
+        kind: "auftrag",
         auftrag_name: row.auftraege?.name ?? "",
         logo_path: row.auftraege?.logo_path ?? null,
         vic_name: `${row.vics?.first_name ?? ""} ${row.vics?.last_name ?? ""}`.trim(),
         result,
         amount_cents: amount,
+      });
+    }
+
+    for (const payout of (payoutsRes.data ?? []) as any[]) {
+      const bucket = byUser.get(payout.user_id);
+      if (!bucket) continue;
+      bucket.balance_cents -= payout.amount_cents;
+      total -= payout.amount_cents;
+      bucket.entries.push({
+        id: payout.id,
+        date: payout.created_at,
+        kind: "auszahlung",
+        auftrag_name: "Auszahlung",
+        logo_path: null,
+        vic_name: "",
+        result: "auszahlung",
+        amount_cents: -payout.amount_cents,
       });
     }
 
@@ -150,14 +171,22 @@ export const getAdminAbrechnung = createServerFn({ method: "GET" })
 export const getMyAbrechnung = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<Abrechnung> => {
-    const { data, error } = await context.supabase
-      .from("vic_auftraege")
-      .select(
-        "id, status, internal_mark, completed_at, updated_at, auftraege(name, logo_path, admin_only), vics!inner(first_name, last_name, claimed_by)",
-      )
-      .eq("vics.claimed_by", context.userId);
+    const [auftraegeRes, payoutsRes] = await Promise.all([
+      context.supabase
+        .from("vic_auftraege")
+        .select(
+          "id, status, internal_mark, completed_at, updated_at, auftraege(name, logo_path, admin_only), vics!inner(first_name, last_name, claimed_by)",
+        )
+        .eq("vics.claimed_by", context.userId),
+      context.supabase
+        .from("payouts")
+        .select("id, amount_cents, created_at")
+        .eq("user_id", context.userId),
+    ]);
 
-    if (error) throw new Error("Abrechnung konnte nicht geladen werden.");
+    if (auftraegeRes.error || payoutsRes.error)
+      throw new Error("Abrechnung konnte nicht geladen werden.");
+    const data = auftraegeRes.data;
 
     const entries: AbrechnungEntry[] = [];
     let balance = 0;
@@ -181,11 +210,26 @@ export const getMyAbrechnung = createServerFn({ method: "GET" })
       entries.push({
         id: row.id,
         date: row.completed_at ?? row.updated_at,
+        kind: "auftrag",
         auftrag_name: row.auftraege?.name ?? "",
         logo_path: row.auftraege?.logo_path ?? null,
         vic_name: `${row.vics?.first_name ?? ""} ${row.vics?.last_name ?? ""}`.trim(),
         result,
         amount_cents: amount,
+      });
+    }
+
+    for (const payout of (payoutsRes.data ?? []) as any[]) {
+      balance -= payout.amount_cents;
+      entries.push({
+        id: payout.id,
+        date: payout.created_at,
+        kind: "auszahlung",
+        auftrag_name: "Auszahlung",
+        logo_path: null,
+        vic_name: "",
+        result: "auszahlung",
+        amount_cents: -payout.amount_cents,
       });
     }
 
@@ -197,4 +241,59 @@ export const getMyAbrechnung = createServerFn({ method: "GET" })
       failed_count: failedCount,
       entries,
     };
+  });
+
+const payoutSchema = z.object({
+  user_id: z.string().uuid(),
+  amount_cents: z.number().int().positive().max(100000000),
+});
+
+export const createPayout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => payoutSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    const { data: roleRow } = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (!roleRow) throw new Error("Kein Zugriff.");
+
+    const [auftraegeRes, payoutsRes] = await Promise.all([
+      context.supabase
+        .from("vic_auftraege")
+        .select("status, internal_mark, auftraege(admin_only), vics!inner(claimed_by)")
+        .eq("vics.claimed_by", data.user_id),
+      context.supabase
+        .from("payouts")
+        .select("amount_cents")
+        .eq("user_id", data.user_id),
+    ]);
+    if (auftraegeRes.error || payoutsRes.error) {
+      throw new Error("Guthaben konnte nicht geprüft werden.");
+    }
+
+    let balance = 0;
+    for (const row of (auftraegeRes.data ?? []) as any[]) {
+      if (row.auftraege?.admin_only) continue;
+      if (row.internal_mark || row.status === "erfolgreich") balance += RATE_SUCCESS_CENTS;
+      else if (row.status === "fehlgeschlagen") balance += RATE_FAILED_CENTS;
+    }
+    for (const payout of (payoutsRes.data ?? []) as any[]) {
+      balance -= payout.amount_cents;
+    }
+
+    if (data.amount_cents > balance) {
+      throw new Error("Der Betrag übersteigt das aktuelle Guthaben.");
+    }
+
+    const { error } = await context.supabase.from("payouts").insert({
+      user_id: data.user_id,
+      amount_cents: data.amount_cents,
+      created_by: context.userId,
+    });
+    if (error) throw new Error("Auszahlung konnte nicht gespeichert werden.");
+
+    return { ok: true, balance_cents: balance - data.amount_cents };
   });

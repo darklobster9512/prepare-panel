@@ -1,7 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
+  Banknote,
   CheckCircle2,
   ChevronDown,
   FolderKanban,
@@ -14,11 +15,27 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { AuftragLogo } from "@/components/auftrag-logo";
 import { PanelShell } from "@/components/panel-shell";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
-import { getAdminAbrechnung } from "@/lib/abrechnung.functions";
+import {
+  createPayout,
+  getAdminAbrechnung,
+  type AdminAbrechnungMitarbeiter,
+} from "@/lib/abrechnung.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/abrechnung")({
   head: () => ({
@@ -53,15 +70,58 @@ function formatDate(value: string): string {
   });
 }
 
+function parseEuroInput(value: string): number | null {
+  const normalized = value.trim().replace(/\./g, "").replace(",", ".");
+  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null;
+  return Math.round(Number.parseFloat(normalized) * 100);
+}
+
 function AdminAbrechnungPage() {
   const { profile } = useAuth();
+  const queryClient = useQueryClient();
   const fetchAbrechnung = useServerFn(getAdminAbrechnung);
+  const runPayout = useServerFn(createPayout);
   const [openUserId, setOpenUserId] = useState<string | null>(null);
+  const [payoutTarget, setPayoutTarget] = useState<AdminAbrechnungMitarbeiter | null>(null);
+  const [payoutAmount, setPayoutAmount] = useState("");
 
   const abrechnungQuery = useQuery({
     queryKey: ["admin", "abrechnung"],
     queryFn: () => fetchAbrechnung(),
   });
+
+  const payoutMutation = useMutation({
+    mutationFn: (input: { user_id: string; amount_cents: number }) => runPayout({ data: input }),
+    onSuccess: (_result, input) => {
+      toast.success(
+        `Auszahlung über ${eur.format(input.amount_cents / 100)} wurde notiert.`,
+      );
+      setPayoutTarget(null);
+      queryClient.invalidateQueries({ queryKey: ["admin", "abrechnung"] });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Auszahlung fehlgeschlagen.");
+    },
+  });
+
+  const openPayout = (m: AdminAbrechnungMitarbeiter) => {
+    setPayoutTarget(m);
+    setPayoutAmount(eur.format(m.balance_cents / 100).replace(/\s*€/u, "").trim());
+  };
+
+  const confirmPayout = () => {
+    if (!payoutTarget) return;
+    const cents = parseEuroInput(payoutAmount);
+    if (cents === null || cents <= 0) {
+      toast.error("Bitte einen gültigen Betrag eingeben.");
+      return;
+    }
+    if (cents > payoutTarget.balance_cents) {
+      toast.error("Der Betrag übersteigt das aktuelle Guthaben.");
+      return;
+    }
+    payoutMutation.mutate({ user_id: payoutTarget.user_id, amount_cents: cents });
+  };
 
   const data = abrechnungQuery.data;
 
@@ -131,35 +191,48 @@ function AdminAbrechnungPage() {
               key={m.user_id}
               className="rounded-xl border border-border bg-card px-5 py-6 shadow-sm sm:px-8"
             >
-              <button
-                type="button"
-                onClick={() => setOpenUserId(open ? null : m.user_id)}
-                className="flex w-full items-center gap-4 text-left"
-                aria-expanded={open}
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-base font-bold tracking-tight text-foreground">
-                    {m.name}
-                  </p>
-                  {m.email && m.email !== m.name && (
-                    <p className="truncate text-xs text-muted-foreground">{m.email}</p>
-                  )}
-                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 font-medium text-emerald-600">
-                      {m.success_count}× erfolgreich
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-0.5 font-medium text-destructive">
-                      {m.failed_count}× fehlgeschlagen
-                    </span>
+              <div className="flex w-full items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => setOpenUserId(open ? null : m.user_id)}
+                  className="flex min-w-0 flex-1 items-center gap-4 text-left"
+                  aria-expanded={open}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-base font-bold tracking-tight text-foreground">
+                      {m.name}
+                    </p>
+                    {m.email && m.email !== m.name && (
+                      <p className="truncate text-xs text-muted-foreground">{m.email}</p>
+                    )}
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 font-medium text-emerald-600">
+                        {m.success_count}× erfolgreich
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-0.5 font-medium text-destructive">
+                        {m.failed_count}× fehlgeschlagen
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <p className="shrink-0 text-2xl font-bold tabular-nums tracking-tight text-foreground">
-                  {eur.format(m.balance_cents / 100)}
-                </p>
-                <ChevronDown
-                  className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
-                />
-              </button>
+                  <p className="shrink-0 text-2xl font-bold tabular-nums tracking-tight text-foreground">
+                    {eur.format(m.balance_cents / 100)}
+                  </p>
+                  <ChevronDown
+                    className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+                  />
+                </button>
+                {m.balance_cents > 0 && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="shrink-0 rounded-full"
+                    onClick={() => openPayout(m)}
+                  >
+                    <Banknote className="h-4 w-4" aria-hidden="true" />
+                    Auszahlen
+                  </Button>
+                )}
+              </div>
 
               {open && (
                 <div className="mt-4 border-t border-border pt-4">
@@ -171,37 +244,52 @@ function AdminAbrechnungPage() {
                     <ul className="divide-y divide-border">
                       {m.entries.map((entry) => (
                         <li key={entry.id} className="flex items-center gap-3 py-3">
-                          <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-secondary/40">
-                            <AuftragLogo
-                              value={entry.logo_path}
-                              alt={entry.auftrag_name}
-                              className="h-full w-full object-contain"
-                              fallback={
-                                <span className="text-xs font-bold text-muted-foreground">
-                                  {entry.auftrag_name.slice(0, 2).toUpperCase()}
-                                </span>
-                              }
-                            />
-                          </span>
+                          {entry.kind === "auszahlung" ? (
+                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-primary/10 text-primary">
+                              <Banknote className="h-5 w-5" aria-hidden="true" />
+                            </span>
+                          ) : (
+                            <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-secondary/40">
+                              <AuftragLogo
+                                value={entry.logo_path}
+                                alt={entry.auftrag_name}
+                                className="h-full w-full object-contain"
+                                fallback={
+                                  <span className="text-xs font-bold text-muted-foreground">
+                                    {entry.auftrag_name.slice(0, 2).toUpperCase()}
+                                  </span>
+                                }
+                              />
+                            </span>
+                          )}
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-semibold text-foreground">
                               {entry.auftrag_name}
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
-                              {entry.vic_name} · {formatDate(entry.date)}
+                              {entry.kind === "auszahlung"
+                                ? formatDate(entry.date)
+                                : `${entry.vic_name} · ${formatDate(entry.date)}`}
                             </p>
                           </div>
                           <span
                             className={
                               entry.result === "erfolgreich"
                                 ? "inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600"
-                                : "inline-flex shrink-0 items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive"
+                                : entry.result === "auszahlung"
+                                  ? "inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary"
+                                  : "inline-flex shrink-0 items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive"
                             }
                           >
-                            {entry.result === "erfolgreich" ? "Erfolgreich" : "Fehlgeschlagen"}
+                            {entry.result === "erfolgreich"
+                              ? "Erfolgreich"
+                              : entry.result === "auszahlung"
+                                ? "Auszahlung"
+                                : "Fehlgeschlagen"}
                           </span>
                           <span className="w-20 shrink-0 text-right text-sm font-bold tabular-nums text-foreground">
-                            +{eur.format(entry.amount_cents / 100)}
+                            {entry.amount_cents >= 0 ? "+" : "−"}
+                            {eur.format(Math.abs(entry.amount_cents) / 100)}
                           </span>
                         </li>
                       ))}
@@ -213,6 +301,52 @@ function AdminAbrechnungPage() {
           );
         })}
       </div>
+
+      <Dialog
+        open={payoutTarget !== null}
+        onOpenChange={(next) => {
+          if (!next) setPayoutTarget(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Auszahlung an {payoutTarget?.name}</DialogTitle>
+            <DialogDescription>
+              Aktuelles Guthaben:{" "}
+              {payoutTarget ? eur.format(payoutTarget.balance_cents / 100) : "–"}. Der
+              Betrag wird als Auszahlung im Verlauf notiert und vom Guthaben abgezogen.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="payout-amount">Betrag (in Euro)</Label>
+            <Input
+              id="payout-amount"
+              inputMode="decimal"
+              value={payoutAmount}
+              onChange={(event) => setPayoutAmount(event.target.value)}
+              placeholder="z. B. 125,00"
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setPayoutTarget(null)}
+              disabled={payoutMutation.isPending}
+            >
+              Abbrechen
+            </Button>
+            <Button
+              type="button"
+              onClick={confirmPayout}
+              disabled={payoutMutation.isPending}
+            >
+              {payoutMutation.isPending ? "Wird notiert …" : "Auszahlung bestätigen"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PanelShell>
   );
 }

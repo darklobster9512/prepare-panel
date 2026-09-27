@@ -33,3 +33,6 @@
 
 ## Admin-Abrechnung (2026-09-27)
 - [x] /admin/abrechnung: Gesamtguthaben + Karte pro Mitarbeiter mit aufklappbarem Verlauf; getAdminAbrechnung (Admin-Check); Nav-Eintrag auf allen Admin-Seiten
+
+## Auszahlungen (2026-09-27)
+- [x] payouts-Tabelle + RLS; createPayout (Admin, Guthaben-Check); Guthaben = Verdienst − Auszahlungen; Auszahlen-Button + Dialog auf /admin/abrechnung; Auszahlungs-Einträge in beiden Verläufen; Toaster in __root
