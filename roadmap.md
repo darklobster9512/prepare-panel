@@ -24,3 +24,9 @@
 ## PLZ und Ort getrennt kopierbar (2026-09-24)
 - [x] E-Mail-Schritt: „PLZ / Ort (generiert)" aufgeteilt in „PLZ (generiert)" und „Ort (generiert)", beide einzeln kopierbar
 - [x] Typprüfung und Build prüfen
+
+## Guthaben-System für Mitarbeiter (2026-09-27)
+- [x] `getMyAbrechnung` in `src/lib/abrechnung.functions.ts`: 5 € erfolgreich / 2,50 € fehlgeschlagen, internal_mark = erfolgreich, admin_only ausgenommen, nachträglich aus Bestandsdaten
+- [x] Route `/mitarbeiter/abrechnung` mit Guthaben-Anzeige und Verlauf
+- [x] Nav-Eintrag „Abrechnung" in `mitarbeiter-nav.ts`
+- [x] Typprüfung und Build prüfen
