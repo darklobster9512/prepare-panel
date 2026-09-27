@@ -30,3 +30,6 @@
 - [x] Route `/mitarbeiter/abrechnung` mit Guthaben-Anzeige und Verlauf
 - [x] Nav-Eintrag „Abrechnung" in `mitarbeiter-nav.ts`
 - [x] Typprüfung und Build prüfen
+
+## Admin-Abrechnung (2026-09-27)
+- [x] /admin/abrechnung: Gesamtguthaben + Karte pro Mitarbeiter mit aufklappbarem Verlauf; getAdminAbrechnung (Admin-Check); Nav-Eintrag auf allen Admin-Seiten
