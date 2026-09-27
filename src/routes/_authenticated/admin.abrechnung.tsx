@@ -1,7 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
+  Banknote,
   CheckCircle2,
   ChevronDown,
   FolderKanban,
@@ -14,11 +15,27 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { AuftragLogo } from "@/components/auftrag-logo";
 import { PanelShell } from "@/components/panel-shell";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
-import { getAdminAbrechnung } from "@/lib/abrechnung.functions";
+import {
+  createPayout,
+  getAdminAbrechnung,
+  type AdminAbrechnungMitarbeiter,
+} from "@/lib/abrechnung.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/abrechnung")({
   head: () => ({
@@ -53,15 +70,58 @@ function formatDate(value: string): string {
   });
 }
 
+function parseEuroInput(value: string): number | null {
+  const normalized = value.trim().replace(/\./g, "").replace(",", ".");
+  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null;
+  return Math.round(Number.parseFloat(normalized) * 100);
+}
+
 function AdminAbrechnungPage() {
   const { profile } = useAuth();
+  const queryClient = useQueryClient();
   const fetchAbrechnung = useServerFn(getAdminAbrechnung);
+  const runPayout = useServerFn(createPayout);
   const [openUserId, setOpenUserId] = useState<string | null>(null);
+  const [payoutTarget, setPayoutTarget] = useState<AdminAbrechnungMitarbeiter | null>(null);
+  const [payoutAmount, setPayoutAmount] = useState("");
 
   const abrechnungQuery = useQuery({
     queryKey: ["admin", "abrechnung"],
     queryFn: () => fetchAbrechnung(),
   });
+
+  const payoutMutation = useMutation({
+    mutationFn: (input: { user_id: string; amount_cents: number }) => runPayout({ data: input }),
+    onSuccess: (_result, input) => {
+      toast.success(
+        `Auszahlung über ${eur.format(input.amount_cents / 100)} wurde notiert.`,
+      );
+      setPayoutTarget(null);
+      queryClient.invalidateQueries({ queryKey: ["admin", "abrechnung"] });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Auszahlung fehlgeschlagen.");
+    },
+  });
+
+  const openPayout = (m: AdminAbrechnungMitarbeiter) => {
+    setPayoutTarget(m);
+    setPayoutAmount(eur.format(m.balance_cents / 100).replace(/\s*€/u, "").trim());
+  };
+
+  const confirmPayout = () => {
+    if (!payoutTarget) return;
+    const cents = parseEuroInput(payoutAmount);
+    if (cents === null || cents <= 0) {
+      toast.error("Bitte einen gültigen Betrag eingeben.");
+      return;
+    }
+    if (cents > payoutTarget.balance_cents) {
+      toast.error("Der Betrag übersteigt das aktuelle Guthaben.");
+      return;
+    }
+    payoutMutation.mutate({ user_id: payoutTarget.user_id, amount_cents: cents });
+  };
 
   const data = abrechnungQuery.data;
 
