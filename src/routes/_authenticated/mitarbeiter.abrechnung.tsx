@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Banknote, CheckCircle2, Wallet, XCircle } from "lucide-react";
-import { useEffect } from "react";
+import { Banknote, CheckCircle2, ChevronLeft, ChevronRight, Wallet, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { AuftragLogo } from "@/components/auftrag-logo";
 import { PanelShell } from "@/components/panel-shell";
