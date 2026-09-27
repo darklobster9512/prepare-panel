@@ -170,14 +170,22 @@ export const getAdminAbrechnung = createServerFn({ method: "GET" })
 export const getMyAbrechnung = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<Abrechnung> => {
-    const { data, error } = await context.supabase
-      .from("vic_auftraege")
-      .select(
-        "id, status, internal_mark, completed_at, updated_at, auftraege(name, logo_path, admin_only), vics!inner(first_name, last_name, claimed_by)",
-      )
-      .eq("vics.claimed_by", context.userId);
+    const [auftraegeRes, payoutsRes] = await Promise.all([
+      context.supabase
+        .from("vic_auftraege")
+        .select(
+          "id, status, internal_mark, completed_at, updated_at, auftraege(name, logo_path, admin_only), vics!inner(first_name, last_name, claimed_by)",
+        )
+        .eq("vics.claimed_by", context.userId),
+      context.supabase
+        .from("payouts")
+        .select("id, amount_cents, created_at")
+        .eq("user_id", context.userId),
+    ]);
 
-    if (error) throw new Error("Abrechnung konnte nicht geladen werden.");
+    if (auftraegeRes.error || payoutsRes.error)
+      throw new Error("Abrechnung konnte nicht geladen werden.");
+    const data = auftraegeRes.data;
 
     const entries: AbrechnungEntry[] = [];
     let balance = 0;
@@ -201,11 +209,26 @@ export const getMyAbrechnung = createServerFn({ method: "GET" })
       entries.push({
         id: row.id,
         date: row.completed_at ?? row.updated_at,
+        kind: "auftrag",
         auftrag_name: row.auftraege?.name ?? "",
         logo_path: row.auftraege?.logo_path ?? null,
         vic_name: `${row.vics?.first_name ?? ""} ${row.vics?.last_name ?? ""}`.trim(),
         result,
         amount_cents: amount,
+      });
+    }
+
+    for (const payout of (payoutsRes.data ?? []) as any[]) {
+      balance -= payout.amount_cents;
+      entries.push({
+        id: payout.id,
+        date: payout.created_at,
+        kind: "auszahlung",
+        auftrag_name: "Auszahlung",
+        logo_path: null,
+        vic_name: "",
+        result: "auszahlung",
+        amount_cents: -payout.amount_cents,
       });
     }
 
