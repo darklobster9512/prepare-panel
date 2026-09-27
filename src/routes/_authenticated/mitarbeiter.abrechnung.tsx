@@ -43,10 +43,13 @@ function formatDate(value: string): string {
   });
 }
 
+const ENTRIES_PER_PAGE = 20;
+
 function AbrechnungPage() {
   const navigate = useNavigate();
   const { profile, role, loading } = useAuth();
   const fetchAbrechnung = useServerFn(getMyAbrechnung);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     if (!loading && role === "admin") {
@@ -59,7 +62,16 @@ function AbrechnungPage() {
     queryFn: () => fetchAbrechnung(),
   });
 
+  // Bei jedem frisch geladenen Verlauf wieder auf Seite 1 starten.
+  useEffect(() => {
+    setPage(1);
+  }, [abrechnungQuery.dataUpdatedAt]);
+
   const data = abrechnungQuery.data;
+  const totalEntries = data?.entries.length ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalEntries / ENTRIES_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedEntries = data ? data.entries.slice((currentPage - 1) * ENTRIES_PER_PAGE, currentPage * ENTRIES_PER_PAGE) : [];
 
   return (
     <PanelShell
