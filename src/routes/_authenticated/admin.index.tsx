@@ -6,6 +6,7 @@ import {
   Phone,
   Send,
   Users,
+  Wallet,
 } from "lucide-react";
 import { useEffect } from "react";
 
@@ -76,6 +77,7 @@ function AdminPanel() {
         { label: "Projekte", icon: FolderKanban, to: "/admin/projekte" },
         { label: "Telefonnummern", icon: Phone, to: "/admin/telefonnummern" },
         { label: "Telegram", icon: Send, to: "/admin/telegram" },
+        { label: "Abrechnung", icon: Wallet, to: "/admin/abrechnung" },
       ]}
 
     >

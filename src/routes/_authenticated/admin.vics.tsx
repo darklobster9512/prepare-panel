@@ -17,6 +17,7 @@ import {
   Send,
   Trash2,
   Users,
+  Wallet,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -148,6 +149,7 @@ const nav = [
   { label: "Projekte", icon: FolderKanban, to: "/admin/projekte" },
   { label: "Telefonnummern", icon: Phone, to: "/admin/telefonnummern" },
   { label: "Telegram", icon: Send, to: "/admin/telegram" },
+        { label: "Abrechnung", icon: Wallet, to: "/admin/abrechnung" },
 ];
 
 function formatDate(value: string | null) {
