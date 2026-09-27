@@ -191,35 +191,48 @@ function AdminAbrechnungPage() {
               key={m.user_id}
               className="rounded-xl border border-border bg-card px-5 py-6 shadow-sm sm:px-8"
             >
-              <button
-                type="button"
-                onClick={() => setOpenUserId(open ? null : m.user_id)}
-                className="flex w-full items-center gap-4 text-left"
-                aria-expanded={open}
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-base font-bold tracking-tight text-foreground">
-                    {m.name}
-                  </p>
-                  {m.email && m.email !== m.name && (
-                    <p className="truncate text-xs text-muted-foreground">{m.email}</p>
-                  )}
-                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 font-medium text-emerald-600">
-                      {m.success_count}× erfolgreich
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-0.5 font-medium text-destructive">
-                      {m.failed_count}× fehlgeschlagen
-                    </span>
+              <div className="flex w-full items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => setOpenUserId(open ? null : m.user_id)}
+                  className="flex min-w-0 flex-1 items-center gap-4 text-left"
+                  aria-expanded={open}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-base font-bold tracking-tight text-foreground">
+                      {m.name}
+                    </p>
+                    {m.email && m.email !== m.name && (
+                      <p className="truncate text-xs text-muted-foreground">{m.email}</p>
+                    )}
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 font-medium text-emerald-600">
+                        {m.success_count}× erfolgreich
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-0.5 font-medium text-destructive">
+                        {m.failed_count}× fehlgeschlagen
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <p className="shrink-0 text-2xl font-bold tabular-nums tracking-tight text-foreground">
-                  {eur.format(m.balance_cents / 100)}
-                </p>
-                <ChevronDown
-                  className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
-                />
-              </button>
+                  <p className="shrink-0 text-2xl font-bold tabular-nums tracking-tight text-foreground">
+                    {eur.format(m.balance_cents / 100)}
+                  </p>
+                  <ChevronDown
+                    className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+                  />
+                </button>
+                {m.balance_cents > 0 && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="shrink-0 rounded-full"
+                    onClick={() => openPayout(m)}
+                  >
+                    <Banknote className="h-4 w-4" aria-hidden="true" />
+                    Auszahlen
+                  </Button>
+                )}
+              </div>
 
               {open && (
                 <div className="mt-4 border-t border-border pt-4">
