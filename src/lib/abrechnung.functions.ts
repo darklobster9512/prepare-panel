@@ -242,3 +242,58 @@ export const getMyAbrechnung = createServerFn({ method: "GET" })
       entries,
     };
   });
+
+const payoutSchema = z.object({
+  user_id: z.string().uuid(),
+  amount_cents: z.number().int().positive().max(100000000),
+});
+
+export const createPayout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => payoutSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    const { data: roleRow } = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (!roleRow) throw new Error("Kein Zugriff.");
+
+    const [auftraegeRes, payoutsRes] = await Promise.all([
+      context.supabase
+        .from("vic_auftraege")
+        .select("status, internal_mark, auftraege(admin_only), vics!inner(claimed_by)")
+        .eq("vics.claimed_by", data.user_id),
+      context.supabase
+        .from("payouts")
+        .select("amount_cents")
+        .eq("user_id", data.user_id),
+    ]);
+    if (auftraegeRes.error || payoutsRes.error) {
+      throw new Error("Guthaben konnte nicht geprüft werden.");
+    }
+
+    let balance = 0;
+    for (const row of (auftraegeRes.data ?? []) as any[]) {
+      if (row.auftraege?.admin_only) continue;
+      if (row.internal_mark || row.status === "erfolgreich") balance += RATE_SUCCESS_CENTS;
+      else if (row.status === "fehlgeschlagen") balance += RATE_FAILED_CENTS;
+    }
+    for (const payout of (payoutsRes.data ?? []) as any[]) {
+      balance -= payout.amount_cents;
+    }
+
+    if (data.amount_cents > balance) {
+      throw new Error("Der Betrag übersteigt das aktuelle Guthaben.");
+    }
+
+    const { error } = await context.supabase.from("payouts").insert({
+      user_id: data.user_id,
+      amount_cents: data.amount_cents,
+      created_by: context.userId,
+    });
+    if (error) throw new Error("Auszahlung konnte nicht gespeichert werden.");
+
+    return { ok: true, balance_cents: balance - data.amount_cents };
+  });
