@@ -8,10 +8,11 @@ const RATE_FAILED_CENTS = 250;
 export type AbrechnungEntry = {
   id: string;
   date: string;
+  kind: "auftrag" | "auszahlung";
   auftrag_name: string;
   logo_path: string | null;
   vic_name: string;
-  result: "erfolgreich" | "fehlgeschlagen";
+  result: "erfolgreich" | "fehlgeschlagen" | "auszahlung";
   amount_cents: number;
 };
 
