@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminAbrechnungRouteImport } from './routes/_authenticated/admin.abrechnung'
+import { Route as AuthenticatedAdminBankkontenRouteImport } from './routes/_authenticated/admin.bankkonten'
 import { Route as AuthenticatedAdminMitarbeiterRouteImport } from './routes/_authenticated/admin.mitarbeiter'
 import { Route as AuthenticatedAdminProjekteRouteImport } from './routes/_authenticated/admin.projekte'
 import { Route as AuthenticatedAdminTelefonnummernRouteImport } from './routes/_authenticated/admin.telefonnummern'
@@ -49,6 +50,12 @@ const AuthenticatedAdminAbrechnungRoute =
   AuthenticatedAdminAbrechnungRouteImport.update({
     id: '/admin/abrechnung',
     path: '/admin/abrechnung',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminBankkontenRoute =
+  AuthenticatedAdminBankkontenRouteImport.update({
+    id: '/admin/bankkonten',
+    path: '/admin/bankkonten',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminMitarbeiterRoute =
@@ -121,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin/abrechnung': typeof AuthenticatedAdminAbrechnungRoute
+  '/admin/bankkonten': typeof AuthenticatedAdminBankkontenRoute
   '/admin/mitarbeiter': typeof AuthenticatedAdminMitarbeiterRoute
   '/admin/projekte': typeof AuthenticatedAdminProjekteRoute
   '/admin/telefonnummern': typeof AuthenticatedAdminTelefonnummernRoute
@@ -138,6 +146,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin/abrechnung': typeof AuthenticatedAdminAbrechnungRoute
+  '/admin/bankkonten': typeof AuthenticatedAdminBankkontenRoute
   '/admin/mitarbeiter': typeof AuthenticatedAdminMitarbeiterRoute
   '/admin/projekte': typeof AuthenticatedAdminProjekteRoute
   '/admin/telefonnummern': typeof AuthenticatedAdminTelefonnummernRoute
@@ -157,6 +166,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/admin/abrechnung': typeof AuthenticatedAdminAbrechnungRoute
+  '/_authenticated/admin/bankkonten': typeof AuthenticatedAdminBankkontenRoute
   '/_authenticated/admin/mitarbeiter': typeof AuthenticatedAdminMitarbeiterRoute
   '/_authenticated/admin/projekte': typeof AuthenticatedAdminProjekteRoute
   '/_authenticated/admin/telefonnummern': typeof AuthenticatedAdminTelefonnummernRoute
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin/abrechnung'
+    | '/admin/bankkonten'
     | '/admin/mitarbeiter'
     | '/admin/projekte'
     | '/admin/telefonnummern'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin/abrechnung'
+    | '/admin/bankkonten'
     | '/admin/mitarbeiter'
     | '/admin/projekte'
     | '/admin/telefonnummern'
@@ -211,6 +223,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/admin/abrechnung'
+    | '/_authenticated/admin/bankkonten'
     | '/_authenticated/admin/mitarbeiter'
     | '/_authenticated/admin/projekte'
     | '/_authenticated/admin/telefonnummern'
@@ -266,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/abrechnung'
       fullPath: '/admin/abrechnung'
       preLoaderRoute: typeof AuthenticatedAdminAbrechnungRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/bankkonten': {
+      id: '/_authenticated/admin/bankkonten'
+      path: '/admin/bankkonten'
+      fullPath: '/admin/bankkonten'
+      preLoaderRoute: typeof AuthenticatedAdminBankkontenRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/mitarbeiter': {
@@ -350,6 +370,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminAbrechnungRoute: typeof AuthenticatedAdminAbrechnungRoute
+  AuthenticatedAdminBankkontenRoute: typeof AuthenticatedAdminBankkontenRoute
   AuthenticatedAdminMitarbeiterRoute: typeof AuthenticatedAdminMitarbeiterRoute
   AuthenticatedAdminProjekteRoute: typeof AuthenticatedAdminProjekteRoute
   AuthenticatedAdminTelefonnummernRoute: typeof AuthenticatedAdminTelefonnummernRoute
@@ -366,6 +387,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminAbrechnungRoute: AuthenticatedAdminAbrechnungRoute,
+  AuthenticatedAdminBankkontenRoute: AuthenticatedAdminBankkontenRoute,
   AuthenticatedAdminMitarbeiterRoute: AuthenticatedAdminMitarbeiterRoute,
   AuthenticatedAdminProjekteRoute: AuthenticatedAdminProjekteRoute,
   AuthenticatedAdminTelefonnummernRoute: AuthenticatedAdminTelefonnummernRoute,
