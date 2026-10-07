@@ -109,6 +109,68 @@ export type Database = {
         }
         Relationships: []
       }
+      bank_accounts: {
+        Row: {
+          account_holder: string
+          anosim_link: string | null
+          bank: string
+          coupled: boolean
+          created_at: string
+          created_by: string | null
+          credentials: Json
+          documents: Json
+          iban: string | null
+          id: string
+          letters_complete: boolean | null
+          notes: string | null
+          project_id: string | null
+          updated_at: string
+          vmos_device: string | null
+        }
+        Insert: {
+          account_holder: string
+          anosim_link?: string | null
+          bank: string
+          coupled?: boolean
+          created_at?: string
+          created_by?: string | null
+          credentials?: Json
+          documents?: Json
+          iban?: string | null
+          id?: string
+          letters_complete?: boolean | null
+          notes?: string | null
+          project_id?: string | null
+          updated_at?: string
+          vmos_device?: string | null
+        }
+        Update: {
+          account_holder?: string
+          anosim_link?: string | null
+          bank?: string
+          coupled?: boolean
+          created_at?: string
+          created_by?: string | null
+          credentials?: Json
+          documents?: Json
+          iban?: string | null
+          id?: string
+          letters_complete?: boolean | null
+          notes?: string | null
+          project_id?: string | null
+          updated_at?: string
+          vmos_device?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_accounts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payouts: {
         Row: {
           amount_cents: number

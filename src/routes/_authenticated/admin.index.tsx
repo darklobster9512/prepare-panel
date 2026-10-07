@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   FolderKanban,
   IdCard,
+  Landmark,
   LayoutDashboard,
   Phone,
   Send,
@@ -74,6 +75,7 @@ function AdminPanel() {
         { label: "Übersicht", icon: LayoutDashboard, to: "/admin", exact: true },
         { label: "Mitarbeiter", icon: Users, to: "/admin/mitarbeiter" },
         { label: "Vics", icon: IdCard, to: "/admin/vics" },
+        { label: "Bankkonten", icon: Landmark, to: "/admin/bankkonten" },
         { label: "Projekte", icon: FolderKanban, to: "/admin/projekte" },
         { label: "Telefonnummern", icon: Phone, to: "/admin/telefonnummern" },
         { label: "Telegram", icon: Send, to: "/admin/telegram" },
