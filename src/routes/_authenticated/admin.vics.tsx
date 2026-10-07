@@ -1449,24 +1449,46 @@ function AdminVics() {
                               <CredentialRow label="Passwort" value={item.password} />
                             </div>
                           ) : null}
-                          {item.used_login_name ||
-                          item.used_password ||
-                          item.webid_link ||
-                          item.postident_link ? (
+                          {(() => {
+                            const effectiveLogin =
+                              item.used_login_name ?? item.login_name;
+                            const effectivePassword =
+                              item.used_password ?? item.password;
+                            const hasAnything =
+                              effectiveLogin ||
+                              effectivePassword ||
+                              item.webid_link ||
+                              item.postident_link;
+                            if (!hasAnything) {
+                              return !item.admin_only ? (
+                                <p className="mt-3 border-t border-border/60 pt-3 text-muted-foreground">
+                                  Noch keine verwendeten Daten.
+                                </p>
+                              ) : null;
+                            }
+                            return (
                             <div className="mt-3 space-y-1 border-t border-border/60 pt-3">
                               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                                 Verwendet
                               </p>
-                              {item.used_login_name ? (
+                              {effectiveLogin ? (
                                 <CredentialRow
-                                  label="Anmeldename"
-                                  value={item.used_login_name}
+                                  label={
+                                    item.used_login_name
+                                      ? "Anmeldename"
+                                      : "Anmeldename (generiert)"
+                                  }
+                                  value={effectiveLogin}
                                 />
                               ) : null}
-                              {item.used_password ? (
+                              {effectivePassword ? (
                                 <CredentialRow
-                                  label="Passwort"
-                                  value={item.used_password}
+                                  label={
+                                    item.used_password
+                                      ? "Passwort"
+                                      : "Passwort (generiert)"
+                                  }
+                                  value={effectivePassword}
                                 />
                               ) : null}
                               {item.webid_link ? (
@@ -1479,11 +1501,8 @@ function AdminVics() {
                                 />
                               ) : null}
                             </div>
-                          ) : !item.admin_only ? (
-                            <p className="mt-3 border-t border-border/60 pt-3 text-muted-foreground">
-                              Noch keine verwendeten Daten.
-                            </p>
-                          ) : null}
+                            );
+                          })()}
 
                           {item.completed_at ? (
                             <p className="pt-2 text-xs text-muted-foreground">
