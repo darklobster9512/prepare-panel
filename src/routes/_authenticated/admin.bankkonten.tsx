@@ -361,7 +361,7 @@ function AdminBankkonten() {
       const path = `${crypto.randomUUID()}/${safeName}`;
       const { error: uploadError } = await supabase.storage
         .from(BANK_DOCUMENTS_BUCKET)
-        .upload(path, file, { contentType: file.type || undefined });
+        .upload(path, file, file.type ? { contentType: file.type } : undefined);
       if (uploadError) {
         toast.error(`„${file.name}" konnte nicht hochgeladen werden.`);
         continue;
