@@ -23,11 +23,15 @@ export function generateYearPassword(firstName: string): string {
  * Mindestens 6 Ziffern; bei kurzen Vornamen werden weitere Ziffern
  * angehängt, bis das Passwort mindestens 12 Zeichen lang ist.
  */
-export function generateVicPassword(firstName: string, minLength = 12): string {
-  const base = (firstName ?? "")
+export function generateVicPassword(
+  firstName: string,
+  minLength = 12,
+  maxLength = 45,
+): string {
+  const base = ((firstName ?? "")
     .trim()
     .split(/\s+/)[0]
-    ?.replace(/[^\p{L}]/gu, "") ?? "";
+    ?.replace(/[^\p{L}]/gu, "") ?? "").slice(0, Math.max(0, maxLength - 6));
 
   const digitCount = Math.max(6, minLength - base.length);
   const array = new Uint32Array(digitCount);
@@ -56,5 +60,6 @@ export function generateLoginName(
   if (!/^\d{4}$/.test(year)) return null;
 
   const short = `${base}${year.slice(2)}`;
+  if (short.length > 50) return `${base.slice(0, 48)}${year.slice(2)}`;
   return short.length >= 8 ? short : `${base}${year}`;
 }
