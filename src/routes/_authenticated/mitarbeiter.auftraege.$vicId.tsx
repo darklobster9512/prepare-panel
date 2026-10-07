@@ -90,6 +90,8 @@ function fieldsFor(auftrag: WorkAuftrag): FieldConfig {
   if (isEmailAuftrag(auftrag)) return { credentials: false, webid: false, postident: false };
   if (name.includes("bbva")) return { credentials: true, webid: false, postident: false };
   if (name.includes("dkb")) return { credentials: true, webid: true, postident: false };
+  if (name.includes("commerzbank"))
+    return { credentials: true, webid: false, postident: true };
   if (name.includes("deutsche bank"))
     return { credentials: false, webid: true, postident: false };
   if (auftrag.ident_type === "postident")
