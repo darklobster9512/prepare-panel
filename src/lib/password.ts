@@ -21,11 +21,11 @@ export function generateYearPassword(firstName: string): string {
 /**
  * Erzeugt ein Passwort nach dem Muster Vorname + Ziffern.
  * Mindestens 6 Ziffern; bei kurzen Vornamen werden weitere Ziffern
- * angehängt, bis das Passwort mindestens 12 Zeichen lang ist.
+ * angehängt, bis das Passwort mindestens 15 Zeichen lang ist.
  */
 export function generateVicPassword(
   firstName: string,
-  minLength = 12,
+  minLength = 15,
   maxLength = 45,
 ): string {
   const base = ((firstName ?? "")
