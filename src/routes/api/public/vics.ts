@@ -81,7 +81,7 @@ export const Route = createFileRoute("/api/public/vics")({
             return;
           }
           const errs: string[] = [];
-          const row: Record<string, any> = { created_by: null };
+          const row: any = { created_by: null };
           for (const [key, label] of Object.entries(REQUIRED)) {
             const v = str(rec[key]);
             if (!v) errs.push(`${label} fehlt.`);
