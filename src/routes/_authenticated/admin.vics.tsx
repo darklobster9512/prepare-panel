@@ -1508,7 +1508,7 @@ function AdminVics() {
                                   vicAuftragId={item.id}
                                   path={item.postident_pdf_path}
                                   name={item.postident_pdf_name}
-                                  editable={false}
+                                  editable
                                   onChanged={() =>
                                     queryClient.invalidateQueries({ queryKey: ["admin", "vics"] })
                                   }
