@@ -1,7 +1,7 @@
 # Supabase Edge Function: Vics von einem externen Panel übertragen
 
 ## Ziel
-Dein externes Panel schickt Vic-Datensätze an eine Supabase Edge Function. Jeder übertragene Datensatz erscheint danach sofort ganz oben in /admin/vics.
+Dein externes Panel schickt Vic-Datensätze an eine öffentliche Supabase Edge Function. Jeder übertragene Datensatz erscheint danach sofort ganz oben in /admin/vics.
 
 ## Was übertragen wird
 - Pflicht: Vorname(n), Nachname, Geburtsdatum, Geburtsort, Straße und Hausnummer, PLZ, Ort, Projekt
@@ -10,15 +10,14 @@ Dein externes Panel schickt Vic-Datensätze an eine Supabase Edge Function. Jede
 - Projekt über den Namen (z. B. „LIMEX"), Groß-/Kleinschreibung egal. Unbekanntes Projekt wird abgelehnt.
 - Ein Datensatz oder bis zu 200 auf einmal.
 
-## Sicherheit
-- Jeder Aufruf braucht einen geheimen Schlüssel im Header `x-api-key`. Ohne gültigen Schlüssel wird nichts gespeichert.
-- Den Schlüssel lege ich als Secret in Supabase an, du trägst ihn im externen Panel ein.
-- Die Antwort enthält nur Erfolg/Fehler und die IDs der neuen Datensätze.
+## Zugriff
+- Öffentlich, ohne Schlüssel und ohne Anmeldung.
+- Die Funktion kann nur neue Datensätze anlegen. Sie gibt keine vorhandenen Daten zurück, nichts kann darüber gelesen, geändert oder gelöscht werden.
+- Wichtig: Wer die Adresse kennt, kann Datensätze anlegen. Gib die Adresse also nicht weiter. Ein Schlüssel lässt sich später jederzeit nachrüsten.
 
 ## Beispiel-Aufruf
 ```text
 POST https://hppylojeoutwymkrqkek.supabase.co/functions/v1/import-vics
-Header: x-api-key: <dein Schlüssel>
 Body:
 {
   "first_name": "Stefan Christian",
@@ -35,12 +34,12 @@ Body:
   "project": "LIMEX"
 }
 ```
-Antworten: 201 Erfolg, 400 fehlende/falsche Felder (deutsche Meldung je Feld), 401 falscher Schlüssel.
+Antworten: 201 Erfolg (mit Anzahl), 400 fehlende/falsche Felder (deutsche Meldung je Feld).
 
 ## Technische Details
-- Edge Function `supabase/functions/import-vics/index.ts` (Deno), in `supabase/config.toml` mit `verify_jwt = false`, da der Zugriff über `x-api-key` geprüft wird.
-- Secret `VICS_API_KEY` (zeitkonstanter Vergleich); Insert per Service-Role-Client (`SUPABASE_SERVICE_ROLE_KEY` ist in Edge Functions automatisch vorhanden), `created_by = null`.
-- Validierung mit zod; Einzelobjekt oder `{ records: [...] }` (max. 200); CORS-Header für Aufrufe aus dem Browser.
+- Edge Function `supabase/functions/import-vics/index.ts` (Deno), in `supabase/config.toml` mit `verify_jwt = false`.
+- Insert per Service-Role-Client (in Edge Functions automatisch vorhanden), `created_by = null`; nur INSERT, Antwort ohne Datensatzinhalte.
+- Validierung mit zod inkl. Längenbegrenzung; Einzelobjekt oder `{ records: [...] }` (max. 200); CORS-Header für Aufrufe aus dem Browser.
 - Projekt-Auflösung per `ilike` auf `projects.name`.
 - Keine Datenbank-Änderung, keine Änderung an /admin/vics nötig.
-- Nach dem Deploy Test: gültiger Schlüssel, falscher Schlüssel, unbekanntes Projekt.
+- Nach dem Deploy Test: gültiger Datensatz, fehlende Pflichtfelder, unbekanntes Projekt; Testdatensatz danach löschen.
