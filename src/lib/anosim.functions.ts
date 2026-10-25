@@ -146,45 +146,8 @@ export const getAnosimFullServiceProduct = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AnosimProductInfo> => {
     await assertAdmin(context.supabase, context.userId);
-    const { anosimFetch } = await import("./anosim.server");
-
-    type ProductPrice = import("./anosim.server").AnosimProductPrice;
-
-    const isFullService = (product: ProductPrice) =>
-      product.rentalType === "RentalFull" &&
-      product.durationInMinutes === FULL_SERVICE_DURATION_MINUTES;
-
-    let match: ProductPrice | undefined;
-
-    for (const rentalTypeId of [2, 3, 1, 4]) {
-      const products = await anosimFetch<ProductPrice[]>("/ProductPrices", {
-        countryId: GERMANY_COUNTRY_ID,
-        rentalTypeId,
-      });
-      const list = Array.isArray(products) ? products : [];
-      match = list.find(isFullService);
-      if (match) break;
-    }
-
-
-    if (!match) {
-      throw new Error(
-        "Aktuell ist keine deutsche FullService-Nummer für 30 Tage verfügbar.",
-      );
-    }
-
-    const available = (match.priceMap ?? []).reduce((sum, entry) => {
-      const any = entry.providers?.find((provider) => provider.providerId === 0);
-      return sum + (toNumber(any?.availableCount) ?? 0);
-    }, 0);
-
-    return {
-      productId: match.id,
-      price: toNumber(match.basePrice) ?? 0,
-      availableCount: available || (toNumber(match.totalCount) ?? 0),
-      country: match.country,
-      durationInMinutes: match.durationInMinutes,
-    };
+    const { findFullServiceProduct } = await import("./anosim-purchase.server");
+    return findFullServiceProduct();
   });
 
 export const listAssignableNumbers = createServerFn({ method: "GET" })
@@ -323,80 +286,14 @@ export const buyAnosimNumber = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { anosimFetch, AnosimError } = await import("./anosim.server");
-
-    type Booking = import("./anosim.server").AnosimBooking;
-
-    const loadBookings = async (): Promise<Booking[]> => {
-      try {
-        const result = await anosimFetch<Booking[]>("/OrderBookings");
-        return Array.isArray(result) ? result : [];
-      } catch (err) {
-        if (err instanceof AnosimError && err.status === 400) return [];
-        throw err;
-      }
-    };
-
-    const before = await loadBookings();
-    const knownIds = new Set(before.map((booking) => booking.id));
-
-    const order = await anosimFetch<{
-      id?: number;
-      bookings?: Booking[];
-    }>(
-      "/Orders",
-      { productId: data.productId, amount: 1, providerId: 0 },
-      { method: "POST" },
+    const { purchaseNumber } = await import("./anosim-purchase.server");
+    const numbers = await purchaseNumber(
+      context.supabase,
+      data.productId,
+      data.vicId ?? null,
+      context.userId,
     );
-
-    // Die Kaufantwort ist je nach Produkt unterschiedlich aufgebaut – deshalb
-    // wird die Buchung anschließend zuverlässig aus der Kontoliste geholt.
-    let fresh: Booking[] = (order?.bookings ?? []).filter(
-      (booking) => booking && typeof booking.id === "number",
-    );
-
-    if (fresh.length === 0) {
-      for (let attempt = 0; attempt < 3 && fresh.length === 0; attempt += 1) {
-        if (attempt > 0) {
-          await new Promise((resolve) => setTimeout(resolve, 1500));
-        }
-        const after = await loadBookings();
-        fresh = after.filter((booking) => !knownIds.has(booking.id));
-      }
-    }
-
-    if (fresh.length === 0) {
-      throw new Error(
-        "Der Kauf wurde ausgelöst, aber AnoSIM hat noch keine Nummer geliefert. Bitte die Liste unter Telefonnummern in einem Moment aktualisieren.",
-      );
-    }
-
-    fresh.sort(
-      (a, b) =>
-        new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
-    );
-
-    const { error } = await context.supabase.from("anosim_numbers").upsert(
-      fresh.map((booking, index) => ({
-        order_booking_id: booking.id,
-        number: booking.number,
-        end_date: booking.endDate ?? null,
-        vic_id: index === 0 ? (data.vicId ?? null) : null,
-        created_by: context.userId,
-      })),
-      { onConflict: "order_booking_id" },
-    );
-
-    if (error) {
-      throw new Error(
-        `Nummer ${fresh[0]?.number ?? ""} wurde gekauft, konnte aber nicht gespeichert werden.`,
-      );
-    }
-
-    return {
-      ok: true,
-      numbers: fresh.map((booking) => booking.number),
-    };
+    return { ok: true, numbers };
   });
 
 export const setAnosimNote = createServerFn({ method: "POST" })
