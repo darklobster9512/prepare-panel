@@ -238,9 +238,11 @@ export const Route = createFileRoute("/api/public/vics")({
           results.push({
             ok: true,
             vic_id: vic.id,
+            existing,
             number,
             ...(numberError ? { number_error: numberError } : {}),
             auftraege: assigned,
+            skipped,
           });
         }
 
