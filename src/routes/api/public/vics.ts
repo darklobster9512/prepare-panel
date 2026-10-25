@@ -60,8 +60,8 @@ export const Route = createFileRoute("/api/public/vics")({
             ? body
             : [body];
         if (input.length === 0) return json({ ok: false, error: "Keine Datensätze." }, 400);
-        if (input.length > 200)
-          return json({ ok: false, error: "Maximal 200 Datensätze pro Aufruf." }, 400);
+        if (input.length > 20)
+          return json({ ok: false, error: "Maximal 20 Datensätze pro Aufruf." }, 400);
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: projects, error: pErr } = await supabaseAdmin
@@ -71,6 +71,13 @@ export const Route = createFileRoute("/api/public/vics")({
         const projectMap = new Map(
           (projects ?? []).map((p) => [p.name.trim().toLowerCase(), p.id]),
         );
+
+        const { data: templates, error: tErr } = await supabaseAdmin
+          .from("auftraege")
+          .select("id, name, ident_type, admin_only");
+        if (tErr) return json({ ok: false, error: "Aufträge konnten nicht geladen werden." }, 500);
+        const { matchAuftraege } = await import("@/lib/auftrag-match");
+        const auftragIds: string[][] = [];
 
         const errors: { index: number; errors: string[] }[] = [];
         const rows: any[] = [];
@@ -99,18 +106,106 @@ export const Route = createFileRoute("/api/public/vics")({
             row.project_id = id ?? null;
           }
           delete row.project;
+          const matched = matchAuftraege(rec.auftraege, (templates ?? []) as any);
+          errs.push(...matched.errors);
+          auftragIds.push(matched.ids);
           if (errs.length) errors.push({ index, errors: errs });
           else rows.push(row);
         });
 
         if (errors.length) return json({ ok: false, errors }, 400);
 
-        const { error } = await supabaseAdmin.from("vics").insert(rows);
-        if (error) {
-          console.error("[import-vics]", error.message);
-          return json({ ok: false, error: "Datensätze konnten nicht gespeichert werden." }, 500);
+        const { buildCredentials } = await import("@/lib/vic-auftraege.server");
+        const nameById = new Map((templates ?? []).map((t) => [t.id, t.name]));
+        let product: { productId: number } | null = null;
+        let productError: string | null = null;
+        const results: any[] = [];
+
+        for (let i = 0; i < rows.length; i += 1) {
+          const { data: vic, error } = await supabaseAdmin
+            .from("vics")
+            .insert(rows[i])
+            .select("id, first_name, last_name")
+            .single();
+          if (error || !vic) {
+            console.error("[import-vics]", error?.message);
+            results.push({ ok: false, error: "Datensatz konnte nicht gespeichert werden." });
+            continue;
+          }
+
+          const assigned: string[] = [];
+          for (const auftragId of auftragIds[i] ?? []) {
+            try {
+              const c = await buildCredentials(supabaseAdmin, vic.id, auftragId);
+              const { error: aErr } = await supabaseAdmin.from("vic_auftraege").insert({
+                vic_id: vic.id,
+                auftrag_id: auftragId,
+                login_name: c.login_name,
+                password: c.password,
+                created_by: null,
+              });
+              if (!aErr) assigned.push(nameById.get(auftragId) ?? auftragId);
+              else console.error("[import-vics] Auftrag", aErr.message);
+            } catch (err) {
+              console.error("[import-vics] Auftrag", err);
+            }
+          }
+
+          let number: string | null = null;
+          let numberError: string | null = null;
+          try {
+            const { findFullServiceProduct, purchaseNumber } = await import(
+              "@/lib/anosim-purchase.server"
+            );
+            if (!product && !productError) {
+              try {
+                product = await findFullServiceProduct();
+              } catch (err) {
+                productError = err instanceof Error ? err.message : "Kein Produkt verfügbar.";
+              }
+            }
+            if (!product) throw new Error(productError ?? "Kein Produkt verfügbar.");
+            const numbers = await purchaseNumber(supabaseAdmin, product.productId, vic.id, null);
+            number = numbers[0] ?? null;
+          } catch (err) {
+            console.error("[import-vics] Nummernkauf", err);
+            numberError = "Nummer konnte nicht gekauft werden.";
+          }
+
+          if (assigned.length > 0) {
+            try {
+              const { data: recipients } = await supabaseAdmin
+                .from("telegram_recipients")
+                .select("chat_id")
+                .eq("active", true);
+              const chatIds = (recipients ?? []).map((r) => r.chat_id);
+              if (chatIds.length > 0) {
+                const { broadcastTelegramMessage, buildNewAuftraegeMessage } = await import(
+                  "@/lib/telegram.server"
+                );
+                await broadcastTelegramMessage(
+                  chatIds,
+                  buildNewAuftraegeMessage({
+                    vicName: `${vic.first_name} ${vic.last_name}`.trim(),
+                    auftragNames: assigned,
+                  }),
+                );
+              }
+            } catch (err) {
+              console.error("[import-vics] Telegram", err);
+            }
+          }
+
+          results.push({
+            ok: true,
+            vic_id: vic.id,
+            number,
+            ...(numberError ? { number_error: numberError } : {}),
+            auftraege: assigned,
+          });
         }
-        return json({ ok: true, count: rows.length }, 201);
+
+        return json({ ok: results.every((r) => r.ok), count: results.length, results }, 201);
       },
     },
   },
