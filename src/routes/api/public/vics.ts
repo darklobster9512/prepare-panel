@@ -197,6 +197,7 @@ export const Route = createFileRoute("/api/public/vics")({
 
           let number: string | null = null;
           let numberError: string | null = null;
+          let numberSkipped = false;
           const { data: owned } = await supabaseAdmin
             .from("anosim_numbers")
             .select("number")
@@ -257,6 +258,7 @@ export const Route = createFileRoute("/api/public/vics")({
             existing,
             number,
             ...(numberError ? { number_error: numberError } : {}),
+            ...(numberSkipped ? { number_skipped: true } : {}),
             auftraege: assigned,
             skipped,
           });
