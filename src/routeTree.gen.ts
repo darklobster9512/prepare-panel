@@ -24,6 +24,7 @@ import { Route as AuthenticatedMitarbeiterIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedMitarbeiterAbrechnungRouteImport } from './routes/_authenticated/mitarbeiter.abrechnung'
 import { Route as AuthenticatedMitarbeiterInformationenRouteImport } from './routes/_authenticated/mitarbeiter.informationen'
 import { Route as AuthenticatedMitarbeiterOnboardingRouteImport } from './routes/_authenticated/mitarbeiter.onboarding'
+import { Route as ApiPublicVicsRouteImport } from './routes/api/public/vics'
 import { Route as AuthenticatedMitarbeiterAuftraegeIndexRouteImport } from './routes/_authenticated/mitarbeiter.auftraege.index'
 import { Route as AuthenticatedMitarbeiterAuftraegeVicIdRouteImport } from './routes/_authenticated/mitarbeiter.auftraege.$vicId'
 
@@ -111,6 +112,11 @@ const AuthenticatedMitarbeiterOnboardingRoute =
     path: '/mitarbeiter/onboarding',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicVicsRoute = ApiPublicVicsRouteImport.update({
+  id: '/api/public/vics',
+  path: '/api/public/vics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedMitarbeiterAuftraegeIndexRoute =
   AuthenticatedMitarbeiterAuftraegeIndexRouteImport.update({
     id: '/mitarbeiter/auftraege/',
@@ -137,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/mitarbeiter/abrechnung': typeof AuthenticatedMitarbeiterAbrechnungRoute
   '/mitarbeiter/informationen': typeof AuthenticatedMitarbeiterInformationenRoute
   '/mitarbeiter/onboarding': typeof AuthenticatedMitarbeiterOnboardingRoute
+  '/api/public/vics': typeof ApiPublicVicsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/mitarbeiter/': typeof AuthenticatedMitarbeiterIndexRoute
   '/mitarbeiter/auftraege/$vicId': typeof AuthenticatedMitarbeiterAuftraegeVicIdRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/mitarbeiter/abrechnung': typeof AuthenticatedMitarbeiterAbrechnungRoute
   '/mitarbeiter/informationen': typeof AuthenticatedMitarbeiterInformationenRoute
   '/mitarbeiter/onboarding': typeof AuthenticatedMitarbeiterOnboardingRoute
+  '/api/public/vics': typeof ApiPublicVicsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/mitarbeiter': typeof AuthenticatedMitarbeiterIndexRoute
   '/mitarbeiter/auftraege/$vicId': typeof AuthenticatedMitarbeiterAuftraegeVicIdRoute
@@ -175,6 +183,7 @@ export interface FileRoutesById {
   '/_authenticated/mitarbeiter/abrechnung': typeof AuthenticatedMitarbeiterAbrechnungRoute
   '/_authenticated/mitarbeiter/informationen': typeof AuthenticatedMitarbeiterInformationenRoute
   '/_authenticated/mitarbeiter/onboarding': typeof AuthenticatedMitarbeiterOnboardingRoute
+  '/api/public/vics': typeof ApiPublicVicsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/mitarbeiter/': typeof AuthenticatedMitarbeiterIndexRoute
   '/_authenticated/mitarbeiter/auftraege/$vicId': typeof AuthenticatedMitarbeiterAuftraegeVicIdRoute
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
     | '/mitarbeiter/abrechnung'
     | '/mitarbeiter/informationen'
     | '/mitarbeiter/onboarding'
+    | '/api/public/vics'
     | '/admin/'
     | '/mitarbeiter/'
     | '/mitarbeiter/auftraege/$vicId'
@@ -213,6 +223,7 @@ export interface FileRouteTypes {
     | '/mitarbeiter/abrechnung'
     | '/mitarbeiter/informationen'
     | '/mitarbeiter/onboarding'
+    | '/api/public/vics'
     | '/admin'
     | '/mitarbeiter'
     | '/mitarbeiter/auftraege/$vicId'
@@ -232,6 +243,7 @@ export interface FileRouteTypes {
     | '/_authenticated/mitarbeiter/abrechnung'
     | '/_authenticated/mitarbeiter/informationen'
     | '/_authenticated/mitarbeiter/onboarding'
+    | '/api/public/vics'
     | '/_authenticated/admin/'
     | '/_authenticated/mitarbeiter/'
     | '/_authenticated/mitarbeiter/auftraege/$vicId'
@@ -242,6 +254,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicVicsRoute: typeof ApiPublicVicsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -351,6 +364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMitarbeiterOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/vics': {
+      id: '/api/public/vics'
+      path: '/api/public/vics'
+      fullPath: '/api/public/vics'
+      preLoaderRoute: typeof ApiPublicVicsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/mitarbeiter/auftraege/': {
       id: '/_authenticated/mitarbeiter/auftraege/'
       path: '/mitarbeiter/auftraege'
@@ -414,6 +434,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicVicsRoute: ApiPublicVicsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
