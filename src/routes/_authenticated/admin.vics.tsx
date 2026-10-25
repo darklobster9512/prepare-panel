@@ -1501,7 +1501,10 @@ function AdminVics() {
                                 />
                               ) : null}
                               {item.webid_link ? (
-                                <LinkRow label="WebID-Link" value={item.webid_link} />
+                                <LinkRow
+                                  label={/commerzbank/i.test(item.auftrag_name) ? "IDnow-Link" : "WebID-Link"}
+                                  value={item.webid_link}
+                                />
                               ) : null}
                               {item.postident_link ? (
                                 <LinkRow

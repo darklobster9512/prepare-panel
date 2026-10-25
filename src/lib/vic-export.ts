@@ -81,7 +81,9 @@ export function buildExportText(
     `Nummer: ${orDash(vic.phone_number)}`,
     orDash(
       item.webid_link
-        ? applyWebidDomain(item.webid_link, vic.project_webid_domain)
+        ? /commerzbank/i.test(item.auftrag_name || "")
+          ? item.webid_link
+          : applyWebidDomain(item.webid_link, vic.project_webid_domain)
         : item.postident_link,
     ),
     orDash(shareLink),
