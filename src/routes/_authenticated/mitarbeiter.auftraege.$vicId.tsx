@@ -17,6 +17,7 @@ import { createPortal } from "react-dom";
 import { AuftragLogo, preloadAuftragFiles } from "@/components/auftrag-logo";
 import { CopyButton } from "@/components/copy-button";
 import { PanelShell } from "@/components/panel-shell";
+import { PostidentPdf } from "@/components/postident-pdf";
 import {
   Dialog,
   DialogContent,
@@ -677,6 +678,12 @@ function SummaryCard({
                     <dd className="break-all text-foreground">{auftrag.postident_link}</dd>
                   </div>
                 ) : null}
+                {auftrag.postident_pdf_path ? (
+                  <div className="flex gap-2">
+                    <dt>PDF:</dt>
+                    <dd className="text-foreground">hochgeladen</dd>
+                  </div>
+                ) : null}
               </dl>
             </div>
 
@@ -781,6 +788,10 @@ function StepCard({
   const [password, setPassword] = useState(step.used_password ?? step.password ?? "");
   const [webid, setWebid] = useState(step.webid_link ?? "");
   const [postident, setPostident] = useState(step.postident_link ?? "");
+  const [pdf, setPdf] = useState({
+    path: step.postident_pdf_path ?? null,
+    name: step.postident_pdf_name ?? null,
+  });
   const [infoOpen, setInfoOpen] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -991,6 +1002,17 @@ function StepCard({
               onChange={setPostident}
               disabled={!editable}
               placeholder="https://…"
+            />
+          ) : null}
+
+          {config.postident ? (
+            <PostidentPdf
+              vicId={item.id}
+              vicAuftragId={step.id}
+              path={pdf.path}
+              name={pdf.name}
+              editable={editable}
+              onChanged={setPdf}
             />
           ) : null}
         </div>

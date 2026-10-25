@@ -15,6 +15,8 @@ export type VicAuftrag = {
   used_password: string | null;
   webid_link: string | null;
   postident_link: string | null;
+  postident_pdf_path?: string | null;
+  postident_pdf_name?: string | null;
   completed_at: string | null;
   internal_mark?: InternalMark | null | undefined;
 };

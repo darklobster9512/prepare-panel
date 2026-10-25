@@ -16,6 +16,8 @@ export type WorkAuftrag = {
   used_password: string | null;
   webid_link: string | null;
   postident_link: string | null;
+  postident_pdf_path?: string | null;
+  postident_pdf_name?: string | null;
 };
 
 export type WorkItem = {
