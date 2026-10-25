@@ -347,6 +347,7 @@ export type Database = {
           postident_link: string | null
           postident_pdf_name: string | null
           postident_pdf_path: string | null
+          source_name: string | null
           status: string
           updated_at: string
           used_login_name: string | null
@@ -367,6 +368,7 @@ export type Database = {
           postident_link?: string | null
           postident_pdf_name?: string | null
           postident_pdf_path?: string | null
+          source_name?: string | null
           status?: string
           updated_at?: string
           used_login_name?: string | null
@@ -387,6 +389,7 @@ export type Database = {
           postident_link?: string | null
           postident_pdf_name?: string | null
           postident_pdf_path?: string | null
+          source_name?: string | null
           status?: string
           updated_at?: string
           used_login_name?: string | null
@@ -438,6 +441,8 @@ export type Database = {
           postal_code: string | null
           project_id: string | null
           request_id: string | null
+          results_error: string | null
+          results_sent_at: string | null
           street: string | null
           tax_id: string | null
           updated_at: string
@@ -468,6 +473,8 @@ export type Database = {
           postal_code?: string | null
           project_id?: string | null
           request_id?: string | null
+          results_error?: string | null
+          results_sent_at?: string | null
           street?: string | null
           tax_id?: string | null
           updated_at?: string
@@ -498,6 +505,8 @@ export type Database = {
           postal_code?: string | null
           project_id?: string | null
           request_id?: string | null
+          results_error?: string | null
+          results_sent_at?: string | null
           street?: string | null
           tax_id?: string | null
           updated_at?: string

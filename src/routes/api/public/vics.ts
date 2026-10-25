@@ -78,6 +78,7 @@ export const Route = createFileRoute("/api/public/vics")({
         if (tErr) return json({ ok: false, error: "Aufträge konnten nicht geladen werden." }, 500);
         const { matchAuftraege } = await import("@/lib/auftrag-match");
         const auftragIds: string[][] = [];
+        const auftragSources: Record<string, string>[] = [];
 
         const errors: { index: number; errors: string[] }[] = [];
         const rows: any[] = [];
@@ -110,6 +111,7 @@ export const Route = createFileRoute("/api/public/vics")({
           const matched = matchAuftraege(rec.auftraege, (templates ?? []) as any);
           errs.push(...matched.errors);
           auftragIds.push(matched.ids);
+          auftragSources.push(matched.sources);
           if (errs.length) errors.push({ index, errors: errs });
           else rows.push(row);
         });
@@ -179,6 +181,7 @@ export const Route = createFileRoute("/api/public/vics")({
                 auftrag_id: auftragId,
                 login_name: c.login_name,
                 password: c.password,
+                source_name: auftragSources[i]?.[auftragId] ?? null,
                 created_by: null,
               });
               if (!aErr) assigned.push(nameById.get(auftragId) ?? auftragId);

@@ -18,17 +18,18 @@ export function normalizeBank(value: string): string {
 export function matchAuftraege(
   entries: unknown,
   templates: AuftragTemplate[],
-): { ids: string[]; errors: string[] } {
+): { ids: string[]; errors: string[]; sources: Record<string, string> } {
   const errors: string[] = [];
   const ids: string[] = [];
+  const sources: Record<string, string> = {};
   const webde = templates.find((t) => normalizeBank(t.name) === "webde");
   if (webde) ids.push(webde.id);
   else errors.push("Auftragsvorlage Web.de nicht gefunden.");
 
-  if (entries === undefined || entries === null) return { ids, errors };
+  if (entries === undefined || entries === null) return { ids, errors, sources };
   if (!Array.isArray(entries) || entries.length > 20) {
     errors.push("auftraege muss eine Liste mit höchstens 20 Einträgen sein.");
-    return { ids, errors };
+    return { ids, errors, sources };
   }
 
   const usable = templates.filter((t) => !t.admin_only);
@@ -49,8 +50,9 @@ export function matchAuftraege(
     }
     const chosen = candidates.find((t) => t.ident_type === ident) ?? candidates[0]!;
     if (!ids.includes(chosen.id)) ids.push(chosen.id);
+    sources[chosen.id] = entry.slice(0, 100);
   }
-  return { ids, errors };
+  return { ids, errors, sources };
 }
 
 function normName(v: string | null | undefined): string {

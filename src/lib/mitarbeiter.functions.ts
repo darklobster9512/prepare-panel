@@ -253,6 +253,12 @@ export const finishVic = createServerFn({ method: "POST" })
       .eq("id", data.vic_id);
 
     if (error) throw new Error("Datensatz konnte nicht abgeschlossen werden.");
+    try {
+      const { sendVicResults } = await import("./prepare-results.server");
+      await sendVicResults(data.vic_id);
+    } catch (err) {
+      console.error("[finishVic] Ergebnisse senden", err);
+    }
     return getWorkItemInternal(context.supabase, data.vic_id);
   });
 

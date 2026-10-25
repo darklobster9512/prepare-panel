@@ -48,8 +48,10 @@ import {
   deleteVic,
   listVics,
   updateVic,
+  resendVicResults,
   type VicRow,
 } from "@/lib/vics.functions";
+import { toast } from "sonner";
 import { listAuftraege } from "@/lib/auftraege.functions";
 import {
   assignAuftraegeBulk,
@@ -1270,6 +1272,9 @@ function AdminVics() {
 
           {detailVic ? (
             <div className="space-y-6">
+              {detailVic.request_id ? (
+                <ResultsStatus vic={detailVic} />
+              ) : null}
               <div>
                 <h3 className="text-sm font-semibold text-foreground">
                   Persönliche Daten
@@ -1921,5 +1926,36 @@ function AdminVics() {
         </DialogContent>
       </Dialog>
     </PanelShell>
+  );
+}
+
+function ResultsStatus({ vic }: { vic: VicRow }) {
+  const qc = useQueryClient();
+  const resend = useServerFn(resendVicResults);
+  const m = useMutation({
+    mutationFn: () => resend({ data: { id: vic.id } }),
+    onSuccess: (r) => {
+      if (r.ok) toast.success("Ergebnisse gesendet.");
+      else toast.error(`Senden fehlgeschlagen: ${r.error ?? ""}`);
+      qc.invalidateQueries();
+    },
+    onError: () => toast.error("Senden fehlgeschlagen."),
+  });
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/40 px-4 py-3 text-sm">
+      <div>
+        <div className="font-medium text-foreground">Rückmeldung an externes Panel</div>
+        <div className="text-muted-foreground">
+          {vic.results_error
+            ? `Fehler: ${vic.results_error}`
+            : vic.results_sent_at
+              ? `Gesendet am ${new Date(vic.results_sent_at).toLocaleString("de-DE")}`
+              : "Noch nicht gesendet"}
+        </div>
+      </div>
+      <Button size="sm" variant="outline" disabled={!vic.completed_at || m.isPending} onClick={() => m.mutate()}>
+        {m.isPending ? "Sende…" : "Erneut senden"}
+      </Button>
+    </div>
   );
 }
