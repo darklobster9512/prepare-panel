@@ -204,6 +204,8 @@ export const Route = createFileRoute("/api/public/vics")({
             .limit(1);
           if (owned && owned.length > 0) {
             number = owned[0]!.number ?? null;
+          } else if (!autoBuy) {
+            numberSkipped = true;
           } else
           try {
             const { findFullServiceProduct, purchaseNumber } = await import(
