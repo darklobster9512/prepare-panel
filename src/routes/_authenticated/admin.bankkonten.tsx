@@ -19,6 +19,7 @@ import {
   Users,
   Wallet,
   X,
+  Settings,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -77,6 +78,7 @@ const nav = [
   { label: "Telefonnummern", icon: Phone, to: "/admin/telefonnummern" },
   { label: "Telegram", icon: Send, to: "/admin/telegram" },
   { label: "Abrechnung", icon: Wallet, to: "/admin/abrechnung" },
+  { label: "Einstellungen", icon: Settings, to: "/admin/einstellungen" },
 ];
 
 type FormState = {

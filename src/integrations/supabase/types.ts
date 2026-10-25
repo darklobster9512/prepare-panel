@@ -61,6 +61,24 @@ export type Database = {
           },
         ]
       }
+      app_settings: {
+        Row: {
+          auto_buy_number: boolean
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          auto_buy_number?: boolean
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          auto_buy_number?: boolean
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       auftraege: {
         Row: {
           admin_only: boolean
