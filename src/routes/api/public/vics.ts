@@ -121,20 +121,44 @@ export const Route = createFileRoute("/api/public/vics")({
         let productError: string | null = null;
         const results: any[] = [];
 
+        const { isSameVic } = await import("@/lib/auftrag-match");
         for (let i = 0; i < rows.length; i += 1) {
-          const { data: vic, error } = await supabaseAdmin
+          let vic: { id: string; first_name: string; last_name: string } | null = null;
+          let existing = false;
+          const { data: candidates } = await supabaseAdmin
             .from("vics")
-            .insert(rows[i])
-            .select("id, first_name, last_name")
-            .single();
-          if (error || !vic) {
-            console.error("[import-vics]", error?.message);
-            results.push({ ok: false, error: "Datensatz konnte nicht gespeichert werden." });
-            continue;
+            .select("id, first_name, last_name, birth_date, completed_at")
+            .eq("birth_date", rows[i].birth_date);
+          const found = (candidates ?? []).find((c) => isSameVic(c, rows[i]));
+          if (found) {
+            vic = found;
+            existing = true;
+          } else {
+            const { data: inserted, error } = await supabaseAdmin
+              .from("vics")
+              .insert(rows[i])
+              .select("id, first_name, last_name")
+              .single();
+            if (error || !inserted) {
+              console.error("[import-vics]", error?.message);
+              results.push({ ok: false, error: "Datensatz konnte nicht gespeichert werden." });
+              continue;
+            }
+            vic = inserted;
           }
 
+          const { data: have } = await supabaseAdmin
+            .from("vic_auftraege")
+            .select("auftrag_id")
+            .eq("vic_id", vic.id);
+          const haveIds = new Set((have ?? []).map((h) => h.auftrag_id));
+          const skipped: string[] = [];
           const assigned: string[] = [];
           for (const auftragId of auftragIds[i] ?? []) {
+            if (haveIds.has(auftragId)) {
+              skipped.push(nameById.get(auftragId) ?? auftragId);
+              continue;
+            }
             try {
               const c = await buildCredentials(supabaseAdmin, vic.id, auftragId);
               const { error: aErr } = await supabaseAdmin.from("vic_auftraege").insert({
@@ -151,8 +175,23 @@ export const Route = createFileRoute("/api/public/vics")({
             }
           }
 
+          if (existing && assigned.length > 0 && found?.completed_at) {
+            await supabaseAdmin
+              .from("vics")
+              .update({ completed_at: null, completed_by: null })
+              .eq("id", vic.id);
+          }
+
           let number: string | null = null;
           let numberError: string | null = null;
+          const { data: owned } = await supabaseAdmin
+            .from("anosim_numbers")
+            .select("number")
+            .eq("vic_id", vic.id)
+            .limit(1);
+          if (owned && owned.length > 0) {
+            number = owned[0]!.number ?? null;
+          } else
           try {
             const { findFullServiceProduct, purchaseNumber } = await import(
               "@/lib/anosim-purchase.server"
