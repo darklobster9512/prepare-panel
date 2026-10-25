@@ -1270,6 +1270,9 @@ function AdminVics() {
 
           {detailVic ? (
             <div className="space-y-6">
+              {detailVic.request_id ? (
+                <ResultsStatus vic={detailVic} />
+              ) : null}
               <div>
                 <h3 className="text-sm font-semibold text-foreground">
                   Persönliche Daten

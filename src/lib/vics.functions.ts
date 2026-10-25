@@ -34,6 +34,9 @@ export type VicRow = {
   phone_order_booking_id: number | null;
   phone_share_link: string | null;
   created_at: string;
+  request_id: string | null;
+  results_sent_at: string | null;
+  results_error: string | null;
 };
 
 async function assertAdmin(supabase: any, userId: string) {
@@ -91,7 +94,7 @@ const assignmentSchema = z.object({
 });
 
 const SELECT_COLUMNS =
-  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, claimed_by, completed_at, email_address, email_street, email_postal_code, email_city, email_birth_date, created_at, projects(name, webid_domain), anosim_numbers(order_booking_id, number, end_date, share_link), vic_auftraege(id, auftrag_id, login_name, password, status, internal_mark, used_login_name, used_password, webid_link, postident_link, postident_pdf_path, postident_pdf_name, completed_at, auftraege(name, logo_path, admin_only, ident_type))";
+  "id, first_name, last_name, birth_name, birth_date, birth_place, street, postal_code, city, marital_status, tax_id, bank, notes, project_id, claimed_by, completed_at, email_address, email_street, email_postal_code, email_city, email_birth_date, created_at, request_id, results_sent_at, results_error, projects(name, webid_domain), anosim_numbers(order_booking_id, number, end_date, share_link), vic_auftraege(id, auftrag_id, login_name, password, status, internal_mark, used_login_name, used_password, webid_link, postident_link, postident_pdf_path, postident_pdf_name, completed_at, auftraege(name, logo_path, admin_only, ident_type))";
 
 type RawVicRow = Omit<
   VicRow,
@@ -246,4 +249,13 @@ export const assignVicProject = createServerFn({ method: "POST" })
 
     if (error) throw new Error("Projekt konnte nicht zugewiesen werden.");
     return { ok: true };
+  });
+
+export const resendVicResults = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }): Promise<{ ok: boolean; error?: string }> => {
+    await assertAdmin(context.supabase, context.userId);
+    const { sendVicResults } = await import("./prepare-results.server");
+    return sendVicResults(data.id);
   });
