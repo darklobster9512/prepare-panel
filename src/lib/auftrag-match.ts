@@ -52,3 +52,20 @@ export function matchAuftraege(
   }
   return { ids, errors };
 }
+
+function normName(v: string | null | undefined): string {
+  return String(v ?? "").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+/** Gleicher Vic: Vorname(n), Nachname und Geburtsdatum stimmen überein. */
+export function isSameVic(
+  a: { first_name: string; last_name: string; birth_date: string | null },
+  b: { first_name: string; last_name: string; birth_date: string | null },
+): boolean {
+  return (
+    !!a.birth_date &&
+    a.birth_date === b.birth_date &&
+    normName(a.first_name) === normName(b.first_name) &&
+    normName(a.last_name) === normName(b.last_name)
+  );
+}
