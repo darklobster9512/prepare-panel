@@ -327,6 +327,8 @@ export type Database = {
           login_name: string | null
           password: string | null
           postident_link: string | null
+          postident_pdf_name: string | null
+          postident_pdf_path: string | null
           status: string
           updated_at: string
           used_login_name: string | null
@@ -345,6 +347,8 @@ export type Database = {
           login_name?: string | null
           password?: string | null
           postident_link?: string | null
+          postident_pdf_name?: string | null
+          postident_pdf_path?: string | null
           status?: string
           updated_at?: string
           used_login_name?: string | null
@@ -363,6 +367,8 @@ export type Database = {
           login_name?: string | null
           password?: string | null
           postident_link?: string | null
+          postident_pdf_name?: string | null
+          postident_pdf_path?: string | null
           status?: string
           updated_at?: string
           used_login_name?: string | null
