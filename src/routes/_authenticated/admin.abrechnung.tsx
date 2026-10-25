@@ -141,6 +141,7 @@ function AdminAbrechnungPage() {
         { label: "Telefonnummern", icon: Phone, to: "/admin/telefonnummern" },
         { label: "Telegram", icon: Send, to: "/admin/telegram" },
         { label: "Abrechnung", icon: Wallet, to: "/admin/abrechnung" },
+  { label: "Einstellungen", icon: Settings, to: "/admin/einstellungen" },
       ]}
     >
       <div className="mx-auto max-w-3xl space-y-6">
