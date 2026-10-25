@@ -71,8 +71,8 @@ export async function sendVicResults(vicId: string): Promise<{ ok: boolean; erro
         if (a.postident_pdf_path) {
           const { data: file } = await supabaseAdmin.storage.from("postident-pdfs").download(a.postident_pdf_path);
           if (file) {
-            entry.pdf_base64 = toBase64(await file.arrayBuffer());
-            entry.pdf_name = a.postident_pdf_name || "postident.pdf";
+            entry["pdf_base64"] = toBase64(await file.arrayBuffer());
+            entry["pdf_name"] = a.postident_pdf_name || "postident.pdf";
           }
         }
         results.push(entry);
