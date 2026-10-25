@@ -123,6 +123,12 @@ export const Route = createFileRoute("/api/public/vics")({
         const results: any[] = [];
 
         const { isSameVic } = await import("@/lib/auftrag-match");
+        const { data: settings } = await (supabaseAdmin as any)
+          .from("app_settings")
+          .select("auto_buy_number")
+          .eq("id", 1)
+          .maybeSingle();
+        const autoBuy = settings?.auto_buy_number ?? true;
         for (let i = 0; i < rows.length; i += 1) {
           let vic: { id: string; first_name: string; last_name: string } | null = null;
           let existing = false;
