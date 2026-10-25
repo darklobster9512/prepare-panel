@@ -92,7 +92,7 @@ function fieldsFor(auftrag: WorkAuftrag): FieldConfig {
   if (name.includes("bbva")) return { credentials: true, webid: false, postident: false };
   if (name.includes("dkb")) return { credentials: true, webid: true, postident: false };
   if (name.includes("commerzbank"))
-    return { credentials: true, webid: false, postident: true };
+    return { credentials: true, webid: true, postident: false };
   if (name.includes("deutsche bank"))
     return { credentials: false, webid: true, postident: false };
   if (auftrag.ident_type === "postident")
@@ -668,7 +668,7 @@ function SummaryCard({
                 ) : null}
                 {auftrag.webid_link ? (
                   <div className="flex gap-2">
-                    <dt>WebID-Link:</dt>
+                    <dt>{/commerzbank/i.test(auftrag.name) ? "IDnow-Link:" : "WebID-Link:"}</dt>
                     <dd className="break-all text-foreground">{auftrag.webid_link}</dd>
                   </div>
                 ) : null}
@@ -987,7 +987,7 @@ function StepCard({
 
           {config.webid ? (
             <Field
-              label="WebID-Link"
+              label={/commerzbank/i.test(step.name) ? "IDnow-Link" : "WebID-Link"}
               value={webid}
               onChange={setWebid}
               disabled={!editable}
