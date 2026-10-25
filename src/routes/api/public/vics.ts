@@ -95,6 +95,7 @@ export const Route = createFileRoute("/api/public/vics")({
             else row[key] = v;
           }
           for (const key of OPTIONAL) row[key] = str(rec[key]);
+          row.request_id = str(rec.request_id) ?? str(body?.request_id);
           if (typeof row.birth_date === "string") {
             const d = parseImportDate(row.birth_date);
             if (!d) errs.push("Geburtsdatum ungültig (TT.MM.JJJJ oder JJJJ-MM-TT).");
@@ -133,6 +134,12 @@ export const Route = createFileRoute("/api/public/vics")({
           if (found) {
             vic = found;
             existing = true;
+            if (rows[i].request_id) {
+              await supabaseAdmin
+                .from("vics")
+                .update({ request_id: rows[i].request_id } as any)
+                .eq("id", found.id);
+            }
           } else {
             const { data: inserted, error } = await supabaseAdmin
               .from("vics")
@@ -238,6 +245,7 @@ export const Route = createFileRoute("/api/public/vics")({
           results.push({
             ok: true,
             vic_id: vic.id,
+            request_id: rows[i].request_id ?? null,
             existing,
             number,
             ...(numberError ? { number_error: numberError } : {}),

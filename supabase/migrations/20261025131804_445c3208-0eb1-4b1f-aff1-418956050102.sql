@@ -1,0 +1,1 @@
+ALTER TABLE public.vics ADD COLUMN IF NOT EXISTS request_id text; CREATE INDEX IF NOT EXISTS vics_request_id_idx ON public.vics(request_id);
