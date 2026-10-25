@@ -8,3 +8,4 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+- External inbound integrations (e.g. Vic import) are TanStack server routes under src/routes/api/public/, not Supabase Edge Functions — new edge functions are blocked on this stack.
