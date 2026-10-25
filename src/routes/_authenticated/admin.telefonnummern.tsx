@@ -14,6 +14,7 @@ import {
   Send,
   Users,
   Wallet,
+  Settings,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 

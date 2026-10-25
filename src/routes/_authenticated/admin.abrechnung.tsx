@@ -14,6 +14,7 @@ import {
   Users,
   Wallet,
   XCircle,
+  Settings,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
