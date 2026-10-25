@@ -2,12 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import {
-  generateInternalPassword,
-  generateLoginName,
-  generateVicPassword,
-  generateYearPassword,
-} from "@/lib/password";
 import type { VicAuftrag } from "@/lib/vic-auftraege.types";
 
 export type { VicAuftrag };
@@ -22,66 +16,6 @@ async function assertAdmin(supabase: any, userId: string) {
 
   if (error) throw new Error("Rolle konnte nicht geprüft werden.");
   if (!data) throw new Error("Kein Adminzugriff.");
-}
-
-async function buildCredentials(supabase: any, vicId: string, auftragId: string) {
-  const { data: vic, error: vicError } = await supabase
-    .from("vics")
-    .select("first_name, last_name, birth_date")
-    .eq("id", vicId)
-    .maybeSingle();
-
-  if (vicError || !vic) throw new Error("Vic-Datensatz konnte nicht geladen werden.");
-
-  const { data: auftrag, error: auftragError } = await supabase
-    .from("auftraege")
-    .select("name, generate_password, generate_loginname, admin_only")
-    .eq("id", auftragId)
-    .maybeSingle();
-
-  if (auftragError || !auftrag) throw new Error("Auftrag konnte nicht geladen werden.");
-
-  let password: string | null = null;
-
-  if (auftrag.admin_only) {
-    return {
-      admin_only: true,
-      password: generateInternalPassword(vic.first_name),
-      login_name: null,
-    };
-  }
-
-  if (auftrag.generate_password) {
-    if (auftrag.name === "BBVA") {
-      // Festes Muster: Vorname + laufendes Jahr (z. B. Dominik2026).
-      password = generateYearPassword(vic.first_name);
-    } else {
-      // Passwörter der anderen Aufträge dieses Vics laden, damit kein Wert doppelt vorkommt.
-      const { data: existing } = await supabase
-        .from("vic_auftraege")
-        .select("auftrag_id, password")
-        .eq("vic_id", vicId);
-
-      const taken = new Set(
-        ((existing ?? []) as Array<{ auftrag_id: string; password: string | null }>)
-          .filter((row) => row.auftrag_id !== auftragId && row.password)
-          .map((row) => row.password as string),
-      );
-
-      for (let attempt = 0; attempt < 10; attempt += 1) {
-        password = generateVicPassword(vic.first_name);
-        if (!taken.has(password)) break;
-      }
-    }
-  }
-
-  return {
-    admin_only: false,
-    password,
-    login_name: auftrag.generate_loginname
-      ? generateLoginName(vic.last_name, vic.birth_date)
-      : null,
-  };
 }
 
 const SELECT_COLUMNS =
@@ -138,6 +72,7 @@ export const assignAuftrag = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<VicAuftrag> => {
     await assertAdmin(context.supabase, context.userId);
 
+    const { buildCredentials } = await import("@/lib/vic-auftraege.server");
     const credentials = await buildCredentials(
       context.supabase,
       data.vic_id,
@@ -225,7 +160,8 @@ export const assignAuftraegeBulk = createServerFn({ method: "POST" })
     const added: VicAuftrag[] = [];
 
     for (const auftragId of data.add_auftrag_ids) {
-      const credentials = await buildCredentials(
+      const { buildCredentials } = await import("@/lib/vic-auftraege.server");
+    const credentials = await buildCredentials(
         context.supabase,
         data.vic_id,
         auftragId,
@@ -322,6 +258,7 @@ export const regenerateCredentials = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<VicAuftrag> => {
     await assertAdmin(context.supabase, context.userId);
 
+    const { buildCredentials } = await import("@/lib/vic-auftraege.server");
     const credentials = await buildCredentials(
       context.supabase,
       data.vic_id,
