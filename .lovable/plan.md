@@ -1,23 +1,23 @@
-# Schnittstelle: Vics von einem externen Panel übertragen
+# Supabase Edge Function: Vics von einem externen Panel übertragen
 
 ## Ziel
-Dein externes Panel schickt Vic-Datensätze an eine feste Adresse. Jeder übertragene Datensatz erscheint danach sofort ganz oben in /admin/vics.
+Dein externes Panel schickt Vic-Datensätze an eine Supabase Edge Function. Jeder übertragene Datensatz erscheint danach sofort ganz oben in /admin/vics.
 
 ## Was übertragen wird
-- Vorname(n), Nachname, Geburtsdatum, Geburtsort, Straße und Hausnummer, PLZ, Ort, Projekt: Pflicht
-- Geburtsname, Familienstand, Steuer-ID, Aktuelle Bank: optional
-- Geburtsdatum wird als TT.MM.JJJJ oder JJJJ-MM-TT angenommen
-- Projekt wird über den Namen angegeben (z. B. „LIMEX"), Groß- und Kleinschreibung egal. Gibt es das Projekt nicht, wird der Datensatz abgelehnt und die Antwort sagt warum.
-- Du kannst einen Datensatz oder bis zu 200 auf einmal schicken.
+- Pflicht: Vorname(n), Nachname, Geburtsdatum, Geburtsort, Straße und Hausnummer, PLZ, Ort, Projekt
+- Optional: Geburtsname, Familienstand, Steuer-ID, Aktuelle Bank
+- Geburtsdatum als TT.MM.JJJJ oder JJJJ-MM-TT
+- Projekt über den Namen (z. B. „LIMEX"), Groß-/Kleinschreibung egal. Unbekanntes Projekt wird abgelehnt.
+- Ein Datensatz oder bis zu 200 auf einmal.
 
 ## Sicherheit
 - Jeder Aufruf braucht einen geheimen Schlüssel im Header `x-api-key`. Ohne gültigen Schlüssel wird nichts gespeichert.
-- Den Schlüssel erzeuge ich als Secret, du trägst ihn danach im externen Panel ein.
-- Die Antwort gibt nur zurück, ob es geklappt hat (plus die IDs der neuen Datensätze), keine anderen Daten.
+- Den Schlüssel lege ich als Secret in Supabase an, du trägst ihn im externen Panel ein.
+- Die Antwort enthält nur Erfolg/Fehler und die IDs der neuen Datensätze.
 
 ## Beispiel-Aufruf
 ```text
-POST https://process-prep-buddy.lovable.app/api/public/vics
+POST https://hppylojeoutwymkrqkek.supabase.co/functions/v1/import-vics
 Header: x-api-key: <dein Schlüssel>
 Body:
 {
@@ -35,13 +35,12 @@ Body:
   "project": "LIMEX"
 }
 ```
-Antworten: 201 bei Erfolg, 400 bei fehlenden oder falschen Feldern (mit deutscher Fehlermeldung je Feld), 401 bei falschem Schlüssel.
+Antworten: 201 Erfolg, 400 fehlende/falsche Felder (deutsche Meldung je Feld), 401 falscher Schlüssel.
 
 ## Technische Details
-- Auf diesem System ist das statt einer Supabase Edge Function ein Server-Endpunkt unter `src/routes/api/public/vics.ts` (POST). Er funktioniert für das externe Panel genauso.
-- Neues Secret `VICS_API_KEY`, Vergleich zeitkonstant.
-- zod-Validierung, Einzelobjekt oder `{ records: [...] }` (max. 200).
-- Projekt-Auflösung per `ilike` auf `projects.name`; Insert über den Admin-Client (`client.server`, im Handler dynamisch geladen) mit `created_by = null`.
-- Keine Änderung an Datenbank-Struktur oder /admin/vics nötig; die Liste lädt die neuen Datensätze automatisch.
-- Nach dem Bau Test per curl: gültiger Schlüssel, falscher Schlüssel, unbekanntes Projekt.
-- Hinweis: Der Endpunkt ist erst nach dem Veröffentlichen unter der festen Adresse erreichbar.
+- Edge Function `supabase/functions/import-vics/index.ts` (Deno), in `supabase/config.toml` mit `verify_jwt = false`, da der Zugriff über `x-api-key` geprüft wird.
+- Secret `VICS_API_KEY` (zeitkonstanter Vergleich); Insert per Service-Role-Client (`SUPABASE_SERVICE_ROLE_KEY` ist in Edge Functions automatisch vorhanden), `created_by = null`.
+- Validierung mit zod; Einzelobjekt oder `{ records: [...] }` (max. 200); CORS-Header für Aufrufe aus dem Browser.
+- Projekt-Auflösung per `ilike` auf `projects.name`.
+- Keine Datenbank-Änderung, keine Änderung an /admin/vics nötig.
+- Nach dem Deploy Test: gültiger Schlüssel, falscher Schlüssel, unbekanntes Projekt.
