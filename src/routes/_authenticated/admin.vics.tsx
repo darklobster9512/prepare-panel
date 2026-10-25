@@ -1,3 +1,4 @@
+import { PostidentPdf } from "@/components/postident-pdf";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -1458,7 +1459,8 @@ function AdminVics() {
                               effectiveLogin ||
                               effectivePassword ||
                               item.webid_link ||
-                              item.postident_link;
+                              item.postident_link ||
+                              item.postident_pdf_path;
                             if (!hasAnything) {
                               return !item.admin_only ? (
                                 <p className="mt-3 border-t border-border/60 pt-3 text-muted-foreground">
@@ -1498,6 +1500,18 @@ function AdminVics() {
                                 <LinkRow
                                   label="Postident-Link"
                                   value={item.postident_link}
+                                />
+                              ) : null}
+                              {item.postident_pdf_path ? (
+                                <PostidentPdf
+                                  vicId={detailVic.id}
+                                  vicAuftragId={item.id}
+                                  path={item.postident_pdf_path}
+                                  name={item.postident_pdf_name}
+                                  editable={false}
+                                  onChanged={() =>
+                                    queryClient.invalidateQueries({ queryKey: ["admin", "vics"] })
+                                  }
                                 />
                               ) : null}
                             </div>
