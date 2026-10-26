@@ -129,6 +129,11 @@ function AdminTelegram() {
     mutationFn: (values: { id: string; active: boolean }) =>
       editRecipient({ data: values }),
     onSuccess: () => invalidate(),
+    onError: () => {
+      setMessage(null);
+      setError("Empfänger konnte nicht aktualisiert werden. Bitte erneut versuchen.");
+      invalidate();
+    },
   });
 
   const deleteMutation = useMutation({
@@ -136,6 +141,10 @@ function AdminTelegram() {
     onSuccess: () => {
       setMessage("Empfänger gelöscht.");
       invalidate();
+    },
+    onError: () => {
+      setMessage(null);
+      setError("Empfänger konnte nicht gelöscht werden.");
     },
   });
 
