@@ -1,22 +1,16 @@
-# SMS werden im Mitarbeiter-Panel nicht angezeigt
+# AnoSIM-Share-Link direkt beim Nummernkauf erstellen
 
-## Was geprueft wurde (bestaetigt)
-- Rudolf Sauter hat die Nummer +4917616172096, korrekt gespeichert und seinem Datensatz zugeordnet (Buchungs-ID 12143015, gueltig bis 25.11.2026).
-- AnoSIM liefert fuer genau diese Buchung aktuell 3 SMS (WEB DE, 17:10, 17:13, 17:14 Uhr). Der API-Schluessel funktioniert, mehrere Abrufe hintereinander werden nicht gedrosselt.
-- Datenbank-Rechte (Mitarbeiter duerfen Nummer und Datensatz lesen) sind in Ordnung.
+## Aktueller Stand (geprueft)
+- Share-Links werden bisher nicht beim Kauf erstellt, sondern erst bei Bedarf: beim Klick auf "Export" im Admin oder wenn ein Datensatz abgeschlossen und an dein externes Panel zurueckgemeldet wird.
+- Die 4 neuesten Nummern (Rudolf Sauter, Friedrich Werner Peter Ripke, Sabine Prenzel, Annette Bringezu) sind alle noch nicht abgeschlossen und wurden nicht exportiert. Deshalb haben sie noch keinen Link. Die API funktioniert, es ist also kein Fehler, sondern der bisherige Ablauf.
 
-Die SMS kommen also bei AnoSIM an, und die gespeicherten Daten stimmen. Der Fehler liegt zwischen deinem Server und dem Mitarbeiter-Bildschirm. Die genaue Ursache ist noch nicht bestaetigt: Das Panel zeigt bei einem Abruffehler nur "Noch keine SMS empfangen" und versteckt die Fehlermeldung. Deshalb ist von aussen nicht sichtbar, was schiefgeht.
-
-## Plan
-1. **Fehler sichtbar machen**: Schlaegt der SMS-Abruf fehl, zeigt die Telefonnummern-Karte eine klare Meldung (z. B. "SMS konnten nicht geladen werden: ...") statt "Noch keine SMS". So sieht der Mitarbeiter und du sofort die echte Ursache.
-2. **Zwischenspeichern ausschliessen**: Der SMS-Abruf ist aktuell ein GET mit immer gleicher Adresse. Hinter einer Domain/einem Proxy kann dadurch eine alte, leere Antwort haengen bleiben. Abruf wird auf "nie zwischenspeichern" umgestellt (POST bzw. no-store), damit jeder 5-Sekunden-Abruf frisch ist.
-3. **Serverseitig protokollieren**: Bei Abruffehlern wird Status und Antwort von AnoSIM ins Server-Log geschrieben (`pm2 logs prepare-panel`), damit sich ein Fehler auf deinem Server nachvollziehen laesst.
-4. **Nummer/Buchung robuster lesen**: Fehlt die Buchungs-ID, wird sie ueber die Nummer bei AnoSIM nachgeschlagen, statt still keine SMS zu zeigen.
+## Aenderung
+1. Direkt nach jedem erfolgreichen Nummernkauf (Admin-Kauf, Zuweisung einer freien Nummer und automatischer Kauf ueber die Schnittstelle) wird der Share-Link bei AnoSIM erzeugt und gespeichert.
+2. Schlaegt das Erzeugen fehl, bleibt die Nummer trotzdem zugewiesen; der Link wird wie bisher beim Export/Abschluss nachgeholt.
+3. Einmalig fuer alle aktiven, zugewiesenen Nummern ohne Link (aktuell u. a. die 4 oben) den Link nachtraeglich erzeugen.
+4. Der Share-Link wird im Admin-Detailfenster neben der Telefonnummer angezeigt (kopierbar).
 
 ## Technische Details
-- `src/lib/mitarbeiter.functions.ts` (`listVicSms`): Fehler nicht mehr zu `[]` verschlucken ausser bei AnoSIM-400; Logging; Methode auf POST.
-- `src/routes/_authenticated/mitarbeiter.auftraege.$vicId.tsx`: `smsQuery.error` in `PhoneCard` anzeigen.
+- Gemeinsamer Helfer `ensureShareLink(anosimNumberId)` in `src/lib/anosim-purchase.server.ts` (POST `/OrderBookingShare/{id}`, speichert `weblink` in `anosim_numbers.share_link`); wird von Kaufpfad, Zuweisung und `src/routes/api/public/vics.ts` aufgerufen; `prepare-results.server.ts` und `getVicShareLink` nutzen denselben Helfer.
+- Nachtraegliches Erzeugen einmalig per Skript ueber die AnoSIM-API.
 - Danach auf dem Server: `git pull`, `npm install`, `npm run build`, `pm2 restart prepare-panel`.
-
-## Bitte vorab pruefen (hilft, die Ursache zu bestaetigen)
-- Oeffne bei Rudolf Sauter als Mitarbeiter die Seite und schau, ob die Nummer selbst links erscheint und ob der Countdown (5 s) laeuft. Falls die Nummer fehlt, liegt es am Laden des Datensatzes, nicht an den SMS.
