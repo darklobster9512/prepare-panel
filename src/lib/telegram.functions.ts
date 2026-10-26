@@ -101,7 +101,10 @@ export const updateTelegramRecipient = createServerFn({ method: "POST" })
       .select(SELECT_COLUMNS)
       .single();
 
-    if (error) throw new Error("Empfänger konnte nicht aktualisiert werden.");
+    if (error) {
+      console.error("telegram_recipients update failed:", error.message);
+      throw new Error("Empfänger konnte nicht aktualisiert werden.");
+    }
     return row as TelegramRecipient;
   });
 
