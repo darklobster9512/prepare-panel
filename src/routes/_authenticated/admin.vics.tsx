@@ -1341,6 +1341,28 @@ function AdminVics() {
                     <p className="text-xs text-muted-foreground">
                       {describeValidity(detailVic.phone_end_date)}
                     </p>
+                    {detailVic.phone_share_link ? (
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={detailVic.phone_share_link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="min-w-0 truncate text-xs font-semibold text-primary underline"
+                        >
+                          AnoSIM-Share-Link
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            navigator.clipboard?.writeText(detailVic.phone_share_link ?? "")
+                          }
+                          aria-label="Share-Link kopieren"
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                        >
+                          <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
                 ) : (
                   <p className="mt-2 text-sm text-muted-foreground">
