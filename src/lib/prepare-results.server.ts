@@ -21,23 +21,15 @@ export function sourceNameFor(name: string, identType: string | null): string {
 async function ensureShareLink(vicId: string): Promise<string | null> {
   const { data: row } = await supabaseAdmin
     .from("anosim_numbers")
-    .select("id, order_booking_id, share_link")
+    .select("order_booking_id, share_link")
     .eq("vic_id", vicId)
     .maybeSingle();
   if (!row) return null;
   if (row.share_link) return row.share_link;
   const id = Number(row.order_booking_id);
   if (!Number.isFinite(id) || id <= 0) return null;
-  try {
-    const { anosimFetch } = await import("./anosim.server");
-    const res = await anosimFetch<{ weblink?: string }>(`/OrderBookingShare/${id}`, {}, { method: "POST" });
-    if (!res?.weblink) return null;
-    await supabaseAdmin.from("anosim_numbers").update({ share_link: res.weblink }).eq("id", row.id);
-    return res.weblink;
-  } catch (err) {
-    console.error("[prepare-results] share link", err);
-    return null;
-  }
+  const { ensureShareLinkForBooking } = await import("./anosim-purchase.server");
+  return ensureShareLinkForBooking(supabaseAdmin, id);
 }
 
 /** Sendet die Ergebnisse eines abgeschlossenen Vics an das externe Panel. Wirft nie. */
