@@ -100,5 +100,47 @@ export async function purchaseNumber(
       `Nummer ${fresh[0]?.number ?? ""} wurde gekauft, konnte aber nicht gespeichert werden.`,
     );
   }
+  for (const booking of fresh) {
+    await ensureShareLinkForBooking(supabase, booking.id);
+  }
   return fresh.map((booking) => booking.number);
+}
+
+/**
+ * Erzeugt den AnoSIM-Share-Link einmalig und speichert ihn. Ein bereits
+ * gespeicherter Link wird immer wiederverwendet (ein neuer Aufruf würde den
+ * alten Token ungültig machen). Wirft nie.
+ */
+export async function ensureShareLinkForBooking(
+  supabase: any,
+  orderBookingId: number,
+): Promise<string | null> {
+  try {
+    const { data: row } = await supabase
+      .from("anosim_numbers")
+      .select("id, share_link")
+      .eq("order_booking_id", orderBookingId)
+      .maybeSingle();
+    if (!row) return null;
+    if (row.share_link) return row.share_link as string;
+
+    const res = await anosimFetch<{ weblink?: string }>(
+      `/OrderBookingShare/${orderBookingId}`,
+      {},
+      { method: "POST" },
+    );
+    if (!res?.weblink) return null;
+    const { error } = await supabase
+      .from("anosim_numbers")
+      .update({ share_link: res.weblink })
+      .eq("id", row.id);
+    if (error) {
+      console.error("[anosim] share link speichern", error.message);
+      return null;
+    }
+    return res.weblink;
+  } catch (err) {
+    console.error("[anosim] share link erzeugen", err);
+    return null;
+  }
 }

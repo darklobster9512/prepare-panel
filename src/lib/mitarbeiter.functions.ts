@@ -268,7 +268,7 @@ export type VicSmsRow = {
   messageText: string;
 };
 
-export const listVicSms = createServerFn({ method: "GET" })
+export const listVicSms = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => z.object({ vic_id: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }): Promise<VicSmsRow[]> => {
@@ -310,6 +310,11 @@ export const listVicSms = createServerFn({ method: "GET" })
       }));
     } catch (err) {
       if (err instanceof AnosimError && err.status === 400) return [];
-      throw err;
+      console.error(
+        "[sms] Abruf fehlgeschlagen",
+        number.order_booking_id,
+        err instanceof AnosimError ? `${err.status} ${err.detail}` : err,
+      );
+      throw err instanceof Error ? err : new Error("SMS konnten nicht geladen werden.");
     }
   });

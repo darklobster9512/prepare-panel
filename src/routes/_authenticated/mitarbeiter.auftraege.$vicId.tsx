@@ -295,6 +295,7 @@ function WizardPage() {
             <PhoneCard
               item={item}
               sms={smsQuery.data ?? []}
+              smsError={smsQuery.isError ? ((smsQuery.error as Error)?.message ?? "SMS konnten nicht geladen werden.") : null}
               countdown={smsCountdown}
               onRefresh={() => {
                 setSmsCountdown(5);
@@ -421,10 +422,12 @@ function VicCard({ item }: { item: WorkItem }) {
 function PhoneCard({
   item,
   sms,
+  smsError,
   countdown,
   onRefresh,
 }: {
   item: WorkItem;
+  smsError: string | null;
   sms: { messageDate: string; messageSender: string; messageText: string }[];
   countdown: number;
   onRefresh: () => void;
@@ -485,6 +488,11 @@ function PhoneCard({
         <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
         Eingehende SMS
       </h3>
+      {smsError ? (
+        <p className="mt-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          SMS konnten nicht geladen werden: {smsError}
+        </p>
+      ) : null}
       {sms.length === 0 ? (
         <p className="mt-2 text-xs text-muted-foreground">Noch keine SMS empfangen.</p>
       ) : (

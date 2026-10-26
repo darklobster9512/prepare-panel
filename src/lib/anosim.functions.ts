@@ -254,6 +254,8 @@ export const assignNumberToVic = createServerFn({ method: "POST" })
     );
 
     if (error) throw new Error("Nummer konnte nicht zugewiesen werden.");
+    const { ensureShareLinkForBooking } = await import("./anosim-purchase.server");
+    await ensureShareLinkForBooking(context.supabase, data.orderBookingId);
     return { ok: true, number, endDate };
   });
 
