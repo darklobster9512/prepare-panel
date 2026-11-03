@@ -91,13 +91,24 @@ export async function sendVicResults(vicId: string): Promise<{ ok: boolean; erro
       }
     }
 
+    const missingPdf = results
+      .filter((r) => r["success"] && /-postident$/i.test(String(r["auftrag"])) && !r["pdf_base64"])
+      .map((r) => String(r["auftrag"]));
+    const clean = results.map((r) =>
+      Object.fromEntries(Object.entries(r).filter(([, v]) => v !== null && v !== undefined && v !== "")),
+    );
+
     const res = await fetch(TARGET, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ request_id: vic.request_id, results }),
+      body: JSON.stringify({ request_id: vic.request_id, results: clean }),
       signal: AbortSignal.timeout(20000),
     });
-    if (!res.ok) throw new Error(`Gegenstelle antwortete mit ${res.status}.`);
+    if (!res.ok) {
+      const body = (await res.text().catch(() => "")).slice(0, 350);
+      const hint = missingPdf.length ? ` PDF fehlt bei: ${missingPdf.join(", ")}.` : "";
+      throw new Error(`Gegenstelle antwortete mit ${res.status}: ${body}${hint}`);
+    }
     await supabaseAdmin
       .from("vics")
       .update({ results_sent_at: new Date().toISOString(), results_error: null })
