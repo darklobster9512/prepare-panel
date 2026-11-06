@@ -2,17 +2,16 @@
 
 ## Ursache (geprüft)
 - Der Santander-Auftrag ist vollständig: erfolgreich, PDF ist hochgeladen.
-- Beim Übertragen wurde er aber unter dem Namen **„Santander-videoident"** gespeichert (das externe Panel hat ihn damals so geschickt, als die Santander-Vorlage noch Videoident war).
-- Das Panel entscheidet anhand dieses Namens, was geschickt wird. Wegen „-videoident" wird Santander als Videoident behandelt: es schickt E-Mail/Ident-Link statt PDF. Ein Ident-Link fehlt, kein PDF dabei → die Gegenstelle lehnt mit 400 ab.
+- Er ist aber unter dem Namen **„Santander-videoident"** gespeichert (so kam er damals vom externen Panel).
+- Wegen „-videoident" schickt das Panel E-Mail und Ident-Link statt PDF. Der Ident-Link fehlt, ein PDF ist nicht dabei, deshalb lehnt die Gegenstelle mit 400 ab.
 
 ## Änderung
-1. Ob ein Auftrag Postident ist, richtet sich künftig nach der **Auftragsvorlage** (Santander = Postident), nicht nach dem übertragenen Namen.
-2. Der gesendete Name wird passend korrigiert: Bank-Teil bleibt, Endung wird aus der Vorlage genommen → „Santander-postident" mit PDF.
-3. Bei Vladans Santander-Auftrag (und allen anderen mit falscher Endung) den gespeicherten Namen einmalig auf die richtige Endung korrigieren.
-4. Danach Vladan einmal erneut senden und prüfen, dass die Gegenstelle annimmt. Kommt trotzdem 400, wird der Antworttext im Detailfenster angezeigt.
+1. **Santander und Consorsbank werden immer als „-postident" übertragen (mit PDF), niemals als Videoident**, egal wie sie gespeichert oder angelegt sind. Bei allen anderen Banken entscheidet die Auftragsvorlage.
+2. Bei Vladan und allen anderen betroffenen Aufträgen den gespeicherten Namen einmalig auf „Santander-postident" bzw. „Consorsbank-postident" korrigieren.
+3. Danach Vladan einmal erneut senden und prüfen, dass die Gegenstelle annimmt. Kommt trotzdem 400, steht der Antworttext im Detailfenster.
 
 Hinweis: Beim erneuten Senden gehen alle Aufträge mit (BBVA erfolgreich, DKB fehlgeschlagen, Santander mit PDF), weil das externe Panel die Rückmeldung pro Anfrage als Ganzes erwartet.
 
 ## Technisch
-- `src/lib/prepare-results.server.ts`: `isPost = t.ident_type === "postident"`; `auftrag` = Bankteil aus `source_name` + Suffix aus `t.ident_type`.
-- Daten-Update auf `vic_auftraege.source_name`, wo Suffix nicht zum `ident_type` der Vorlage passt.
+- `src/lib/prepare-results.server.ts`: `isPost = bank in {santander, consorsbank} || t.ident_type === "postident"`; gesendeter Name = Bankteil + Endung passend zu `isPost`.
+- Daten-Update: `vic_auftraege.source_name` für Santander/Consorsbank auf `-postident`.
