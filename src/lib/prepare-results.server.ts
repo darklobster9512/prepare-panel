@@ -50,13 +50,18 @@ export async function sendVicResults(vicId: string): Promise<{ ok: boolean; erro
     for (const a of (vic.vic_auftraege ?? []) as any[]) {
       const t = a.auftraege;
       if (!t || t.admin_only || normalizeBank(t.name) === "webde") continue;
-      const auftrag: string = a.source_name || sourceNameFor(t.name, t.ident_type);
+      const bankKey = normalizeBank(t.name);
+      const forcePost = bankKey === "santander" || bankKey === "consorsbank";
+      const rawName: string = a.source_name || sourceNameFor(t.name, t.ident_type);
+      const postByTemplate = forcePost || t.ident_type === "postident";
+      const bankPart = rawName.replace(/-(postident|videoident)$/i, "");
+      const auftrag = `${bankPart}-${postByTemplate ? "postident" : "videoident"}`;
       const success = a.status === "erfolgreich" || (a.status !== "fehlgeschlagen" && !!a.internal_mark);
       if (!success) {
         results.push({ auftrag, success: false });
         continue;
       }
-      const isPost = /-postident$/i.test(auftrag);
+      const isPost = postByTemplate;
       const isBbva = normalizeBank(t.name) === "bbva";
       if (isPost) {
         const entry: Record<string, unknown> = { auftrag, success: true, pdf_base64: null, pdf_name: null };
